@@ -1,0 +1,15 @@
+.storeSelector {
+  margin-right: 16px;
+  display: flex;
+  align-items: center;
+
+  .selector {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 4px 8px;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04) !important;
+    }
+  }
+}

@@ -1,0 +1,131 @@
+.loginPage {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e6e6fa, #b0e0e6);
+}
+
+.loginContainer {
+  width: 100%;
+  max-width: 1200px;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.loginCard {
+  width: 100%;
+  max-width: 800px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+  .card-content {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  // .right {
+  //   border-radius: 16px;
+  //   width: 400px;
+  //   backdrop-filter: blur(10px);
+  //   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  //   background: linear-gradient(to bottom, rgb(33, 147, 176), rgb(109, 213, 237));
+  // }
+
+  .right {
+    width: 450px;
+    padding: 40px;
+    background: linear-gradient(to bottom, rgb(33, 147, 176), rgb(109, 213, 237));
+    border-radius: 16px 0 0 16px;
+    color: white;
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 40px;
+    }
+
+    .images {
+      .chart {
+        width: 300px;
+        height: auto;
+        position: absolute;
+        left: 70px;
+        margin-top: -30px;
+      }
+
+      .work {
+        width: 270px;
+        height: auto;
+        position: absolute;
+        left: 220px;
+        top: 120px;
+      }
+
+      .line {
+        width: 190px;
+        height: auto;
+        position: absolute;
+        left: 0px;
+        bottom: 0;
+      }
+    }
+  }
+
+  .login-info {
+    padding: 24px;
+    box-sizing: border-box;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+
+    .welcome {
+      font-size: 36px;
+      color: #36a3bf;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: #36a3bf;
+      margin: 0;
+    }
+  }
+}
+
+.inputIcon {
+  color: #999;
+}
+
+.loginButton {
+  height: 48px;
+  font-size: 16px;
+  border-radius: 24px;
+  background: #36a3bf;
+  margin-top: 20px;
+
+  &:hover {
+    background: #62cae3 !important;
+  }
+}
+
+:global {
+  .ant-input-affix-wrapper {
+    border-radius: 24px;
+    padding: 8px 16px;
+  }
+
+  .ant-form-item {
+    margin-bottom: 24px;
+  }
+
+  .ant-card-body {
+    padding: 0px !important;
+  }
+}
