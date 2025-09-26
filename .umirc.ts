@@ -56,6 +56,11 @@ export default defineConfig({
       path: '/supplier-portal',
       component: './SupplierPortal',
     },
+    {
+      name: '配件目录',
+      path: '/catalog',
+      component: './PartCatalog',
+    },
   ],
   npmClient: 'pnpm',
   proxy: {

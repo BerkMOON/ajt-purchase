@@ -209,8 +209,8 @@ const filterPurchases = (purchases: PurchaseItem[], params: PurchaseParams) => {
 };
 
 // 模拟异步请求的延迟
-// eslint-disable-next-line no-promise-executor-return
 const delay = (ms: number = 300) =>
+  // eslint-disable-next-line no-promise-executor-return
   new Promise((resolve) => setTimeout(resolve, ms));
 
 export const PurchaseAPI = {
@@ -392,18 +392,42 @@ export const PurchaseAPI = {
     const index = purchases.findIndex((item) => item.id === purchaseId);
 
     if (index !== -1) {
-      purchases[index].status = PurchaseStatusMap[5]; // 待询价
-      purchases[index].modify_time = formatDateTime();
-      savePurchaseList(purchases);
+      const purchase = purchases[index];
 
-      return {
-        response_status: {
-          code: 200,
-          msg: '审核通过，进入询价流程',
-          extension: { key: '', value: '' },
-        },
-        data: null,
-      };
+      // 检查采购单中是否包含备件
+      const hasPartsItems = purchase.purchase_details.some(
+        (detail) => detail.category_type === 'PARTS',
+      );
+
+      if (hasPartsItems) {
+        // 包含备件，走询价流程
+        purchases[index].status = PurchaseStatusMap[5]; // 待询价
+        purchases[index].modify_time = formatDateTime();
+        savePurchaseList(purchases);
+
+        return {
+          response_status: {
+            code: 200,
+            msg: '审核通过，进入询价流程',
+            extension: { key: '', value: '' },
+          },
+          data: null,
+        };
+      } else {
+        // 只包含精品，跳过询价直接到订单待审核状态
+        purchases[index].status = PurchaseStatusMap[7]; // 订单待审核
+        purchases[index].modify_time = formatDateTime();
+        savePurchaseList(purchases);
+
+        return {
+          response_status: {
+            code: 200,
+            msg: '审核通过，精品采购单已提交订单审核',
+            extension: { key: '', value: '' },
+          },
+          data: null,
+        };
+      }
     } else {
       throw new Error('采购单不存在');
     }
