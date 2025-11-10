@@ -40,8 +40,7 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
       title: '类型',
       key: 'category_type',
       width: 80,
-      render: (_: any, record: PartsInfo | AccessoryInfo) =>
-        record.category_type === 'PARTS' ? '备件' : '精品',
+      render: () => <Tag color="blue">备件</Tag>,
     },
     {
       title: '数量',
@@ -65,36 +64,20 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
       title: '单价',
       key: 'price',
       width: 100,
-      render: (_: any, record: AccessoryInfo | PartsInfo) => {
-        if (record.category_type === 'ACCESSORIES') {
-          const accessory = record;
-          return (
-            <span style={{ color: '#f50', fontWeight: 'bold' }}>
-              ¥{accessory.fixed_price.toFixed(2)}
-            </span>
-          );
-        } else {
-          const part = record;
-          return part.historical_avg_price ? (
-            <span>¥{part.historical_avg_price.toFixed(2)}</span>
-          ) : (
-            <Tag color="warning">待询价</Tag>
-          );
-        }
+      render: (_: any, record: PartsInfo | AccessoryInfo) => {
+        const part = record as PartsInfo;
+        return part.historical_avg_price ? (
+          <span>¥{part.historical_avg_price.toFixed(2)}</span>
+        ) : (
+          <Tag color="warning">待询价</Tag>
+        );
       },
     },
     {
       title: '供应商',
       key: 'supplier',
       width: 120,
-      render: (_: any, record: AccessoryInfo | PartsInfo) => {
-        if (record.category_type === 'ACCESSORIES') {
-          const accessory = record;
-          return accessory.supplier_name;
-        } else {
-          return <Tag color="blue">待选择</Tag>;
-        }
-      },
+      render: () => <Tag color="blue">待选择</Tag>,
     },
   ];
 

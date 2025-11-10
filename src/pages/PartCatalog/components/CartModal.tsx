@@ -24,11 +24,7 @@ const CartModal: React.FC<CartModalProps> = ({
       title: '类型',
       key: 'category_type',
       width: 80,
-      render: (_: any, record: PartsInfo | AccessoryInfo) => (
-        <Tag color={record.category_type === 'PARTS' ? 'blue' : 'green'}>
-          {record.category_type === 'PARTS' ? '备件' : '精品'}
-        </Tag>
-      ),
+      render: () => <Tag color="blue">备件</Tag>,
     },
     { title: '规格', dataIndex: 'specification', width: 120 },
     {
@@ -41,21 +37,12 @@ const CartModal: React.FC<CartModalProps> = ({
       key: 'price',
       width: 100,
       render: (_: any, record: PartsInfo | AccessoryInfo) => {
-        if (record.category_type === 'ACCESSORIES') {
-          const accessory = record as AccessoryInfo;
-          return (
-            <span style={{ color: '#f50', fontWeight: 'bold' }}>
-              ¥{accessory.fixed_price.toFixed(2)}
-            </span>
-          );
-        } else {
-          const part = record as PartsInfo;
-          return part.historical_avg_price ? (
-            <span>¥{part.historical_avg_price.toFixed(2)}</span>
-          ) : (
-            <Tag color="warning">待询价</Tag>
-          );
-        }
+        const part = record as PartsInfo;
+        return part.historical_avg_price ? (
+          <span>¥{part.historical_avg_price.toFixed(2)}</span>
+        ) : (
+          <Tag color="warning">待询价</Tag>
+        );
       },
     },
     {

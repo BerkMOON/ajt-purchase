@@ -29,7 +29,7 @@ export interface BaseModalFormProps {
 }
 
 export interface BaseListInfo {
-  meta: {
+  count: {
     total_count: number;
     total_page: number;
   };
@@ -64,7 +64,10 @@ export interface ColumnsProps<T> {
   deleteModal?: ModalControl;
   createOrModifyModal: ModalControl;
   updateRoleModal?: ModalControl;
+  resetPasswordModal?: ModalControl;
+  changeRoleModal?: ModalControl;
   customModal?: ModalControl;
+  bindingModal?: ModalControl;
 }
 
 export interface StatusInfo {

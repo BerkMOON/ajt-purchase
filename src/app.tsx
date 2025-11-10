@@ -8,6 +8,7 @@ import { UserInfo } from './services/user/typings';
 import { UserAPI } from './services/user/UserController';
 
 dayjs.extend(isoWeek);
+
 // 全局初始化数据配置，用于 Layout 用户信息和权限初始化
 // 更多信息见文档：https://umijs.org/docs/api/runtime-config#getinitialstate
 export async function getInitialState(): Promise<
@@ -21,37 +22,6 @@ export async function getInitialState(): Promise<
     const userInfo = await UserAPI.getUserDetail();
     const { data } = userInfo;
     if (data) {
-      // 如果用户有角色列表且没有保存的当前门店，初始化默认选择第一个
-      if (data.role_list && data.role_list.length > 0) {
-        const saved = localStorage.getItem('currentStore');
-        if (!saved) {
-          const firstRole = data.role_list[0];
-          const defaultStore = {
-            companyId: firstRole.company_id,
-            companyName: firstRole.company_name,
-            storeId: firstRole.store_id,
-            storeName: firstRole.store_name,
-          };
-          localStorage.setItem('currentStore', JSON.stringify(defaultStore));
-        } else {
-          const parsed = JSON.parse(saved);
-          const match = data.role_list.find(
-            (role) =>
-              role.company_id === parsed.companyId &&
-              role.store_id === parsed.storeId,
-          );
-          if (!match) {
-            const firstRole = data.role_list[0];
-            const defaultStore = {
-              companyId: firstRole.company_id,
-              companyName: firstRole.company_name,
-              storeId: firstRole.store_id,
-              storeName: firstRole.store_name,
-            };
-            localStorage.setItem('currentStore', JSON.stringify(defaultStore));
-          }
-        }
-      }
       return { ...data, isLogin: true };
     } else {
       return { isLogin: false };
@@ -70,6 +40,15 @@ export const request = {
       const url = config.url || '';
       const isThirdPartyAPI = url.includes('amap.com');
       if (!isThirdPartyAPI || url.includes(window.location.host)) {
+        // 从localStorage获取token并添加到Authorization header
+        const token = localStorage.getItem('token');
+        if (token) {
+          config.headers = {
+            ...config.headers,
+            Authorization: `Bearer ${token}`,
+          };
+        }
+
         // 从localStorage获取当前选中的门店和公司信息
         const currentStore = localStorage.getItem('currentStore');
         if (currentStore) {
@@ -88,6 +67,8 @@ export const request = {
     errorHandler: (error: any) => {
       // 统一错误处理
       if (error.response?.status === 401) {
+        // 清除token
+        localStorage.removeItem('token');
         const currentPath = window.location.pathname;
         localStorage.setItem('redirectPath', currentPath);
         window.location.href = '/login';

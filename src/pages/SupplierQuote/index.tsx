@@ -32,6 +32,9 @@ const SupplierQuote: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const supplierId = searchParams.get('supplier') || '1';
+  const mode = searchParams.get('mode') || 'edit'; // view: 查看模式, edit: 编辑模式
+  const isViewMode = mode === 'view'; // 是否为查看模式（采购人员查看）
+
   const [purchase, setPurchase] = useState<PurchaseItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -159,20 +162,37 @@ const SupplierQuote: React.FC = () => {
                   返回
                 </Button>
                 <span style={{ fontSize: 16, fontWeight: 'bold' }}>
-                  供应商报价 - {purchase.purchase_no}
+                  {isViewMode ? '查看报价' : '供应商报价'} -{' '}
+                  {purchase.purchase_no}
                 </span>
+                {isViewMode && (
+                  <span
+                    style={{
+                      color: '#1890ff',
+                      fontSize: 14,
+                      padding: '4px 8px',
+                      background: '#e6f7ff',
+                      borderRadius: 4,
+                      border: '1px solid #91d5ff',
+                    }}
+                  >
+                    只读模式
+                  </span>
+                )}
               </Space>
             </Col>
-            <Col>
-              <Button
-                type="primary"
-                icon={<SaveOutlined />}
-                loading={saving}
-                onClick={() => form.submit()}
-              >
-                保存报价
-              </Button>
-            </Col>
+            {!isViewMode && (
+              <Col>
+                <Button
+                  type="primary"
+                  icon={<SaveOutlined />}
+                  loading={saving}
+                  onClick={() => form.submit()}
+                >
+                  保存报价
+                </Button>
+              </Col>
+            )}
           </Row>
         </div>
 
@@ -267,20 +287,24 @@ const SupplierQuote: React.FC = () => {
                         price ? `¥${price.toFixed(2)}` : '-',
                     },
                     {
-                      title: '报价单价 *',
+                      title: isViewMode ? '报价单价' : '报价单价 *',
                       key: 'unit_price',
                       width: 120,
                       render: (_, record) => (
                         <Form.Item
                           name={`unit_price_${record.id}`}
-                          rules={[
-                            { required: true, message: '请输入报价' },
-                            {
-                              type: 'number',
-                              min: 0,
-                              message: '价格不能为负数',
-                            },
-                          ]}
+                          rules={
+                            isViewMode
+                              ? []
+                              : [
+                                  { required: true, message: '请输入报价' },
+                                  {
+                                    type: 'number',
+                                    min: 0,
+                                    message: '价格不能为负数',
+                                  },
+                                ]
+                          }
                           style={{ margin: 0 }}
                         >
                           <InputNumber
@@ -289,6 +313,7 @@ const SupplierQuote: React.FC = () => {
                             placeholder="单价"
                             style={{ width: '100%' }}
                             addonBefore="¥"
+                            disabled={isViewMode}
                           />
                         </Form.Item>
                       ),
@@ -308,6 +333,7 @@ const SupplierQuote: React.FC = () => {
                             disabledDate={(current) =>
                               current && current < dayjs().endOf('day')
                             }
+                            disabled={isViewMode}
                           />
                         </Form.Item>
                       ),
@@ -320,7 +346,7 @@ const SupplierQuote: React.FC = () => {
                           name={`remark_${record.id}`}
                           style={{ margin: 0 }}
                         >
-                          <Input placeholder="备注信息" />
+                          <Input placeholder="备注信息" disabled={isViewMode} />
                         </Form.Item>
                       ),
                     },
@@ -332,19 +358,28 @@ const SupplierQuote: React.FC = () => {
                   scroll={{ x: 1000 }}
                 />
 
-                <div style={{ marginTop: 16, textAlign: 'center' }}>
-                  <Space>
-                    <Button onClick={() => window.history.back()}>取消</Button>
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      loading={saving}
-                      icon={<SaveOutlined />}
-                    >
-                      提交报价
-                    </Button>
-                  </Space>
-                </div>
+                {!isViewMode && (
+                  <div style={{ marginTop: 16, textAlign: 'center' }}>
+                    <Space>
+                      <Button onClick={() => window.history.back()}>
+                        取消
+                      </Button>
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        loading={saving}
+                        icon={<SaveOutlined />}
+                      >
+                        提交报价
+                      </Button>
+                    </Space>
+                  </div>
+                )}
+                {isViewMode && (
+                  <div style={{ marginTop: 16, textAlign: 'center' }}>
+                    <Button onClick={() => window.history.back()}>返回</Button>
+                  </div>
+                )}
               </Form>
             </Card>
           </Col>

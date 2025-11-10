@@ -56,22 +56,12 @@ export const usePurchaseCreation = () => {
           specification: item.specification,
           quantity: quantity,
           unit: item.unit,
-          category_type: item.category_type,
+          category_type: CategoryType.PARTS, // 暂时只支持备件
         };
 
-        // 根据类型添加额外字段
-        if (item.category_type === CategoryType.ACCESSORIES) {
-          const accessory = item as AccessoryInfo;
-          return {
-            ...baseDetail,
-            supplier_id: accessory.supplier_id,
-            supplier_name: accessory.supplier_name,
-            fixed_price: accessory.fixed_price,
-            stock_status: accessory.stock_status,
-          };
-        } else {
-          return baseDetail;
-        }
+        // 【已删除】精品类型特殊处理 - 暂不支持精品模块
+        // 所有配件统一按备件处理
+        return baseDetail;
       });
 
       const createParams: CreatePurchaseParams = {
@@ -90,7 +80,7 @@ export const usePurchaseCreation = () => {
         form.resetFields();
 
         // 跳转到采购单详情页
-        history.push(`/purchase/${response.data.id}`);
+        history.push(`/purchase`);
       } else {
         message.error(response.response_status.msg || '创建失败');
       }

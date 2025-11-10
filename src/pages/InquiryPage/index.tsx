@@ -154,9 +154,12 @@ const InquiryPage: React.FC = () => {
   };
 
   // 跳转到供应商报价页面
-  const goToSupplierQuote = (supplierId: string) => {
+  const goToSupplierQuote = (
+    supplierId: string,
+    mode: 'view' | 'edit' = 'view',
+  ) => {
     if (!purchase) return;
-    const url = `/purchase/${purchase.id}/supplier-quote?supplier=${supplierId}`;
+    const url = `/purchase/${purchase.id}/supplier-quote?supplier=${supplierId}&mode=${mode}`;
     window.open(url, '_blank');
   };
 
@@ -199,24 +202,29 @@ const InquiryPage: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      width: 200,
+      width: 240,
       render: (_: any, record: QuoteItem) => (
         <Space>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => goToSupplierQuote(record.supplier_id)}
-          >
-            {record.status === 'quoted' ? '查看报价' : '填写报价'}
-          </Button>
+          {record.status === 'pending' && (
+            <Tag color="default">等待供应商报价</Tag>
+          )}
           {record.status === 'quoted' && (
-            <Button
-              type="link"
-              size="small"
-              onClick={() => handleSelectSupplier(record)}
-            >
-              选择
-            </Button>
+            <>
+              <Button
+                type="link"
+                size="small"
+                onClick={() => goToSupplierQuote(record.supplier_id, 'view')}
+              >
+                查看报价
+              </Button>
+              <Button
+                type="link"
+                size="small"
+                onClick={() => handleSelectSupplier(record)}
+              >
+                选择
+              </Button>
+            </>
           )}
           {record.status === 'selected' && <Tag color="success">已选中</Tag>}
         </Space>
@@ -307,7 +315,8 @@ const InquiryPage: React.FC = () => {
                     </li>
                     <li>
                       <strong>等待报价：</strong>{' '}
-                      供应商会在门户中看到此询价单，并填写报价信息
+                      供应商会在门户中看到此询价单，并
+                      <strong>独立填写报价信息</strong>（采购人员无法代填）
                     </li>
                     <li>
                       <strong>监控进度：</strong>{' '}
@@ -321,6 +330,10 @@ const InquiryPage: React.FC = () => {
                   <p>
                     <strong>供应商门户链接：</strong>{' '}
                     <code>{window.location.origin}/supplier-portal</code>
+                  </p>
+                  <p style={{ color: '#ff4d4f', marginTop: 8 }}>
+                    <strong>⚠️ 注意：</strong>{' '}
+                    报价必须由供应商在供应商门户中填写，采购人员不能代为填写，以确保报价的独立性和公正性。
                   </p>
                 </>
               ) : (

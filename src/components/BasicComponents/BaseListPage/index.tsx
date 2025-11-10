@@ -201,7 +201,7 @@ const BaseListPage = forwardRef<BaseListPageRef, BaseListPageProps>(
         fetchTableData({
           page: pageInfo.page,
           limit: pageInfo.limit,
-          formValues,
+          ...formValues,
         });
       },
     }));

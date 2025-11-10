@@ -3,32 +3,36 @@ import { PurchaseItem } from '@/services/purchase/typings';
 import { ColumnsProps } from '@/types/common';
 import { Link } from '@umijs/max';
 import { Button, Divider, Tag } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 
 export interface PurchaseColumnsProps extends ColumnsProps<PurchaseItem> {
   onSubmit?: (record: PurchaseItem) => void;
+  isDraft?: boolean; // 是否是草稿列表
 }
 
 export const getColumns = (props: PurchaseColumnsProps) => {
-  const { handleModalOpen, deleteModal, createOrModifyModal, onSubmit } = props;
+  const {
+    handleModalOpen,
+    deleteModal,
+    createOrModifyModal,
+    onSubmit,
+    isDraft = false,
+  } = props;
 
   const getStatusColor = (statusCode: number) => {
     switch (statusCode) {
       case 1:
         return 'default'; // 草稿
       case 2:
-        return 'processing'; // 待审核
-      case 3:
-        return 'success'; // 审核通过
-      case 4:
-        return 'error'; // 已驳回
-      case 5:
         return 'warning'; // 待询价
-      case 6:
+      case 3:
         return 'blue'; // 已报价
-      case 7:
+      case 4:
+        return 'orange'; // 价格待审批
+      case 5:
         return 'purple'; // 已下单
-      case 8:
-        return 'green'; // 已完成
+      case 6:
+        return 'success'; // 已到货
       default:
         return 'default';
     }
@@ -81,45 +85,47 @@ export const getColumns = (props: PurchaseColumnsProps) => {
       title: '操作',
       key: 'action',
       width: 250,
+      fixed: 'right' as const,
       render: (_: any, record: PurchaseItem) => {
-        const canEdit = record.status.code === 1; // 只有草稿状态可以编辑
-        const canDelete = record.status.code === 1; // 只有草稿状态可以删除
-        const canSubmit = record.status.code === 1; // 只有草稿状态可以提交
-
-        return (
-          <>
-            {canEdit && (
-              <>
-                <Button
-                  type="link"
-                  onClick={() => handleModalOpen(createOrModifyModal, record)}
-                >
-                  修改
-                </Button>
-                <Divider type="vertical" />
-              </>
-            )}
-            {canSubmit && (
-              <>
-                <Button type="link" onClick={() => onSubmit?.(record)}>
-                  提交
-                </Button>
-                <Divider type="vertical" />
-              </>
-            )}
-            {canDelete && (
+        if (isDraft) {
+          // 草稿列表：全部都是草稿状态，都可以编辑、删除、提交
+          return (
+            <>
               <Button
                 type="link"
+                onClick={() => handleModalOpen(createOrModifyModal, record)}
+              >
+                编辑
+              </Button>
+              <Divider type="vertical" />
+              <Button
+                type="link"
+                onClick={() => onSubmit?.(record)}
+                style={{ color: '#52c41a' }}
+              >
+                提交审核
+              </Button>
+              <Divider type="vertical" />
+              <Button
+                type="link"
+                danger
                 onClick={() =>
                   handleModalOpen(deleteModal as ModalControl, record)
                 }
               >
                 删除
               </Button>
-            )}
-          </>
-        );
+            </>
+          );
+        } else {
+          // 正式列表：只显示查看详情
+          return (
+            <Link to={`/purchase/${record.id}`}>
+              <Button type="link">查看详情</Button>
+            </Link>
+          );
+        }
       },
     },
-  ];
+  ] as ColumnsType<PurchaseItem>;
 };

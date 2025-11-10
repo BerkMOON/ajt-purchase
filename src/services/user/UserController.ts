@@ -1,29 +1,41 @@
 /* eslint-disable */
+import { COMMON_STATUS } from '@/constants';
 import { ResponseInfoType } from '@/types/common';
 import { request } from '@umijs/max';
-import type { ModifyRoleParams, PageInfo_UserInfo, UserInfo } from './typings';
+import type {
+  CaptchaRequest,
+  CaptchaResponse,
+  CreateUserParams,
+  LoginResponse,
+  QueryUserListParams,
+  QueryUserListResponse,
+  UserInfo,
+  UserRoleResponse,
+} from './typings';
 
-const API_PREFIX_ADMIN = '/api/business';
-const API_PREFIX = `${API_PREFIX_ADMIN}/user`;
+const API_PREFIX = '/api/v1/platform/user';
 
 export const UserAPI = {
   /**
-   * 获取用户列表
-   * GET /api/admin/user/getAllUsers
-   * @param params 分页参数
+   * 用户列表
+   * GET /api/v1/platform/user/list
+   * 接口ID：372130720
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-372130720
    */
-  queryUserList: (params?: { page?: number; limit?: number }) =>
-    request<ResponseInfoType<PageInfo_UserInfo>>(`${API_PREFIX}/getAllUsers`, {
+  queryUserList: (params?: QueryUserListParams) =>
+    request<ResponseInfoType<QueryUserListResponse>>(`${API_PREFIX}/list`, {
       method: 'GET',
       params,
     }),
 
   /**
-   * 获取用户详情
-   * GET /api/getSelfInfo
+   * 获取登录用户信息
+   * GET /api/v1/getSelfInfo
+   * 接口ID：372021960
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-372021960
    */
   getUserDetail: () =>
-    request<ResponseInfoType<UserInfo>>(`${API_PREFIX_ADMIN}/getSelfInfo`, {
+    request<ResponseInfoType<UserInfo>>('/api/v1/getSelfInfo', {
       method: 'GET',
     }),
 
@@ -31,59 +43,127 @@ export const UserAPI = {
    * 用户登录
    * POST /api/login
    */
-  loginUser: (params: { username: string; password: string }) =>
-    request<ResponseInfoType<null>>(`${API_PREFIX_ADMIN}/login`, {
+  loginUser: (params: {
+    username: string;
+    password: string;
+    captcha_id: string;
+    answer: string;
+  }) =>
+    request<ResponseInfoType<LoginResponse>>('/api/v1/login', {
       method: 'POST',
       data: params,
     }),
 
   /**
-   * 用户登出
-   * POST /api/logout
+   * 重置用户密码
+   * POST /api/v1/platform/user/password/reset
+   * 接口ID：372129897
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-372129897
    */
-  logout: () =>
-    request<ResponseInfoType<null>>(`${API_PREFIX_ADMIN}/logout`, {
-      method: 'POST',
-    }),
-
-  /**
-   * 用户注册
-   * POST /api/admin/user/register
-   */
-  createUser: (params: UserInfo) =>
-    request<ResponseInfoType<null>>(`${API_PREFIX}/register`, {
+  resetUserPassword: (params: { user_id: string; password: string }) =>
+    request<ResponseInfoType<null>>(`${API_PREFIX}/password/reset`, {
       method: 'POST',
       data: params,
     }),
 
   /**
-   * 删除用户
-   * POST /api/admin/user/delete
+   * 创建用户
+   * POST /api/v1/platform/user/create
+   * 接口ID：372026063
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-372026063
    */
-  deleteUser: (params: { user_id: string }) =>
-    request<ResponseInfoType<null>>(`${API_PREFIX}/delete`, {
+  createUser: (params: CreateUserParams) =>
+    request<ResponseInfoType<null>>(`${API_PREFIX}/create`, {
       method: 'POST',
       data: params,
     }),
 
   /**
-   * 更新用户角色
-   * POST /api/admin/user/updateUserRole
+   * 更新用户状态
+   * POST /api/v1/platform/user/status
+   * 接口ID：372129195
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-372129195
    */
-  modifyRole: (params: ModifyRoleParams) =>
-    request<ResponseInfoType<null>>(`${API_PREFIX}/updateUserRole`, {
+  updateUserStatus: (params: { user_id: string; status: COMMON_STATUS }) =>
+    request<ResponseInfoType<null>>(`${API_PREFIX}/status`, {
       method: 'POST',
       data: params,
     }),
 
   /**
    * 更新用户信息
-   * POST /api/admin/user/updateUserInfo
-   * 接口ID：210698804
-   * 接口地址：https://app.apifox.com/link/project/5084807/apis/api-210698804
+   * POST /api/v1/platform/user/update
+   * 接口ID：372128245
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-372128245
    */
   modifyUserInfo: (params: UserInfo) =>
-    request<ResponseInfoType<null>>(`${API_PREFIX}/updateUserInfo`, {
+    request<ResponseInfoType<null>>(`${API_PREFIX}/update`, {
+      method: 'POST',
+      data: params,
+    }),
+
+  /**
+   * 获取验证码
+   * POST /api/v1/captcha/gen
+   * 接口ID：372032368
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-372032368
+   */
+  generateCaptcha: (params: CaptchaRequest) =>
+    request<ResponseInfoType<CaptchaResponse>>(`${API_PREFIX}/captcha/gen`, {
+      method: 'POST',
+      data: params,
+    }),
+
+  /**
+   * 绑定用户角色
+   * POST /api/v1/platform/user/bindRole
+   * 接口ID：372519434
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-372519434
+   */
+  bindUserRole: (params: { user_id: number; role_id: number }) =>
+    request<ResponseInfoType<null>>(`${API_PREFIX}/bindRole`, {
+      method: 'POST',
+      data: params,
+    }),
+
+  /**
+   * 获取用户角色
+   * GET /api/v1/platform/user/listUserRole
+   * 接口ID：372520262
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-372520262
+   */
+  getUserRole: (params: { user_id: number }) =>
+    request<ResponseInfoType<UserRoleResponse>>(`${API_PREFIX}/listUserRole`, {
+      method: 'GET',
+      params,
+    }),
+
+  /**
+   * 绑定门店
+   * POST /api/v1/platform/user/bindStore
+   * 接口ID：374215166
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-374215166
+   */
+  bindStore: (params: {
+    user_id: number;
+    store_pairs: {
+      store_id: number;
+      company_id: number;
+    }[];
+  }) =>
+    request<ResponseInfoType<null>>(`${API_PREFIX}/bindStore`, {
+      method: 'POST',
+      data: params,
+    }),
+
+  /**
+   * 绑定供应商
+    POST /api/v1/platform/user/bindSupplier
+    接口ID：374219061
+    接口地址：https://app.apifox.com/link/project/7357392/apis/api-374219061
+   */
+  bindSupplier: (params: { user_id: number; supplier_code: string }) =>
+    request<ResponseInfoType<null>>(`${API_PREFIX}/bindSupplier`, {
       method: 'POST',
       data: params,
     }),

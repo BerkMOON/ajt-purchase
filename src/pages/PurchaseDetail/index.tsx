@@ -74,36 +74,8 @@ const PurchaseDetail: React.FC = () => {
     }
   };
 
-  // 审核通过
-  const handleApprove = async () => {
-    if (!purchase) return;
-
-    try {
-      await PurchaseAPI.approvePurchase(purchase.id);
-      message.success('审核通过');
-      fetchPurchaseDetail();
-    } catch (error) {
-      message.error('审核失败');
-    }
-  };
-
-  // 驳回采购单
-  const handleReject = async () => {
-    if (!purchase || !rejectReason.trim()) {
-      message.error('请填写驳回原因');
-      return;
-    }
-
-    try {
-      await PurchaseAPI.rejectPurchase(purchase.id, rejectReason);
-      message.success('驳回成功');
-      setRejectModalVisible(false);
-      setRejectReason('');
-      fetchPurchaseDetail();
-    } catch (error) {
-      message.error('驳回失败');
-    }
-  };
+  // 【已删除】审核通过 - 第一轮审核已取消
+  // 【已删除】驳回采购单 - 第一轮审核已取消
 
   // 获取状态颜色
   const getStatusColor = (statusCode: number) => {
@@ -111,21 +83,15 @@ const PurchaseDetail: React.FC = () => {
       case 1:
         return 'default'; // 草稿
       case 2:
-        return 'processing'; // 待审核
-      case 3:
-        return 'success'; // 审核通过
-      case 4:
-        return 'error'; // 已驳回
-      case 5:
         return 'warning'; // 待询价
-      case 6:
+      case 3:
         return 'blue'; // 已报价
-      case 7:
-        return 'orange'; // 订单待审核
-      case 8:
+      case 4:
+        return 'orange'; // 价格待审批
+      case 5:
         return 'purple'; // 已下单
-      case 9:
-        return 'green'; // 已完成
+      case 6:
+        return 'success'; // 已到货
       default:
         return 'default';
     }
@@ -163,35 +129,58 @@ const PurchaseDetail: React.FC = () => {
     });
   };
 
-  // 审核订单通过
-  const handleApproveOrder = async () => {
+  // 【已删除】handleApproveOrder - 订单审核已取消
+  // 【已删除】handleRejectOrder - 订单审核已取消
+
+  // 【新增】价格审批通过
+  const handleApprovePriceRequest = async () => {
     if (!purchase) return;
 
     try {
-      await PurchaseAPI.approveOrder(purchase.id);
-      message.success('订单审核通过');
+      await PurchaseAPI.approvePriceRequest(purchase.id);
+      message.success('价格审批通过');
       fetchPurchaseDetail();
-    } catch (error) {
-      message.error('审核失败');
+    } catch (error: any) {
+      message.error(error.message || '审批失败');
     }
   };
 
-  // 驳回订单
-  const handleRejectOrder = async () => {
+  // 【新增】价格审批驳回
+  const handleRejectPriceRequest = async () => {
     if (!purchase || !rejectReason.trim()) {
       message.error('请填写驳回原因');
       return;
     }
 
     try {
-      await PurchaseAPI.rejectOrder(purchase.id, rejectReason);
-      message.success('订单驳回成功');
+      await PurchaseAPI.rejectPriceRequest(purchase.id, rejectReason);
+      message.success('价格审批驳回，需重新询价');
       setRejectModalVisible(false);
       setRejectReason('');
       fetchPurchaseDetail();
-    } catch (error) {
-      message.error('驳回失败');
+    } catch (error: any) {
+      message.error(error.message || '驳回失败');
     }
+  };
+
+  // 【新增】确认到货
+  const handleConfirmArrival = () => {
+    if (!purchase) return;
+
+    Modal.confirm({
+      title: '确认到货',
+      content: '请确认货物已全部到货，确认后将更新采购单状态为"已到货"',
+      onOk: async () => {
+        try {
+          const arrivalDate = new Date().toISOString().split('T')[0];
+          await PurchaseAPI.confirmArrival(purchase.id, arrivalDate);
+          message.success('到货确认成功');
+          fetchPurchaseDetail();
+        } catch (error: any) {
+          message.error(error.message || '确认失败');
+        }
+      },
+    });
   };
 
   // 获取可执行的操作
@@ -205,26 +194,12 @@ const PurchaseDetail: React.FC = () => {
       // 草稿状态
       actions.push(
         <Button key="submit" type="primary" onClick={handleSubmit}>
-          提交
+          提交审核
         </Button>,
       );
     }
 
     if (status === 2) {
-      // 待审核状态
-      actions.push(
-        <Button key="approve" type="primary" onClick={handleApprove}>
-          审核通过
-        </Button>,
-      );
-      actions.push(
-        <Button key="reject" onClick={() => setRejectModalVisible(true)}>
-          驳回
-        </Button>,
-      );
-    }
-
-    if (status === 5) {
       // 待询价状态
       actions.push(
         <Button key="inquiry" type="primary" onClick={goToInquiry}>
@@ -233,7 +208,7 @@ const PurchaseDetail: React.FC = () => {
       );
     }
 
-    if (status === 6) {
+    if (status === 3) {
       // 已报价状态
       actions.push(
         <Button key="inquiry" onClick={goToInquiry}>
@@ -260,16 +235,42 @@ const PurchaseDetail: React.FC = () => {
       }
     }
 
-    if (status === 7) {
-      // 订单待审核状态
+    if (status === 4) {
+      // 价格待审批状态
       actions.push(
-        <Button key="approve-order" type="primary" onClick={handleApproveOrder}>
-          审核通过
+        <Button
+          key="approve-price"
+          type="primary"
+          onClick={handleApprovePriceRequest}
+        >
+          价格审批通过
         </Button>,
       );
       actions.push(
-        <Button key="reject-order" onClick={() => setRejectModalVisible(true)}>
-          驳回
+        <Button key="reject-price" onClick={() => setRejectModalVisible(true)}>
+          价格审批驳回
+        </Button>,
+      );
+    }
+
+    if (status === 5) {
+      // 已下单状态
+      actions.push(
+        <Button
+          key="confirm-arrival"
+          type="primary"
+          onClick={handleConfirmArrival}
+        >
+          确认到货
+        </Button>,
+      );
+    }
+
+    if (status === 6) {
+      // 已到货状态（完成）
+      actions.push(
+        <Button key="completed" type="default" disabled>
+          已完成
         </Button>,
       );
     }
@@ -279,6 +280,18 @@ const PurchaseDetail: React.FC = () => {
 
   // 配件清单表格列
   const partColumns = [
+    {
+      title: '配件类型',
+      dataIndex: 'category_type',
+      key: 'category_type',
+      render: (type: string) => {
+        // 暂时只支持备件
+        if (type === 'PARTS') {
+          return <Tag color="blue">备件</Tag>;
+        }
+        return <Tag>未知</Tag>;
+      },
+    },
     {
       title: '配件编码',
       dataIndex: 'part_code',
@@ -416,27 +429,83 @@ const PurchaseDetail: React.FC = () => {
             <Card title="状态流水" size="small">
               <Timeline>
                 <Timeline.Item color="green">
-                  <p>创建采购单</p>
+                  <p>
+                    <strong>创建采购单</strong>
+                  </p>
                   <p style={{ color: '#666' }}>
                     {purchase.creator_name} 于 {purchase.create_time}
                   </p>
                 </Timeline.Item>
                 {purchase.status.code >= 2 && (
                   <Timeline.Item color="blue">
-                    <p>提交审核</p>
+                    <p>
+                      <strong>提交审核</strong>
+                    </p>
                     <p style={{ color: '#666' }}>已提交待审核</p>
                   </Timeline.Item>
                 )}
                 {purchase.status.code === 3 && (
                   <Timeline.Item color="green">
-                    <p>审核通过</p>
-                    <p style={{ color: '#666' }}>审核员审核通过</p>
+                    <p>
+                      <strong>审核通过</strong>
+                    </p>
+                    <p style={{ color: '#666' }}>
+                      审核员审核通过，等待系统发送询价
+                    </p>
                   </Timeline.Item>
                 )}
                 {purchase.status.code === 4 && (
                   <Timeline.Item color="red">
-                    <p>审核驳回</p>
-                    <p style={{ color: '#666' }}>审核员驳回申请</p>
+                    <p>
+                      <strong>审核驳回</strong>
+                    </p>
+                    <p style={{ color: '#666' }}>
+                      审核员驳回申请，需要修改后重新提交
+                    </p>
+                  </Timeline.Item>
+                )}
+                {purchase.status.code >= 5 && (
+                  <Timeline.Item color="orange">
+                    <p>
+                      <strong>发送询价</strong>
+                    </p>
+                    <p style={{ color: '#666' }}>系统已向供应商发送询价通知</p>
+                  </Timeline.Item>
+                )}
+                {purchase.status.code >= 6 && (
+                  <Timeline.Item color="purple">
+                    <p>
+                      <strong>供应商报价</strong>
+                    </p>
+                    <p style={{ color: '#666' }}>
+                      供应商已完成报价，可进行比价选择
+                    </p>
+                  </Timeline.Item>
+                )}
+                {purchase.status.code >= 7 && (
+                  <Timeline.Item color="cyan">
+                    <p>
+                      <strong>提交订单</strong>
+                    </p>
+                    <p style={{ color: '#666' }}>
+                      已选择供应商并提交订单，等待最终审核
+                    </p>
+                  </Timeline.Item>
+                )}
+                {purchase.status.code >= 8 && (
+                  <Timeline.Item color="green">
+                    <p>
+                      <strong>订单确认</strong>
+                    </p>
+                    <p style={{ color: '#666' }}>订单审核通过，已正式下单</p>
+                  </Timeline.Item>
+                )}
+                {purchase.status.code === 9 && (
+                  <Timeline.Item color="green">
+                    <p>
+                      <strong>订单完成</strong>
+                    </p>
+                    <p style={{ color: '#666' }}>订单履行完成</p>
                   </Timeline.Item>
                 )}
               </Timeline>
@@ -447,9 +516,9 @@ const PurchaseDetail: React.FC = () => {
 
       {/* 驳回原因弹窗 */}
       <Modal
-        title={purchase?.status.code === 7 ? '驳回订单' : '驳回采购单'}
+        title="价格审批驳回"
         open={rejectModalVisible}
-        onOk={purchase?.status.code === 7 ? handleRejectOrder : handleReject}
+        onOk={handleRejectPriceRequest}
         onCancel={() => {
           setRejectModalVisible(false);
           setRejectReason('');

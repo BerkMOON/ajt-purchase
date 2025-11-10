@@ -1,3 +1,4 @@
+import { CategoryType } from '@/services/purchase/typings.d';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Button,
@@ -7,6 +8,7 @@ import {
   InputNumber,
   Popconfirm,
   Table,
+  Tag,
 } from 'antd';
 
 const { TextArea } = Input;
@@ -35,6 +37,26 @@ export const createAndModifyForm = (
               size="small"
               rowKey="key"
               columns={[
+                {
+                  title: '配件类型',
+                  dataIndex: 'category_type',
+                  width: 100,
+                  render: (_, field) => (
+                    <>
+                      {/* 隐藏字段，自动设置为备件 */}
+                      <Form.Item
+                        {...field}
+                        name={[field.name, 'category_type']}
+                        initialValue={CategoryType.PARTS}
+                        hidden
+                      >
+                        <Input />
+                      </Form.Item>
+                      {/* 只显示备件标签（暂不支持精品） */}
+                      <Tag color="blue">备件</Tag>
+                    </>
+                  ),
+                },
                 {
                   title: '配件编码',
                   dataIndex: 'part_code',

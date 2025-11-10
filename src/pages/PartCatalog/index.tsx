@@ -17,14 +17,8 @@ const PartCatalog: React.FC = () => {
   // 使用自定义Hooks管理状态和逻辑
   const { selectedItems, addToCart, removeFromCart, clearCart } = useCart();
 
-  const {
-    loading,
-    parts,
-    searchParams,
-    handleTabChange,
-    handleSearch,
-    updateSearchParams,
-  } = usePartSearch();
+  const { loading, parts, searchParams, handleSearch, updateSearchParams } =
+    usePartSearch();
 
   const {
     createModalVisible,
@@ -76,7 +70,6 @@ const PartCatalog: React.FC = () => {
               loading={loading}
               parts={parts}
               searchParams={searchParams}
-              onTabChange={handleTabChange}
               onSearch={handleSearch}
               onUpdateParams={updateSearchParams}
               onAddToCart={addToCart}

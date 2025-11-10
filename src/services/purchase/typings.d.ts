@@ -10,6 +10,10 @@ export interface PurchaseItem {
   expected_delivery_date: string;
   remark?: string;
   purchase_details: PurchaseDetailItem[];
+  // 到货相关字段
+  arrival_date?: string; // 实际到货日期
+  arrival_confirm_time?: string; // 到货确认时间
+  delivery_cycle?: number; // 交货周期（天）
 }
 
 export interface PurchaseStatus {
@@ -20,7 +24,7 @@ export interface PurchaseStatus {
 // 商品类型枚举
 export enum CategoryType {
   PARTS = 'PARTS', // 备件
-  ACCESSORIES = 'ACCESSORIES', // 精品
+  // 【已删除】ACCESSORIES - 暂不支持精品模块
 }
 
 // 库存状态枚举
@@ -92,6 +96,7 @@ export interface PurchaseParams {
   store_ids?: string[];
   creator_name?: string;
   status_codes?: number[];
+  exclude_status?: number; // 排除指定状态的采购单
   date_range?: any; // 用于前端表单的日期范围选择器
 }
 
@@ -145,12 +150,9 @@ export interface PageInfo_PartCatalog {
 
 export const PurchaseStatusMap = {
   1: { code: 1, name: '草稿' },
-  2: { code: 2, name: '待审核' },
-  3: { code: 3, name: '审核通过' },
-  4: { code: 4, name: '已驳回' },
-  5: { code: 5, name: '待询价' },
-  6: { code: 6, name: '已报价' },
-  7: { code: 7, name: '订单待审核' },
-  8: { code: 8, name: '已下单' },
-  9: { code: 9, name: '已完成' },
+  2: { code: 2, name: '待询价' },
+  3: { code: 3, name: '已报价' },
+  4: { code: 4, name: '价格待审批' },
+  5: { code: 5, name: '已下单' },
+  6: { code: 6, name: '已到货' },
 };
