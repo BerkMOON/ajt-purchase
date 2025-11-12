@@ -5,8 +5,11 @@ import ChangeStatusForm from '@/components/BasicComponents/ChangeStatusForm';
 import CreateOrModifyForm from '@/components/BasicComponents/CreateOrModifyForm';
 import { COMMON_STATUS, COMMON_STATUS_CODE } from '@/constants';
 import { useModalControl } from '@/hooks/useModalControl';
-import { CompanyAPI } from '@/services/company/CompanyController';
-import type { CompanyItem, CompanyParams } from '@/services/company/typing';
+import { CompanyAPI } from '@/services/System/company/CompanyController';
+import type {
+  CompanyItem,
+  CompanyParams,
+} from '@/services/System/company/typing';
 import { Navigate, useAccess } from '@umijs/max';
 import React, { useRef, useState } from 'react';
 import { getColumns } from './colums';

@@ -24,6 +24,12 @@ export default defineConfig({
       access: 'home',
     },
     {
+      name: '用户信息',
+      path: '/user-info',
+      component: './UserInfo',
+      access: 'home',
+    },
+    {
       name: '登录',
       path: '/login',
       component: './Login',

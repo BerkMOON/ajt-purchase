@@ -1,7 +1,7 @@
 import chartPng from '@/assets/images/chart.png';
 import linePng from '@/assets/images/line.png';
 import workPng from '@/assets/images/work-progress.png';
-import { UserAPI } from '@/services/user/UserController';
+import { UserAPI } from '@/services/System/user/UserController';
 import {
   generateNonce,
   generateSignature,

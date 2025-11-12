@@ -34,6 +34,8 @@ interface BaseListPageProps<T = any, U = any> {
   };
   extraButtons?: React.ReactNode;
   isOffset?: boolean;
+  rowKey?: string | ((record: T) => string);
+  expandable?: TableProps<T>['expandable'];
   exportConfig?: {
     fileName?: string;
     fetchAllData?: (params: U) => Promise<ResponseInfoType<any>>;
@@ -65,6 +67,8 @@ const BaseListPage = forwardRef<BaseListPageRef, BaseListPageProps>(
       createButton,
       extraButtons,
       isOffset = false,
+      rowKey,
+      expandable,
       exportConfig,
     } = props;
 
@@ -262,9 +266,13 @@ const BaseListPage = forwardRef<BaseListPageRef, BaseListPageProps>(
 
         <Table<any>
           loading={loading}
-          rowKey={(record) => record.id || record.role_id || record.user_id}
+          rowKey={
+            rowKey ||
+            ((record) => record.id || record.role_id || record.user_id)
+          }
           columns={columns}
           dataSource={data}
+          expandable={expandable}
           scroll={{ x: 'max-content' }}
           pagination={{
             current: pageInfo.page,

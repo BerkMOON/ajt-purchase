@@ -1,4 +1,4 @@
-import { RoleList } from '@/services/user/typings';
+import { RoleList } from '@/services/System/user/typings';
 import { useCallback, useState } from 'react';
 
 export interface CurrentStore {

@@ -1,4 +1,4 @@
-import { UserInfo } from '@/services/user/typings';
+import { UserInfo } from '@/services/System/user/typings';
 import { DownOutlined } from '@ant-design/icons';
 import { useModel } from '@umijs/max';
 import { Button, Dropdown } from 'antd';

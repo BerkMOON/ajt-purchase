@@ -1,9 +1,9 @@
 import BaseModalForm from '@/components/BasicComponents/BaseModalForm';
 import { COMMON_STATUS, Role } from '@/constants';
 import { useRequest } from '@/hooks/useRequest';
-import { RoleAPI } from '@/services/role/RoleController';
-import { RoleInfo } from '@/services/role/typings';
-import { UserAPI } from '@/services/user/UserController';
+import { RoleAPI } from '@/services/System/role/RoleController';
+import { RoleInfo } from '@/services/System/role/typings';
+import { UserAPI } from '@/services/System/user/UserController';
 import { Form, Select } from 'antd';
 import { useEffect, useState } from 'react';
 

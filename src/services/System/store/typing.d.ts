@@ -1,4 +1,8 @@
-import { BaseListInfo, PageInfoParams, StatusInfo } from '../../types/common';
+import {
+  BaseListInfo,
+  PageInfoParams,
+  StatusInfo,
+} from '../../../types/common';
 
 export interface StoreItem {
   id: number;

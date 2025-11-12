@@ -10,6 +10,7 @@ import {
 import { Navigate, useAccess } from '@umijs/max';
 import { Card, Col, Result, Row, Tabs } from 'antd';
 import React, { useState } from 'react';
+import AccessApiManagement from './AccessApiManagement';
 import CategoryManagement from './CategoryManagement';
 import CompanyManagement from './CompanyManagement';
 import ProductManagement from './ProductManagement';
@@ -72,6 +73,14 @@ const SystemAdmin: React.FC = () => {
       description: '管理供应商信息和资质',
       icon: <TeamOutlined style={{ fontSize: 48, color: '#13c2c2' }} />,
       tab: 'supplier',
+    },
+    {
+      title: '接口管理',
+      description: '管理系统接口权限与分级',
+      icon: (
+        <SafetyCertificateOutlined style={{ fontSize: 48, color: '#873bf4' }} />
+      ),
+      tab: 'accessApi',
     },
     {
       title: '用户管理',
@@ -158,6 +167,9 @@ const SystemAdmin: React.FC = () => {
         </TabPane>
         <TabPane tab="供应商管理" key="supplier">
           <SupplierManagement />
+        </TabPane>
+        <TabPane tab="接口管理" key="accessApi">
+          <AccessApiManagement />
         </TabPane>
       </Tabs>
     </div>

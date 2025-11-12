@@ -4,8 +4,8 @@ import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import Login from './components/BasicComponents/Login/Login';
 import iconPng from './favicon.jpeg';
-import { UserInfo } from './services/user/typings';
-import { UserAPI } from './services/user/UserController';
+import { UserInfo } from './services/System/user/typings';
+import { UserAPI } from './services/System/user/UserController';
 
 dayjs.extend(isoWeek);
 

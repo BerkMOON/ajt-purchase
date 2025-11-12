@@ -57,6 +57,7 @@ export interface QueryUserListParams extends PageInfoParams {
   phone?: string;
   email?: string;
   status?: COMMON_STATUS;
+  user_type: Role;
 }
 export interface QueryUserListResponse extends BaseListInfo {
   users: UserInfo[];

@@ -1,12 +1,19 @@
 import { COMMON_STATUS, COMMON_STATUS_CODE } from '@/constants';
 import { ModalControl } from '@/hooks/useModalControl';
-import { RoleInfo } from '@/services/role/typings';
+import { RoleInfo } from '@/services/System/role/typings';
 import { ColumnsProps } from '@/types/common';
 import { getStatusMeta, resolveCommonStatus } from '@/utils/status';
 import { Divider, Tag } from 'antd';
 
-export const getColumns = (props: ColumnsProps<RoleInfo>) => {
-  const { handleModalOpen, changeStatusModal, createOrModifyModal } = props;
+export const getColumns = (
+  props: ColumnsProps<RoleInfo> & { bindApisModal?: ModalControl },
+) => {
+  const {
+    handleModalOpen,
+    changeStatusModal,
+    createOrModifyModal,
+    bindApisModal,
+  } = props;
 
   return [
     {
@@ -19,7 +26,7 @@ export const getColumns = (props: ColumnsProps<RoleInfo>) => {
     },
     {
       title: '角色类型',
-      dataIndex: 'role_type',
+      dataIndex: 'role_type_name',
     },
     {
       title: '角色状态',
@@ -57,6 +64,14 @@ export const getColumns = (props: ColumnsProps<RoleInfo>) => {
           <Divider type="vertical" />
           <a onClick={() => handleModalOpen(createOrModifyModal, record)}>
             修改角色信息
+          </a>
+          <Divider type="vertical" />
+          <a
+            onClick={() =>
+              handleModalOpen(bindApisModal as ModalControl, record)
+            }
+          >
+            绑定接口
           </a>
         </>
       ),

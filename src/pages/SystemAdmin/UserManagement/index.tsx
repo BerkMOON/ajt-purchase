@@ -3,10 +3,15 @@ import BaseListPage, {
 } from '@/components/BasicComponents/BaseListPage';
 import ChangeStatusForm from '@/components/BasicComponents/ChangeStatusForm';
 import CreateOrModifyForm from '@/components/BasicComponents/CreateOrModifyForm';
-import { COMMON_STATUS, COMMON_STATUS_CODE, Role } from '@/constants';
+import {
+  COMMON_STATUS,
+  COMMON_STATUS_CODE,
+  Role,
+  SuccessCode,
+} from '@/constants';
 import { useModalControl } from '@/hooks/useModalControl';
-import type { UserInfo } from '@/services/user/typings';
-import { UserAPI } from '@/services/user/UserController';
+import type { UserInfo } from '@/services/System/user/typings';
+import { UserAPI } from '@/services/System/user/UserController';
 import { Navigate, useAccess } from '@umijs/max';
 import React, { useRef } from 'react';
 import { getColumns } from './colums';
@@ -117,7 +122,7 @@ const TableList: React.FC = () => {
     });
 
     // 如果创建成功且有 role_id，则绑定角色
-    if (createResponse.response_status.code === 200) {
+    if (createResponse.response_status.code === SuccessCode.SUCCESS) {
       try {
         let userId: number | undefined;
 
@@ -132,6 +137,7 @@ const TableList: React.FC = () => {
           // 如果响应中没有用户ID，通过用户名查询获取
           const userListResponse = await UserAPI.queryUserList({
             username: userParams.username,
+            user_type,
             page: 1,
             limit: 1,
           });

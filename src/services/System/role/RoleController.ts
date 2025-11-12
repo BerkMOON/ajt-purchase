@@ -57,4 +57,32 @@ export const RoleAPI = {
       method: 'POST',
       data: params,
     }),
+
+  /**
+   * 绑定接口
+   * POST /api/v1/platform/role/bindApis
+   * 接口ID：375007169
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-375007169
+   */
+  bindApis: (params: { role_id: number; api_codes: string[] }) =>
+    request<ResponseInfoType<null>>(`${API_PREFIX}/bindApis`, {
+      method: 'POST',
+      data: params,
+    }),
+
+  /**
+   * 角色接口列表
+   * GET /api/v1/platform/role/listRoleApis
+   * 接口ID：375007999
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-375007999
+   */
+  listRoleApis: (params: { role_id: string }) =>
+    request<
+      ResponseInfoType<{
+        code_list?: string[];
+      }>
+    >(`${API_PREFIX}/listRoleApis`, {
+      method: 'GET',
+      params,
+    }),
 };

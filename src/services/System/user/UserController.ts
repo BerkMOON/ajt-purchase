@@ -109,7 +109,7 @@ export const UserAPI = {
    * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-372032368
    */
   generateCaptcha: (params: CaptchaRequest) =>
-    request<ResponseInfoType<CaptchaResponse>>(`${API_PREFIX}/captcha/gen`, {
+    request<ResponseInfoType<CaptchaResponse>>('/api/v1/captcha/gen', {
       method: 'POST',
       data: params,
     }),
