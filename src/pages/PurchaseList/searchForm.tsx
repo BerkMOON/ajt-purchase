@@ -38,8 +38,8 @@ export const searchForm = (
       </Form.Item>
     </Col>
     <Col span={8}>
-      <Form.Item name="status_codes" label="采购单状态">
-        <Select mode="multiple" placeholder="请选择采购单状态" allowClear>
+      <Form.Item name="status" label="采购单状态">
+        <Select placeholder="请选择采购单状态" allowClear>
           {Object.values(PurchaseStatusMap).map((status) => (
             <Option key={status.code} value={status.code}>
               {status.name}

@@ -45,10 +45,10 @@ const PurchaseList: React.FC = () => {
   const handleSubmit = async (record: PurchaseItem) => {
     Modal.confirm({
       title: '确认提交',
-      content: `确定要提交采购单 ${record.purchase_no} 吗？提交后将进入审核流程，草稿将从临时存储中移除。`,
+      content: `确定要提交采购单 ${record.order_no} 吗？提交后将进入待询价状态，草稿将从临时存储中移除。`,
       onOk: async () => {
         try {
-          await PurchaseAPI.submitPurchase(record.id);
+          await PurchaseAPI.submitPurchase(record.order_no);
           message.success('提交成功');
           // 刷新草稿列表和正式列表
           draftListRef.current?.getData();
@@ -83,7 +83,6 @@ const PurchaseList: React.FC = () => {
     // 处理日期范围参数
     const searchParams: PurchaseParams = {
       ...params,
-      status_codes: [1], // 草稿状态
     };
 
     if (params.date_range) {
@@ -95,8 +94,8 @@ const PurchaseList: React.FC = () => {
     // 调用专门的 Redis API 获取草稿
     const response = await PurchaseAPI.getDraftPurchases(searchParams);
     return {
-      list: response.data.purchase_list,
-      total: response.data.meta.total_count,
+      list: response.data.orders,
+      total: response.data.count.total_count,
     };
   };
 
@@ -105,7 +104,6 @@ const PurchaseList: React.FC = () => {
     // 处理日期范围参数
     const searchParams: PurchaseParams = {
       ...params,
-      exclude_status: 1, // 排除草稿状态
     };
 
     if (params.date_range) {
@@ -116,8 +114,8 @@ const PurchaseList: React.FC = () => {
 
     const response = await PurchaseAPI.getAllPurchases(searchParams);
     return {
-      list: response.data.purchase_list,
-      total: response.data.meta.total_count,
+      list: response.data.orders,
+      total: response.data.count.total_count,
     };
   };
 
@@ -127,6 +125,9 @@ const PurchaseList: React.FC = () => {
       ...values,
       expected_delivery_date:
         values.expected_delivery_date?.format('YYYY-MM-DD'),
+      inquiry_deadline: values.inquiry_deadline
+        ? dayjs(values.inquiry_deadline).format('YYYY-MM-DD HH:mm:ss')
+        : null,
     };
   };
 
@@ -138,6 +139,9 @@ const PurchaseList: React.FC = () => {
       ...record,
       expected_delivery_date: record.expected_delivery_date
         ? dayjs(record.expected_delivery_date)
+        : null,
+      inquiry_deadline: record.inquiry_deadline
+        ? dayjs(record.inquiry_deadline).format('YYYY-MM-DD HH:mm:ss')
         : null,
     };
   };

@@ -41,10 +41,10 @@ export const getColumns = (props: PurchaseColumnsProps) => {
   return [
     {
       title: '采购单号',
-      dataIndex: 'purchase_no',
-      key: 'purchase_no',
+      dataIndex: 'order_no',
+      key: 'order_no',
       render: (text: string, record: PurchaseItem) => (
-        <Link to={`/purchase/${record.id}`}>{text}</Link>
+        <Link to={`/purchase/${record.order_no}`}>{text}</Link>
       ),
     },
     {
@@ -61,12 +61,6 @@ export const getColumns = (props: PurchaseColumnsProps) => {
       title: '采购人',
       dataIndex: 'creator_name',
       key: 'creator_name',
-    },
-    {
-      title: '总金额',
-      dataIndex: 'total_amount',
-      key: 'total_amount',
-      render: (amount: number) => `¥${amount?.toFixed(2) || '0.00'}`,
     },
     {
       title: '当前状态',
@@ -103,7 +97,7 @@ export const getColumns = (props: PurchaseColumnsProps) => {
                 onClick={() => onSubmit?.(record)}
                 style={{ color: '#52c41a' }}
               >
-                提交审核
+                提交草稿
               </Button>
               <Divider type="vertical" />
               <Button
@@ -120,7 +114,7 @@ export const getColumns = (props: PurchaseColumnsProps) => {
         } else {
           // 正式列表：只显示查看详情
           return (
-            <Link to={`/purchase/${record.id}`}>
+            <Link to={`/purchase/${record.order_no}`}>
               <Button type="link">查看详情</Button>
             </Link>
           );

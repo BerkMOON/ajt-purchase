@@ -60,7 +60,7 @@ const SupplierPortal: React.FC = () => {
     try {
       setLoading(true);
       // 获取所有采购单，筛选出待询价状态的
-      const response = await PurchaseAPI.getAllPurchases({ status_codes: [5] });
+      const response = await PurchaseAPI.getAllPurchases({ status: 5 });
       let inquiryList = response.data.purchase_list;
 
       // 根据供应商类型筛选相关的采购单

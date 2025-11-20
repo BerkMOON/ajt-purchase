@@ -11,6 +11,7 @@ import type {
   QueryUserListResponse,
   UserInfo,
   UserRoleResponse,
+  UserStoreInfo,
 } from './typings';
 
 const API_PREFIX = '/api/v1/platform/user';
@@ -166,5 +167,17 @@ export const UserAPI = {
     request<ResponseInfoType<null>>(`${API_PREFIX}/bindSupplier`, {
       method: 'POST',
       data: params,
+    }),
+
+  /**
+   * 获取用户门店
+   * GET /api/v1/platform/user/listUserStore
+   * 接口ID：374218538
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-374218538
+   */
+  listUserStore: (params: { user_id: number }) =>
+    request<ResponseInfoType<UserStoreInfo>>(`${API_PREFIX}/listUserStore`, {
+      method: 'GET',
+      params,
     }),
 };

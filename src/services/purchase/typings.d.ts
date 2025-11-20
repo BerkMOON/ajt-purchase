@@ -1,6 +1,7 @@
+import { BaseListInfo } from '@/types/common';
 export interface PurchaseItem {
   id: string;
-  purchase_no: string;
+  order_no: string;
   create_time: string;
   modify_time: string;
   store_name: string;
@@ -9,7 +10,8 @@ export interface PurchaseItem {
   status: PurchaseStatus;
   expected_delivery_date: string;
   remark?: string;
-  purchase_details: PurchaseDetailItem[];
+  items: PurchaseDetailItem[];
+  inquiry_deadline?: string; // 询价截止时间
   // 到货相关字段
   arrival_date?: string; // 实际到货日期
   arrival_confirm_time?: string; // 到货确认时间
@@ -95,27 +97,23 @@ export interface PurchaseParams {
   end_date?: string;
   store_ids?: string[];
   creator_name?: string;
-  status_codes?: number[];
-  exclude_status?: number; // 排除指定状态的采购单
+  status?: number;
   date_range?: any; // 用于前端表单的日期范围选择器
 }
 
 export interface CreatePurchaseParams {
   expected_delivery_date: string;
   remark?: string;
-  purchase_details: Omit<PurchaseDetailItem, 'id' | 'historical_avg_price'>[];
+  inquiry_deadline?: string;
+  items: Omit<PurchaseDetailItem, 'id' | 'historical_avg_price'>[];
 }
 
 export interface UpdatePurchaseParams extends CreatePurchaseParams {
   purchase_id: string;
 }
 
-export interface PageInfo_PurchaseItem {
-  meta: {
-    total_count: number;
-    total_page: number;
-  };
-  purchase_list: PurchaseItem[];
+export interface PageInfo_PurchaseItem extends BaseListInfo {
+  orders: PurchaseItem[];
 }
 
 // 配件目录相关类型

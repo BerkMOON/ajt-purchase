@@ -16,8 +16,8 @@ const Home = () => {
 
     try {
       setLoading(true);
-      const response = await PurchaseAPI.getAllPurchases({ status_codes: [2] });
-      setPendingPurchases(response.data.purchase_list);
+      const response = await PurchaseAPI.getAllPurchases({ status: 2 });
+      setPendingPurchases(response.data.orders);
     } catch (error) {
       console.error('获取待审核采购单失败:', error);
     } finally {
@@ -42,13 +42,13 @@ const Home = () => {
       />
 
       {/* 待办事项提醒 */}
-      {purchaseAudit && pendingPurchases.length > 0 && (
+      {purchaseAudit && pendingPurchases?.length > 0 && (
         <Card
           title={
             <Space>
               <BellOutlined />
               待办事项
-              <Badge count={pendingPurchases.length} />
+              <Badge count={pendingPurchases?.length} />
             </Space>
           }
           style={{ marginTop: 24 }}

@@ -15,6 +15,10 @@ const { TextArea } = Input;
 
 export const createAndModifyForm = (
   <>
+    <Form.Item name="store_id" label="采购门店" required>
+      <InputNumber placeholder="请输入采购门店" />
+    </Form.Item>
+
     <Form.Item
       name="expected_delivery_date"
       label="期望到货日期"
@@ -23,12 +27,20 @@ export const createAndModifyForm = (
       <DatePicker placeholder="请选择期望到货日期" style={{ width: '100%' }} />
     </Form.Item>
 
+    <Form.Item name="inquiry_deadline" label="询价截止时间">
+      <DatePicker
+        showTime
+        placeholder="请选择询价截止时间"
+        style={{ width: '100%' }}
+      />
+    </Form.Item>
+
     <Form.Item name="remark" label="备注">
       <TextArea rows={3} placeholder="请输入备注信息" />
     </Form.Item>
 
     <Form.Item label="配件清单" required>
-      <Form.List name="purchase_details">
+      <Form.List name="items">
         {(fields, { add, remove }) => (
           <>
             <Table
@@ -39,14 +51,14 @@ export const createAndModifyForm = (
               columns={[
                 {
                   title: '配件类型',
-                  dataIndex: 'category_type',
+                  dataIndex: 'part_type',
                   width: 100,
                   render: (_, field) => (
                     <>
                       {/* 隐藏字段，自动设置为备件 */}
                       <Form.Item
                         {...field}
-                        name={[field.name, 'category_type']}
+                        name={[field.name, 'part_type']}
                         initialValue={CategoryType.PARTS}
                         hidden
                       >
@@ -55,6 +67,21 @@ export const createAndModifyForm = (
                       {/* 只显示备件标签（暂不支持精品） */}
                       <Tag color="blue">备件</Tag>
                     </>
+                  ),
+                },
+                {
+                  title: '配件id',
+                  dataIndex: 'part_id',
+                  width: 150,
+                  render: (_, field) => (
+                    <Form.Item
+                      {...field}
+                      name={[field.name, 'part_id']}
+                      rules={[{ required: true, message: '请输入配件id' }]}
+                      style={{ margin: 0 }}
+                    >
+                      <InputNumber placeholder="配件id" />
+                    </Form.Item>
                   ),
                 },
                 {

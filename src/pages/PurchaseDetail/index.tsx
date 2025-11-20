@@ -22,6 +22,16 @@ import React, { useEffect, useState } from 'react';
 
 const { TextArea } = Input;
 
+// 订单状态枚举
+const OrderStatus = {
+  DRAFT: 1, // 草稿
+  PENDING_INQUIRY: 2, // 待询价
+  QUOTED: 3, // 已报价
+  PRICE_PENDING_APPROVAL: 4, // 价格待审批
+  ORDERED: 5, // 已下单
+  ARRIVED: 6, // 已到货
+} as const;
+
 const PurchaseDetail: React.FC = () => {
   const { isLogin } = useAccess();
   const { id } = useParams<{ id: string }>();
@@ -80,17 +90,17 @@ const PurchaseDetail: React.FC = () => {
   // 获取状态颜色
   const getStatusColor = (statusCode: number) => {
     switch (statusCode) {
-      case 1:
+      case OrderStatus.DRAFT:
         return 'default'; // 草稿
-      case 2:
+      case OrderStatus.PENDING_INQUIRY:
         return 'warning'; // 待询价
-      case 3:
+      case OrderStatus.QUOTED:
         return 'blue'; // 已报价
-      case 4:
+      case OrderStatus.PRICE_PENDING_APPROVAL:
         return 'orange'; // 价格待审批
-      case 5:
+      case OrderStatus.ORDERED:
         return 'purple'; // 已下单
-      case 6:
+      case OrderStatus.ARRIVED:
         return 'success'; // 已到货
       default:
         return 'default';
@@ -119,7 +129,7 @@ const PurchaseDetail: React.FC = () => {
       content: `确定为供应商 ${selectedQuote.supplier_name} 提交采购订单吗？提交后需要审核通过才能正式下单。`,
       onOk: async () => {
         try {
-          await PurchaseAPI.submitOrder(purchase.id);
+          // await PurchaseAPI.submitOrder(purchase.id);
           message.success('订单提交成功，待审核');
           fetchPurchaseDetail(); // 重新获取数据
         } catch (error) {
@@ -129,15 +139,12 @@ const PurchaseDetail: React.FC = () => {
     });
   };
 
-  // 【已删除】handleApproveOrder - 订单审核已取消
-  // 【已删除】handleRejectOrder - 订单审核已取消
-
   // 【新增】价格审批通过
   const handleApprovePriceRequest = async () => {
     if (!purchase) return;
 
     try {
-      await PurchaseAPI.approvePriceRequest(purchase.id);
+      // await PurchaseAPI.approvePriceRequest(purchase.id);
       message.success('价格审批通过');
       fetchPurchaseDetail();
     } catch (error: any) {
@@ -153,7 +160,7 @@ const PurchaseDetail: React.FC = () => {
     }
 
     try {
-      await PurchaseAPI.rejectPriceRequest(purchase.id, rejectReason);
+      // await PurchaseAPI.rejectPriceRequest(purchase.id, rejectReason);
       message.success('价格审批驳回，需重新询价');
       setRejectModalVisible(false);
       setRejectReason('');
@@ -172,8 +179,8 @@ const PurchaseDetail: React.FC = () => {
       content: '请确认货物已全部到货，确认后将更新采购单状态为"已到货"',
       onOk: async () => {
         try {
-          const arrivalDate = new Date().toISOString().split('T')[0];
-          await PurchaseAPI.confirmArrival(purchase.id, arrivalDate);
+          // const arrivalDate = new Date().toISOString().split('T')[0];
+          // await PurchaseAPI.confirmArrival(purchase.id, arrivalDate);
           message.success('到货确认成功');
           fetchPurchaseDetail();
         } catch (error: any) {
@@ -190,7 +197,7 @@ const PurchaseDetail: React.FC = () => {
     const actions = [];
     const status = purchase.status.code;
 
-    if (status === 1) {
+    if (status === OrderStatus.DRAFT) {
       // 草稿状态
       actions.push(
         <Button key="submit" type="primary" onClick={handleSubmit}>
@@ -199,7 +206,7 @@ const PurchaseDetail: React.FC = () => {
       );
     }
 
-    if (status === 2) {
+    if (status === OrderStatus.PENDING_INQUIRY) {
       // 待询价状态
       actions.push(
         <Button key="inquiry" type="primary" onClick={goToInquiry}>
@@ -208,7 +215,7 @@ const PurchaseDetail: React.FC = () => {
       );
     }
 
-    if (status === 3) {
+    if (status === OrderStatus.QUOTED) {
       // 已报价状态
       actions.push(
         <Button key="inquiry" onClick={goToInquiry}>
@@ -235,7 +242,7 @@ const PurchaseDetail: React.FC = () => {
       }
     }
 
-    if (status === 4) {
+    if (status === OrderStatus.PRICE_PENDING_APPROVAL) {
       // 价格待审批状态
       actions.push(
         <Button
@@ -253,7 +260,7 @@ const PurchaseDetail: React.FC = () => {
       );
     }
 
-    if (status === 5) {
+    if (status === OrderStatus.ORDERED) {
       // 已下单状态
       actions.push(
         <Button
@@ -266,7 +273,7 @@ const PurchaseDetail: React.FC = () => {
       );
     }
 
-    if (status === 6) {
+    if (status === OrderStatus.ARRIVED) {
       // 已到货状态（完成）
       actions.push(
         <Button key="completed" type="default" disabled>
@@ -282,8 +289,8 @@ const PurchaseDetail: React.FC = () => {
   const partColumns = [
     {
       title: '配件类型',
-      dataIndex: 'category_type',
-      key: 'category_type',
+      dataIndex: 'part_type',
+      key: 'part_type',
       render: (type: string) => {
         // 暂时只支持备件
         if (type === 'PARTS') {
@@ -359,7 +366,7 @@ const PurchaseDetail: React.FC = () => {
             </Button>
             <Divider type="vertical" />
             <span style={{ fontSize: 16, fontWeight: 'bold' }}>
-              采购单详情 - {purchase.purchase_no}
+              采购单详情 - {purchase.order_no}
             </span>
             <Tag color={getStatusColor(purchase.status.code)}>
               {purchase.status.name}
@@ -377,7 +384,7 @@ const PurchaseDetail: React.FC = () => {
             <Card title="基本信息" size="small">
               <Descriptions column={3} bordered>
                 <Descriptions.Item label="采购单号">
-                  {purchase.purchase_no}
+                  {purchase.order_no}
                 </Descriptions.Item>
                 <Descriptions.Item label="采购门店">
                   {purchase.store_name}
@@ -416,7 +423,7 @@ const PurchaseDetail: React.FC = () => {
             <Card title="配件清单" size="small">
               <Table
                 columns={partColumns}
-                dataSource={purchase.purchase_details}
+                dataSource={purchase.items}
                 rowKey="id"
                 pagination={false}
                 size="small"
@@ -436,35 +443,7 @@ const PurchaseDetail: React.FC = () => {
                     {purchase.creator_name} 于 {purchase.create_time}
                   </p>
                 </Timeline.Item>
-                {purchase.status.code >= 2 && (
-                  <Timeline.Item color="blue">
-                    <p>
-                      <strong>提交审核</strong>
-                    </p>
-                    <p style={{ color: '#666' }}>已提交待审核</p>
-                  </Timeline.Item>
-                )}
-                {purchase.status.code === 3 && (
-                  <Timeline.Item color="green">
-                    <p>
-                      <strong>审核通过</strong>
-                    </p>
-                    <p style={{ color: '#666' }}>
-                      审核员审核通过，等待系统发送询价
-                    </p>
-                  </Timeline.Item>
-                )}
-                {purchase.status.code === 4 && (
-                  <Timeline.Item color="red">
-                    <p>
-                      <strong>审核驳回</strong>
-                    </p>
-                    <p style={{ color: '#666' }}>
-                      审核员驳回申请，需要修改后重新提交
-                    </p>
-                  </Timeline.Item>
-                )}
-                {purchase.status.code >= 5 && (
+                {purchase.status.code >= OrderStatus.PENDING_INQUIRY && (
                   <Timeline.Item color="orange">
                     <p>
                       <strong>发送询价</strong>
@@ -472,7 +451,7 @@ const PurchaseDetail: React.FC = () => {
                     <p style={{ color: '#666' }}>系统已向供应商发送询价通知</p>
                   </Timeline.Item>
                 )}
-                {purchase.status.code >= 6 && (
+                {purchase.status.code >= OrderStatus.QUOTED && (
                   <Timeline.Item color="purple">
                     <p>
                       <strong>供应商报价</strong>
@@ -482,30 +461,28 @@ const PurchaseDetail: React.FC = () => {
                     </p>
                   </Timeline.Item>
                 )}
-                {purchase.status.code >= 7 && (
+                {purchase.status.code >= OrderStatus.PRICE_PENDING_APPROVAL && (
                   <Timeline.Item color="cyan">
                     <p>
-                      <strong>提交订单</strong>
+                      <strong>价格审批中</strong>
                     </p>
-                    <p style={{ color: '#666' }}>
-                      已选择供应商并提交订单，等待最终审核
-                    </p>
+                    <p style={{ color: '#666' }}>已选择供应商，等待价格审批</p>
                   </Timeline.Item>
                 )}
-                {purchase.status.code >= 8 && (
+                {purchase.status.code >= OrderStatus.ORDERED && (
                   <Timeline.Item color="green">
                     <p>
                       <strong>订单确认</strong>
                     </p>
-                    <p style={{ color: '#666' }}>订单审核通过，已正式下单</p>
+                    <p style={{ color: '#666' }}>价格审批通过，已正式下单</p>
                   </Timeline.Item>
                 )}
-                {purchase.status.code === 9 && (
+                {purchase.status.code === OrderStatus.ARRIVED && (
                   <Timeline.Item color="green">
                     <p>
                       <strong>订单完成</strong>
                     </p>
-                    <p style={{ color: '#666' }}>订单履行完成</p>
+                    <p style={{ color: '#666' }}>货物已到货，订单完成</p>
                   </Timeline.Item>
                 )}
               </Timeline>

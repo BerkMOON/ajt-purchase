@@ -37,6 +37,27 @@ export const getColumns = (props: ColumnsProps<UserInfo>) => {
       dataIndex: 'role_name',
     },
     {
+      title: '供应商名称',
+      dataIndex: 'supplier_name',
+      render: (_: any, record: UserInfo) => {
+        return record.user_type === Role.Supplier ? record.supplier_name : null;
+      },
+    },
+    {
+      title: '公司名称',
+      dataIndex: 'company_name',
+      render: (_: any, record: UserInfo) => {
+        return record.user_type === Role.Store ? record.company_name : null;
+      },
+    },
+    {
+      title: '门店名称',
+      dataIndex: 'store_name',
+      render: (_: any, record: UserInfo) => {
+        return record.user_type === Role.Store ? record.store_name : null;
+      },
+    },
+    {
       title: '用户状态',
       dataIndex: 'status',
       render: (_: any, record: UserInfo) => {

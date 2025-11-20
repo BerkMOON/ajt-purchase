@@ -15,6 +15,9 @@ export interface UserInfo {
   status: StatusInfo;
   user_type: string;
   username: string;
+  company_name?: string;
+  store_name?: string;
+  supplier_name?: string;
 }
 
 export interface RoleList {
@@ -85,4 +88,8 @@ export interface LoginResponse {
 
 export interface UserRoleResponse {
   role_ids: number[];
+}
+
+export interface UserStoreInfo {
+  pairs: { store_id: number; company_id: number }[];
 }
