@@ -1,164 +1,195 @@
-import { PurchaseAPI } from '@/services/purchase/PurchaseController';
-import { PurchaseItem } from '@/services/purchase/typings';
+import { PurchaseAPI } from '@/services/purchase';
+import type { PurchaseItem } from '@/services/purchase/typings.d';
+import { QuoteAPI, SupplierQuoteSummary } from '@/services/quote';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { history, Navigate, useAccess, useParams } from '@umijs/max';
 import {
   Button,
   Card,
   Col,
-  Descriptions,
   Divider,
-  Input,
   message,
   Modal,
   Result,
   Row,
   Space,
-  Table,
+  Spin,
   Tag,
-  Timeline,
 } from 'antd';
-import React, { useEffect, useState } from 'react';
-
-const { TextArea } = Input;
-
-// 订单状态枚举
-const OrderStatus = {
-  DRAFT: 1, // 草稿
-  PENDING_INQUIRY: 2, // 待询价
-  QUOTED: 3, // 已报价
-  PRICE_PENDING_APPROVAL: 4, // 价格待审批
-  ORDERED: 5, // 已下单
-  ARRIVED: 6, // 已到货
-} as const;
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import BasicInfoCard from './components/BasicInfoCard';
+import PartListCard from './components/PartListCard';
+import RejectModal from './components/RejectModal';
+import SelectSupplierModal from './components/SelectSupplierModal';
+import StatusTimelineCard from './components/StatusTimelineCard';
+import SupplierQuotesCard from './components/SupplierQuotesCard';
+import { OrderStatus } from './constants';
+import {
+  buildItemQuoteData,
+  buildSelectionsFromPurchaseItems,
+  SelectedSupplierMap,
+} from './utils';
 
 const PurchaseDetail: React.FC = () => {
   const { isLogin } = useAccess();
   const { id } = useParams<{ id: string }>();
   const [purchase, setPurchase] = useState<PurchaseItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const [quotes, setQuotes] = useState<SupplierQuoteSummary[]>([]);
   const [rejectModalVisible, setRejectModalVisible] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
-  const [quotes, setQuotes] = useState<any[]>([]);
+  const [selectSupplierModalVisible, setSelectSupplierModalVisible] =
+    useState(false);
+  const [selectedSuppliers, setSelectedSuppliers] =
+    useState<SelectedSupplierMap>({});
 
-  // 获取采购单详情
-  const fetchPurchaseDetail = async () => {
+  const itemQuoteData = useMemo(
+    () => buildItemQuoteData(purchase, quotes),
+    [purchase, quotes],
+  );
+  const hasSupplierSelection = useMemo(
+    () => Object.values(selectedSuppliers).some((item) => !!item.quote_no),
+    [selectedSuppliers],
+  );
+
+  const fetchPurchaseDetail = useCallback(async () => {
     if (!id) return;
-
+    setLoading(true);
     try {
-      setLoading(true);
-      const [purchaseResponse, quotesResponse] = await Promise.all([
-        PurchaseAPI.getPurchaseDetail(id),
-        PurchaseAPI.getPurchaseQuotes(id),
-      ]);
+      const purchaseResponse = await PurchaseAPI.getPurchaseDetail(id);
+      const purchaseData = purchaseResponse.data;
+      setPurchase(purchaseData);
 
-      setPurchase(purchaseResponse.data);
-      setQuotes(quotesResponse.data || []);
+      if (purchaseData.status.code >= OrderStatus.QUOTED) {
+        setSelectedSuppliers(
+          buildSelectionsFromPurchaseItems(purchaseData.items || []),
+        );
+      } else {
+        setSelectedSuppliers({});
+      }
+
+      if (purchaseData.status.code >= OrderStatus.INQUIRING) {
+        try {
+          const quoteResponse = await QuoteAPI.getSupplierQuotesByOrder(
+            purchaseData.order_no,
+          );
+          setQuotes(quoteResponse.data?.quotes || []);
+        } catch (error) {
+          console.error('获取报价失败', error);
+          setQuotes([]);
+        }
+      } else {
+        setQuotes([]);
+      }
     } catch (error) {
       message.error('获取采购单详情失败');
       console.error(error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchPurchaseDetail();
-  }, [id]);
+  }, [fetchPurchaseDetail]);
 
-  // 返回列表页
   const goBack = () => {
     history.push('/purchase');
   };
 
-  // 提交采购单
-  const handleSubmit = async () => {
-    if (!purchase) return;
-
-    try {
-      await PurchaseAPI.submitPurchase(purchase.id);
-      message.success('提交成功');
-      fetchPurchaseDetail();
-    } catch (error) {
-      message.error('提交失败');
-    }
-  };
-
-  // 【已删除】审核通过 - 第一轮审核已取消
-  // 【已删除】驳回采购单 - 第一轮审核已取消
-
-  // 获取状态颜色
-  const getStatusColor = (statusCode: number) => {
-    switch (statusCode) {
-      case OrderStatus.DRAFT:
-        return 'default'; // 草稿
-      case OrderStatus.PENDING_INQUIRY:
-        return 'warning'; // 待询价
-      case OrderStatus.QUOTED:
-        return 'blue'; // 已报价
-      case OrderStatus.PRICE_PENDING_APPROVAL:
-        return 'orange'; // 价格待审批
-      case OrderStatus.ORDERED:
-        return 'purple'; // 已下单
-      case OrderStatus.ARRIVED:
-        return 'success'; // 已到货
-      default:
-        return 'default';
-    }
-  };
-
-  // 进入询价页面
   const goToInquiry = () => {
     if (purchase) {
       history.push(`/purchase/${purchase.id}/inquiry`);
     }
   };
 
-  // 提交订单
-  const handleSubmitOrder = async () => {
-    if (!purchase) return;
+  const getStatusColor = (statusCode: number) => {
+    switch (statusCode) {
+      case OrderStatus.DRAFT:
+        return 'default';
+      case OrderStatus.PENDING_APPROVAL:
+        return 'processing';
+      case OrderStatus.APPROVAL_REJECTED:
+        return 'error';
+      case OrderStatus.INQUIRING:
+        return 'warning';
+      case OrderStatus.QUOTED:
+        return 'blue';
+      case OrderStatus.PRICE_PENDING_APPROVAL:
+        return 'orange';
+      case OrderStatus.PRICE_APPROVAL_REJECTED:
+        return 'error';
+      case OrderStatus.ORDERED:
+        return 'purple';
+      case OrderStatus.ARRIVED:
+        return 'success';
+      default:
+        return 'default';
+    }
+  };
 
-    const selectedQuote = quotes.find((q: any) => q.status === 'selected');
-    if (!selectedQuote) {
-      message.warning('请先在询价页面选择供应商');
+  const handleItemSupplierChange = (
+    itemKey: string,
+    quoteNo: string,
+    supplierName: string,
+    inquiryItemId: number,
+  ) => {
+    setSelectedSuppliers((prev) => ({
+      ...prev,
+      [itemKey]: {
+        quote_no: quoteNo,
+        supplier_name: supplierName,
+        inquiry_item_id: inquiryItemId,
+      },
+    }));
+  };
+
+  const confirmSelectSuppliers = async () => {
+    if (!purchase) {
+      return;
+    }
+    const selections = Object.values(selectedSuppliers).filter(
+      (item) => !!item.quote_no,
+    );
+    if (selections.length === 0) {
+      message.warning('请至少选择一个商品的供应商');
       return;
     }
 
-    Modal.confirm({
-      title: '确认提交订单',
-      content: `确定为供应商 ${selectedQuote.supplier_name} 提交采购订单吗？提交后需要审核通过才能正式下单。`,
-      onOk: async () => {
-        try {
-          // await PurchaseAPI.submitOrder(purchase.id);
-          message.success('订单提交成功，待审核');
-          fetchPurchaseDetail(); // 重新获取数据
-        } catch (error) {
-          message.error('订单提交失败');
-        }
-      },
-    });
+    try {
+      await QuoteAPI.selectSuppliersByItems({
+        order_no: purchase.order_no,
+        selections: selections.map((item) => ({
+          inquiry_item_id: item.inquiry_item_id,
+          quote_no: item.quote_no,
+        })),
+      });
+      message.success('供应商选择成功，订单已下单');
+      setSelectSupplierModalVisible(false);
+      fetchPurchaseDetail();
+    } catch (error: any) {
+      message.error(error?.message || '选择供应商失败');
+      console.error(error);
+    }
   };
 
-  // 【新增】价格审批通过
   const handleApprovePriceRequest = async () => {
     if (!purchase) return;
-
     try {
       // await PurchaseAPI.approvePriceRequest(purchase.id);
       message.success('价格审批通过');
       fetchPurchaseDetail();
     } catch (error: any) {
-      message.error(error.message || '审批失败');
+      message.error(error?.message || '审批失败');
     }
   };
 
-  // 【新增】价格审批驳回
   const handleRejectPriceRequest = async () => {
-    if (!purchase || !rejectReason.trim()) {
+    if (!purchase) return;
+    if (!rejectReason.trim()) {
       message.error('请填写驳回原因');
       return;
     }
-
     try {
       // await PurchaseAPI.rejectPriceRequest(purchase.id, rejectReason);
       message.success('价格审批驳回，需重新询价');
@@ -166,87 +197,101 @@ const PurchaseDetail: React.FC = () => {
       setRejectReason('');
       fetchPurchaseDetail();
     } catch (error: any) {
-      message.error(error.message || '驳回失败');
+      message.error(error?.message || '驳回失败');
     }
   };
 
-  // 【新增】确认到货
   const handleConfirmArrival = () => {
     if (!purchase) return;
-
     Modal.confirm({
       title: '确认到货',
-      content: '请确认货物已全部到货，确认后将更新采购单状态为"已到货"',
+      content: '请确认货物已全部到货，确认后将更新采购单状态为“已到货”。',
       onOk: async () => {
         try {
-          // const arrivalDate = new Date().toISOString().split('T')[0];
-          // await PurchaseAPI.confirmArrival(purchase.id, arrivalDate);
+          // await PurchaseAPI.confirmArrival(purchase.id);
           message.success('到货确认成功');
           fetchPurchaseDetail();
         } catch (error: any) {
-          message.error(error.message || '确认失败');
+          message.error(error?.message || '确认失败');
         }
       },
     });
   };
 
-  // 获取可执行的操作
+  const handleSubmitOrder = () => {
+    if (!purchase) return;
+    const selectedQuote = quotes.find((q) => q.status?.code === 2);
+    if (!selectedQuote) {
+      message.warning('请先在询价页面选择供应商');
+      return;
+    }
+    Modal.confirm({
+      title: '确认提交订单',
+      content: `确定为供应商 ${selectedQuote.supplier_name} 提交采购订单吗？提交后需要审核通过才能正式下单。`,
+      onOk: async () => {
+        try {
+          // await PurchaseAPI.submitOrder(purchase.id);
+          message.success('订单提交成功，待审核');
+          fetchPurchaseDetail();
+        } catch (error) {
+          message.error('订单提交失败');
+        }
+      },
+    });
+  };
+
   const getAvailableActions = () => {
     if (!purchase) return [];
-
-    const actions = [];
     const status = purchase.status.code;
+    const actions: React.ReactNode[] = [];
 
-    if (status === OrderStatus.DRAFT) {
-      // 草稿状态
+    if (status === OrderStatus.PENDING_APPROVAL) {
       actions.push(
-        <Button key="submit" type="primary" onClick={handleSubmit}>
-          提交审核
+        <Button key="pending" type="default" disabled>
+          待审核（第一版自动审核）
         </Button>,
       );
     }
 
-    if (status === OrderStatus.PENDING_INQUIRY) {
-      // 待询价状态
+    if (status === OrderStatus.APPROVAL_REJECTED) {
+      actions.push(
+        <Button key="approval-rejected" danger disabled>
+          审核已驳回
+        </Button>,
+      );
+    }
+
+    if (status === OrderStatus.INQUIRING) {
       actions.push(
         <Button key="inquiry" type="primary" onClick={goToInquiry}>
-          进入询价
+          查看询价进度
         </Button>,
       );
     }
 
     if (status === OrderStatus.QUOTED) {
-      // 已报价状态
       actions.push(
-        <Button key="inquiry" onClick={goToInquiry}>
+        <Button key="quoted" onClick={goToInquiry}>
           查看报价
         </Button>,
       );
-
-      // 检查是否有选中的供应商
-      const hasSelectedSupplier = quotes.some(
-        (q: any) => q.status === 'selected',
+      const hasSelectedQuote = quotes.some((q) => q.status?.code === 2);
+      actions.push(
+        <Button
+          key="submit-order"
+          type="primary"
+          onClick={handleSubmitOrder}
+          disabled={!hasSelectedQuote}
+        >
+          {hasSelectedQuote ? '提交订单' : '请先选择供应商'}
+        </Button>,
       );
-      if (hasSelectedSupplier) {
-        actions.push(
-          <Button key="submit-order" type="primary" onClick={handleSubmitOrder}>
-            提交订单
-          </Button>,
-        );
-      } else {
-        actions.push(
-          <Button key="select-supplier" type="primary" disabled>
-            请先选择供应商
-          </Button>,
-        );
-      }
     }
 
     if (status === OrderStatus.PRICE_PENDING_APPROVAL) {
-      // 价格待审批状态
       actions.push(
         <Button
-          key="approve-price"
+          key="price-approve"
           type="primary"
           onClick={handleApprovePriceRequest}
         >
@@ -254,14 +299,21 @@ const PurchaseDetail: React.FC = () => {
         </Button>,
       );
       actions.push(
-        <Button key="reject-price" onClick={() => setRejectModalVisible(true)}>
+        <Button key="price-reject" onClick={() => setRejectModalVisible(true)}>
           价格审批驳回
         </Button>,
       );
     }
 
+    if (status === OrderStatus.PRICE_APPROVAL_REJECTED) {
+      actions.push(
+        <Button key="price-rejected" danger disabled>
+          价格审批已驳回
+        </Button>,
+      );
+    }
+
     if (status === OrderStatus.ORDERED) {
-      // 已下单状态
       actions.push(
         <Button
           key="confirm-arrival"
@@ -274,7 +326,6 @@ const PurchaseDetail: React.FC = () => {
     }
 
     if (status === OrderStatus.ARRIVED) {
-      // 已到货状态（完成）
       actions.push(
         <Button key="completed" type="default" disabled>
           已完成
@@ -285,59 +336,16 @@ const PurchaseDetail: React.FC = () => {
     return actions;
   };
 
-  // 配件清单表格列
-  const partColumns = [
-    {
-      title: '配件类型',
-      dataIndex: 'part_type',
-      key: 'part_type',
-      render: (type: string) => {
-        // 暂时只支持备件
-        if (type === 'PARTS') {
-          return <Tag color="blue">备件</Tag>;
-        }
-        return <Tag>未知</Tag>;
-      },
-    },
-    {
-      title: '配件编码',
-      dataIndex: 'part_code',
-      key: 'part_code',
-    },
-    {
-      title: '配件名称',
-      dataIndex: 'part_name',
-      key: 'part_name',
-    },
-    {
-      title: '规格型号',
-      dataIndex: 'specification',
-      key: 'specification',
-    },
-    {
-      title: '采购数量',
-      dataIndex: 'quantity',
-      key: 'quantity',
-    },
-    {
-      title: '单位',
-      dataIndex: 'unit',
-      key: 'unit',
-    },
-    {
-      title: '历史均价',
-      dataIndex: 'historical_avg_price',
-      key: 'historical_avg_price',
-      render: (price: number) => (price ? `¥${price.toFixed(2)}` : '-'),
-    },
-  ];
-
   if (!isLogin) {
     return <Navigate to="/login" />;
   }
 
   if (loading) {
-    return <div>加载中...</div>;
+    return (
+      <div style={{ padding: 24, textAlign: 'center' }}>
+        <Spin />
+      </div>
+    );
   }
 
   if (!purchase) {
@@ -358,7 +366,6 @@ const PurchaseDetail: React.FC = () => {
   return (
     <div style={{ padding: '24px', background: '#f5f5f5', minHeight: '100vh' }}>
       <Card>
-        {/* 头部操作栏 */}
         <div style={{ marginBottom: 24 }}>
           <Space>
             <Button icon={<ArrowLeftOutlined />} onClick={goBack}>
@@ -379,139 +386,54 @@ const PurchaseDetail: React.FC = () => {
         </div>
 
         <Row gutter={[24, 24]}>
-          {/* 基本信息 */}
           <Col span={24}>
-            <Card title="基本信息" size="small">
-              <Descriptions column={3} bordered>
-                <Descriptions.Item label="采购单号">
-                  {purchase.order_no}
-                </Descriptions.Item>
-                <Descriptions.Item label="采购门店">
-                  {purchase.store_name}
-                </Descriptions.Item>
-                <Descriptions.Item label="采购人">
-                  {purchase.creator_name}
-                </Descriptions.Item>
-                <Descriptions.Item label="创建时间">
-                  {purchase.create_time}
-                </Descriptions.Item>
-                <Descriptions.Item label="修改时间">
-                  {purchase.modify_time}
-                </Descriptions.Item>
-                <Descriptions.Item label="期望到货日期">
-                  {purchase.expected_delivery_date}
-                </Descriptions.Item>
-                <Descriptions.Item label="总金额">
-                  ¥{purchase.total_amount?.toFixed(2) || '0.00'}
-                </Descriptions.Item>
-                <Descriptions.Item label="当前状态" span={2}>
-                  <Tag color={getStatusColor(purchase.status.code)}>
-                    {purchase.status.name}
-                  </Tag>
-                </Descriptions.Item>
-                {purchase.remark && (
-                  <Descriptions.Item label="备注" span={3}>
-                    {purchase.remark}
-                  </Descriptions.Item>
-                )}
-              </Descriptions>
-            </Card>
+            <BasicInfoCard
+              purchase={purchase}
+              getStatusColor={getStatusColor}
+            />
           </Col>
 
-          {/* 配件清单 */}
           <Col span={24}>
-            <Card title="配件清单" size="small">
-              <Table
-                columns={partColumns}
-                dataSource={purchase.items}
-                rowKey="id"
-                pagination={false}
-                size="small"
-              />
-            </Card>
+            <PartListCard items={purchase.items} />
           </Col>
 
-          {/* 状态流水 */}
           <Col span={24}>
-            <Card title="状态流水" size="small">
-              <Timeline>
-                <Timeline.Item color="green">
-                  <p>
-                    <strong>创建采购单</strong>
-                  </p>
-                  <p style={{ color: '#666' }}>
-                    {purchase.creator_name} 于 {purchase.create_time}
-                  </p>
-                </Timeline.Item>
-                {purchase.status.code >= OrderStatus.PENDING_INQUIRY && (
-                  <Timeline.Item color="orange">
-                    <p>
-                      <strong>发送询价</strong>
-                    </p>
-                    <p style={{ color: '#666' }}>系统已向供应商发送询价通知</p>
-                  </Timeline.Item>
-                )}
-                {purchase.status.code >= OrderStatus.QUOTED && (
-                  <Timeline.Item color="purple">
-                    <p>
-                      <strong>供应商报价</strong>
-                    </p>
-                    <p style={{ color: '#666' }}>
-                      供应商已完成报价，可进行比价选择
-                    </p>
-                  </Timeline.Item>
-                )}
-                {purchase.status.code >= OrderStatus.PRICE_PENDING_APPROVAL && (
-                  <Timeline.Item color="cyan">
-                    <p>
-                      <strong>价格审批中</strong>
-                    </p>
-                    <p style={{ color: '#666' }}>已选择供应商，等待价格审批</p>
-                  </Timeline.Item>
-                )}
-                {purchase.status.code >= OrderStatus.ORDERED && (
-                  <Timeline.Item color="green">
-                    <p>
-                      <strong>订单确认</strong>
-                    </p>
-                    <p style={{ color: '#666' }}>价格审批通过，已正式下单</p>
-                  </Timeline.Item>
-                )}
-                {purchase.status.code === OrderStatus.ARRIVED && (
-                  <Timeline.Item color="green">
-                    <p>
-                      <strong>订单完成</strong>
-                    </p>
-                    <p style={{ color: '#666' }}>货物已到货，订单完成</p>
-                  </Timeline.Item>
-                )}
-              </Timeline>
-            </Card>
+            <SupplierQuotesCard
+              visible={purchase.status.code >= OrderStatus.INQUIRING}
+              itemQuoteData={itemQuoteData}
+              selectedSuppliers={selectedSuppliers}
+              onSelectSupplier={handleItemSupplierChange}
+              canConfirm={hasSupplierSelection}
+              onOpenConfirmModal={() => setSelectSupplierModalVisible(true)}
+              purchaseStatus={purchase.status.code}
+              selectionEnabled={purchase.status.code === OrderStatus.INQUIRING}
+            />
+          </Col>
+
+          <Col span={24}>
+            <StatusTimelineCard purchase={purchase} />
           </Col>
         </Row>
       </Card>
 
-      {/* 驳回原因弹窗 */}
-      <Modal
-        title="价格审批驳回"
-        open={rejectModalVisible}
+      <RejectModal
+        visible={rejectModalVisible}
+        reason={rejectReason}
+        onChange={setRejectReason}
         onOk={handleRejectPriceRequest}
         onCancel={() => {
           setRejectModalVisible(false);
           setRejectReason('');
         }}
-        width={500}
-      >
-        <div style={{ marginBottom: 16 }}>
-          <label>驳回原因：</label>
-        </div>
-        <TextArea
-          rows={4}
-          placeholder="请输入驳回原因"
-          value={rejectReason}
-          onChange={(e) => setRejectReason(e.target.value)}
-        />
-      </Modal>
+      />
+
+      <SelectSupplierModal
+        visible={selectSupplierModalVisible}
+        onOk={confirmSelectSuppliers}
+        onCancel={() => setSelectSupplierModalVisible(false)}
+        selectedSuppliers={selectedSuppliers}
+        itemQuoteData={itemQuoteData}
+      />
     </div>
   );
 };

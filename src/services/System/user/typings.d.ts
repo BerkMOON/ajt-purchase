@@ -18,6 +18,16 @@ export interface UserInfo {
   company_name?: string;
   store_name?: string;
   supplier_name?: string;
+  store_infos?: {
+    company_id: number;
+    company_name: string;
+    store_id: number;
+    store_name: string;
+  }[];
+  supplier_infos?: {
+    supplier_code: string;
+    supplier_name: string;
+  }[];
 }
 
 export interface RoleList {

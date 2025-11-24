@@ -53,14 +53,14 @@ export default defineConfig({
       path: '/purchase/:id/inquiry',
       component: './InquiryPage',
       hideInMenu: true,
-      access: 'purchaseInquiry',
+      // access: 'purchaseInquiry',
     },
     {
       name: '供应商报价',
-      path: '/purchase/:id/supplier-quote',
+      path: '/supplier-quote/:id',
       component: './SupplierQuote',
       hideInMenu: true,
-      access: 'purchaseSupplierQuote',
+      // access: 'purchaseSupplierQuote',
     },
     {
       name: '供应商门户',

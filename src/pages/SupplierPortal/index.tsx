@@ -1,188 +1,216 @@
-import { PurchaseAPI } from '@/services/purchase/PurchaseController';
-import { PurchaseItem } from '@/services/purchase/typings';
-import { Navigate, useAccess } from '@umijs/max';
+import { InquiryAPI, SupplierInquiryItem } from '@/services/inquiry';
+import { Navigate, useAccess, useModel } from '@umijs/max';
 import {
   Alert,
   Button,
   Card,
+  Col,
+  DatePicker,
   Descriptions,
+  Form,
+  Input,
+  Result,
+  Row,
   Select,
   Space,
   Table,
   Tag,
   message,
 } from 'antd';
-import React, { useEffect, useState } from 'react';
-
-const { Option } = Select;
-
-// 模拟供应商数据
-const mockSuppliers = [
-  {
-    id: '1',
-    name: '北京汽配供应商',
-    contact: '张经理',
-    phone: '138****1234',
-    type: 'PARTS', // 备件供应商
-    description: '专业提供汽车备件，支持多品牌车型',
-  },
-  {
-    id: '2',
-    name: '上海零部件公司',
-    contact: '李经理',
-    phone: '139****5678',
-    type: 'BOTH', // 备件+精品供应商
-    description: '提供备件和精品服务，产品线丰富',
-  },
-  {
-    id: '3',
-    name: '广州配件批发商',
-    contact: '王经理',
-    phone: '137****9012',
-    type: 'ACCESSORIES', // 精品供应商
-    description: '专注汽车精品和改装配件',
-  },
-];
+import dayjs from 'dayjs';
+import React, { useEffect, useMemo, useState } from 'react';
 
 const SupplierPortal: React.FC = () => {
   const { isLogin } = useAccess();
-  const [selectedSupplierId, setSelectedSupplierId] = useState<string>('1');
-  const [inquiries, setInquiries] = useState<PurchaseItem[]>([]);
-  const [quotes, setQuotes] = useState<any>({});
-  const [loading, setLoading] = useState(false);
-
-  const currentSupplier = mockSuppliers.find(
-    (s) => s.id === selectedSupplierId,
+  const { initialState } = useModel('@@initialState');
+  const rawSupplierInfos =
+    (initialState as any)?.supplier_infos ??
+    (initialState as any)?.currentUser?.supplier_infos ??
+    [];
+  const supplierInfos = (rawSupplierInfos || []).map((info: any) => ({
+    supplier_code: info?.supplier_code ?? info?.code ?? '',
+    supplier_name: info?.supplier_name ?? info?.name ?? '',
+  }));
+  const [selectedSupplierCode, setSelectedSupplierCode] = useState<string>(
+    supplierInfos?.[0]?.supplier_code || '',
   );
+  const selectedSupplierName = useMemo(() => {
+    return (
+      supplierInfos?.find(
+        (item: any) => item?.supplier_code === selectedSupplierCode,
+      )?.supplier_name || supplierInfos?.[0]?.supplier_name
+    );
+  }, [selectedSupplierCode, supplierInfos]);
 
-  // 获取待询价的采购单
-  const fetchInquiries = async () => {
+  const [inquiries, setInquiries] = useState<SupplierInquiryItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
+
+  // 筛选条件
+  const [filters, setFilters] = useState<{
+    inquiry_no?: string;
+    order_no?: string;
+    status?: number;
+    start_date?: string;
+    end_date?: string;
+  }>({});
+
+  // 获取供应商的询价单列表
+  const fetchInquiries = async (
+    page = pagination.current,
+    pageSize = pagination.pageSize,
+  ) => {
+    if (!selectedSupplierCode) return;
     try {
       setLoading(true);
-      // 获取所有采购单，筛选出待询价状态的
-      const response = await PurchaseAPI.getAllPurchases({ status: 5 });
-      let inquiryList = response.data.purchase_list;
+      const response = await InquiryAPI.getSupplierInquiries({
+        page,
+        limit: pageSize,
+        supplier_code: selectedSupplierCode,
+        ...filters,
+      });
 
-      // 根据供应商类型筛选相关的采购单
-      if (currentSupplier) {
-        inquiryList = inquiryList.filter((inquiry) => {
-          const hasPartsItems = inquiry.purchase_details.some(
-            (detail) => detail.category_type === 'PARTS',
-          );
-          const hasAccessoryItems = inquiry.purchase_details.some(
-            (detail) => detail.category_type === 'ACCESSORIES',
-          );
-
-          switch (currentSupplier.type) {
-            case 'PARTS':
-              return hasPartsItems; // 备件供应商只看包含备件的采购单
-            case 'ACCESSORIES':
-              return hasAccessoryItems; // 精品供应商只看包含精品的采购单
-            case 'BOTH':
-              return hasPartsItems || hasAccessoryItems; // 综合供应商看所有采购单
-            default:
-              return false;
-          }
-        });
-      }
-
-      setInquiries(inquiryList);
-
-      // 获取当前供应商的报价情况
-      const quotesData: any = {};
-      for (const inquiry of inquiryList) {
-        try {
-          const quoteResponse = await PurchaseAPI.getPurchaseQuotes(inquiry.id);
-          const myQuote = quoteResponse.data.find(
-            (q: any) => q.supplier_id === selectedSupplierId,
-          );
-          quotesData[inquiry.id] = myQuote || null;
-        } catch (error) {
-          quotesData[inquiry.id] = null;
-        }
-      }
-      setQuotes(quotesData);
+      setInquiries(response.data?.list || []);
+      setPagination({
+        current: page,
+        pageSize,
+        total: response.data?.total?.total_count || 0,
+      });
     } catch (error) {
       message.error('获取询价信息失败');
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchInquiries();
-  }, [selectedSupplierId]);
+    if (selectedSupplierCode) {
+      fetchInquiries(1, pagination.pageSize);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSupplierCode, filters]);
+
+  // 处理筛选
+  const handleFilter = (values: any) => {
+    const newFilters: typeof filters = {};
+    if (values.inquiry_no) {
+      newFilters.inquiry_no = values.inquiry_no;
+    }
+    if (values.order_no) {
+      newFilters.order_no = values.order_no;
+    }
+    if (values.status !== undefined && values.status !== null) {
+      newFilters.status = values.status;
+    }
+    if (values.dateRange && values.dateRange.length === 2) {
+      newFilters.start_date = values.dateRange[0].format('YYYY-MM-DD');
+      newFilters.end_date = values.dateRange[1].format('YYYY-MM-DD');
+    }
+    setFilters(newFilters);
+    setPagination((prev) => ({ ...prev, current: 1 }));
+  };
+
+  // 重置筛选
+  const handleReset = () => {
+    setFilters({});
+    setPagination((prev) => ({ ...prev, current: 1 }));
+  };
 
   // 进入报价页面
-  const goToQuote = (purchaseId: string) => {
-    const url = `/purchase/${purchaseId}/supplier-quote?supplier=${selectedSupplierId}`;
+  const goToQuote = (inquiryNo: string) => {
+    const url = `/supplier-quote/${inquiryNo}?supplier_code=${
+      selectedSupplierCode || ''
+    }`;
     window.open(url, '_blank');
+  };
+
+  // 检查询价是否已过期
+  const isInquiryExpired = (deadline: string) => {
+    return new Date(deadline) < new Date();
   };
 
   // 表格列定义
   const columns = [
     {
-      title: '采购单号',
-      dataIndex: 'purchase_no',
-      key: 'purchase_no',
+      title: '询价单号',
+      dataIndex: 'inquiry_no',
+      key: 'inquiry_no',
       render: (text: string) => <strong>{text}</strong>,
     },
     {
-      title: '采购门店',
-      dataIndex: 'store_name',
-      key: 'store_name',
-    },
-    {
-      title: '创建时间',
-      dataIndex: 'create_time',
-      key: 'create_time',
-    },
-    {
-      title: '期望到货日期',
-      dataIndex: 'expected_delivery_date',
-      key: 'expected_delivery_date',
+      title: '采购单号',
+      dataIndex: 'order_no',
+      key: 'order_no',
+      render: (text: string) => text,
     },
     {
       title: '配件数量',
-      key: 'parts_count',
-      render: (_: any, record: PurchaseItem) =>
-        `${record.purchase_details.length} 项`,
+      dataIndex: 'item_count',
+      key: 'item_count',
+      render: (count: number) => `${count} 项`,
     },
     {
-      title: '报价状态',
-      key: 'quote_status',
-      render: (_: any, record: PurchaseItem) => {
-        const myQuote = quotes[record.id];
-        if (myQuote) {
-          return <Tag color="success">已报价</Tag>;
-        } else {
-          return <Tag color="warning">待报价</Tag>;
-        }
+      title: '询价截止时间',
+      dataIndex: 'deadline',
+      key: 'deadline',
+      render: (deadline: string) => {
+        const expired = isInquiryExpired(deadline);
+        return (
+          <span style={{ color: expired ? 'red' : 'inherit' }}>
+            {dayjs(deadline).format('YYYY-MM-DD HH:mm:ss')}
+            {expired && (
+              <Tag color="red" style={{ marginLeft: 8 }}>
+                已过期
+              </Tag>
+            )}
+          </span>
+        );
       },
     },
     {
-      title: '已报价金额',
-      key: 'quoted_amount',
-      render: (_: any, record: PurchaseItem) => {
-        const myQuote = quotes[record.id];
-        return myQuote?.total_amount
-          ? `¥${myQuote.total_amount.toFixed(2)}`
-          : '-';
+      title: '询价状态',
+      key: 'status',
+      render: (_: any, record: SupplierInquiryItem) => {
+        const statusColors: { [key: number]: string } = {
+          0: 'warning',
+          1: 'success',
+          2: 'default',
+          3: 'blue',
+        };
+        return (
+          <Tag color={statusColors[record.status.code] || 'default'}>
+            {record.status.name}
+          </Tag>
+        );
       },
+    },
+    {
+      title: '创建时间',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      render: (time: string) => dayjs(time).format('YYYY-MM-DD HH:mm:ss'),
     },
     {
       title: '操作',
       key: 'action',
-      render: (_: any, record: PurchaseItem) => {
-        const myQuote = quotes[record.id];
+      render: (_: any, record: SupplierInquiryItem) => {
+        const expired = isInquiryExpired(record.deadline);
+        const isQuoted = record.status.code === 1 || record.status.code === 3;
+
         return (
           <Space>
             <Button
               type="primary"
               size="small"
-              onClick={() => goToQuote(record.id)}
+              onClick={() => goToQuote(record.inquiry_no)}
+              disabled={expired && !isQuoted}
             >
-              {myQuote ? '修改报价' : '立即报价'}
+              {isQuoted ? '查看报价' : expired ? '已过期' : '立即报价'}
             </Button>
           </Space>
         );
@@ -194,144 +222,150 @@ const SupplierPortal: React.FC = () => {
     return <Navigate to="/login" />;
   }
 
+  if (!supplierInfos || supplierInfos.length === 0) {
+    return (
+      <Result
+        status="warning"
+        title="当前账号未绑定供应商"
+        subTitle="请联系平台管理员绑定供应商后再访问供应商门户。"
+      />
+    );
+  }
+
   return (
     <div style={{ padding: '24px' }}>
       <Card title="供应商询价门户">
-        {/* 供应商选择 */}
-        <div style={{ marginBottom: 24 }}>
-          <Space align="center">
-            <span>当前供应商：</span>
-            <Select
-              value={selectedSupplierId}
-              onChange={setSelectedSupplierId}
-              style={{ width: 200 }}
-            >
-              {mockSuppliers.map((supplier) => (
-                <Option key={supplier.id} value={supplier.id}>
-                  {supplier.name}
-                </Option>
-              ))}
-            </Select>
-          </Space>
-        </div>
-
         {/* 供应商信息 */}
-        {currentSupplier && (
-          <Card size="small" style={{ marginBottom: 16 }}>
-            <Descriptions column={2} size="small">
-              <Descriptions.Item label="供应商名称">
-                {currentSupplier.name}
+        <Card size="small" style={{ marginBottom: 16 }}>
+          <Descriptions column={2} size="small">
+            <Descriptions.Item label="供应商名称">
+              {selectedSupplierName || supplierInfos?.[0]?.supplier_name}
+            </Descriptions.Item>
+            <Descriptions.Item label="供应商ID">
+              {selectedSupplierCode || supplierInfos?.[0]?.supplier_code}
+            </Descriptions.Item>
+            {supplierInfos.length > 1 && (
+              <Descriptions.Item label="切换供应商" span={2}>
+                <Select
+                  value={selectedSupplierCode}
+                  onChange={(value) => {
+                    setSelectedSupplierCode(value);
+                    setPagination((prev) => ({ ...prev, current: 1 }));
+                  }}
+                  style={{ width: 260 }}
+                  options={supplierInfos.map((item: any) => ({
+                    label: `${item.supplier_name}（${item.supplier_code}）`,
+                    value: item.supplier_code,
+                  }))}
+                />
               </Descriptions.Item>
-              <Descriptions.Item label="联系人">
-                {currentSupplier.contact}
-              </Descriptions.Item>
-              <Descriptions.Item label="联系电话">
-                {currentSupplier.phone}
-              </Descriptions.Item>
-              <Descriptions.Item label="供应商类型">
-                <Tag
-                  color={
-                    currentSupplier.type === 'PARTS'
-                      ? 'blue'
-                      : currentSupplier.type === 'ACCESSORIES'
-                      ? 'green'
-                      : 'orange'
-                  }
-                >
-                  {currentSupplier.type === 'PARTS'
-                    ? '备件供应商'
-                    : currentSupplier.type === 'ACCESSORIES'
-                    ? '精品供应商'
-                    : '综合供应商'}
-                </Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="业务描述" span={2}>
-                {currentSupplier.description}
-              </Descriptions.Item>
-            </Descriptions>
-          </Card>
-        )}
+            )}
+          </Descriptions>
+        </Card>
 
         {/* 使用说明 */}
-        {currentSupplier && (
-          <Alert
-            message={`${
-              currentSupplier.type === 'PARTS'
-                ? '备件'
-                : currentSupplier.type === 'ACCESSORIES'
-                ? '精品'
-                : '综合'
-            }供应商操作指引`}
-            description={
-              <div>
-                {currentSupplier.type === 'PARTS' && (
-                  <>
-                    <p>
-                      <strong>备件供应商报价流程：</strong>
-                    </p>
-                    <ol>
-                      <li>查看下方包含备件的询价单列表</li>
-                      <li>{`点击"立即报价"按钮，为备件填写竞争性报价`}</li>
-                      <li>填写单价、预计交货期等信息，注意价格竞争力</li>
-                      <li>可随时修改报价，系统会显示您的中标概率</li>
-                      <li>采购方将根据价格、交货期、质量等因素选择供应商</li>
-                    </ol>
-                  </>
-                )}
-                {currentSupplier.type === 'ACCESSORIES' && (
-                  <>
-                    <p>
-                      <strong>精品供应商操作指引：</strong>
-                    </p>
-                    <ol>
-                      <li>查看下方包含精品的询价单列表</li>
-                      <li>{`点击"立即报价"按钮，确认精品价格和库存`}</li>
-                      <li>精品价格通常固定，主要确认交货期和库存状态</li>
-                      <li>确保商品描述和规格准确，避免后续纠纷</li>
-                      <li>精品采购通常按照固定价格直接成交</li>
-                    </ol>
-                  </>
-                )}
-                {currentSupplier.type === 'BOTH' && (
-                  <>
-                    <p>
-                      <strong>综合供应商操作指引：</strong>
-                    </p>
-                    <ol>
-                      <li>查看下方包含备件和精品的询价单列表</li>
-                      <li>备件需要竞价报价，注意价格竞争力</li>
-                      <li>精品按固定价格报价，确认库存和交货期</li>
-                      <li>可以为同一采购单提供备件+精品的组合方案</li>
-                      <li>利用产品线优势，提供更有竞争力的整体方案</li>
-                    </ol>
-                  </>
-                )}
-                <p>
-                  <strong>注意：</strong>
-                  系统已根据您的供应商类型自动筛选相关的询价单。
-                </p>
-              </div>
-            }
-            type="info"
-            style={{ marginBottom: 16 }}
-            showIcon
-          />
-        )}
+        <Alert
+          message="供应商报价流程指引"
+          description={
+            <div>
+              <p>
+                <strong>报价流程：</strong>
+              </p>
+              <ol>
+                <li>查看下方询价单列表，了解采购需求</li>
+                <li>点击&quot;立即报价&quot;按钮，为每个配件填写报价信息</li>
+                <li>填写单价、品牌、产地、预计交货天数等信息</li>
+                <li>注意询价截止时间，过期后无法提交报价</li>
+                <li>如无法报价，可点击&quot;不报价&quot;按钮并说明原因</li>
+                <li>采购方将根据价格、质量、交货期等因素选择供应商</li>
+              </ol>
+              <p style={{ color: 'red', marginTop: 8 }}>
+                <strong>注意：</strong>
+                报价后仍可修改，但请在截止时间前完成。
+              </p>
+            </div>
+          }
+          type="info"
+          style={{ marginBottom: 16 }}
+          showIcon
+        />
+
+        {/* 筛选表单 */}
+        <Card size="small" style={{ marginBottom: 16 }}>
+          <Form
+            layout="inline"
+            onFinish={handleFilter}
+            initialValues={{
+              status: undefined,
+            }}
+          >
+            <Row gutter={16} style={{ width: '100%' }}>
+              <Col span={6}>
+                <Form.Item name="inquiry_no" label="询价单号">
+                  <Input placeholder="请输入询价单号" allowClear />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item name="order_no" label="采购单号">
+                  <Input placeholder="请输入采购单号" allowClear />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item name="status" label="询价状态">
+                  <Select
+                    placeholder="请选择状态"
+                    allowClear
+                    style={{ width: '100%' }}
+                    options={[
+                      { label: '待报价', value: 0 },
+                      { label: '已报价', value: 1 },
+                      { label: '已超时', value: 2 },
+                      { label: '已选中', value: 3 },
+                    ]}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item name="dateRange" label="创建时间">
+                  <DatePicker.RangePicker
+                    style={{ width: '100%' }}
+                    format="YYYY-MM-DD"
+                    placeholder={['开始日期', '结束日期']}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row>
+              <Col span={24} style={{ textAlign: 'right' }}>
+                <Space>
+                  <Button onClick={handleReset}>重置</Button>
+                  <Button type="primary" htmlType="submit">
+                    查询
+                  </Button>
+                </Space>
+              </Col>
+            </Row>
+          </Form>
+        </Card>
 
         {/* 询价单列表 */}
         <Table
           columns={columns}
           dataSource={inquiries}
-          rowKey="id"
+          rowKey="inquiry_no"
           loading={loading}
           pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total) => `共 ${total} 条记录`,
+            onChange: (page, pageSize) => fetchInquiries(page, pageSize),
           }}
           locale={{
             emptyText:
-              inquiries.length === 0 && !loading
+              inquiries?.length === 0 && !loading
                 ? '暂无待报价的询价单'
                 : undefined,
           }}

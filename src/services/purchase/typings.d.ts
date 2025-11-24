@@ -1,21 +1,19 @@
 import { BaseListInfo } from '@/types/common';
 export interface PurchaseItem {
-  id: string;
+  id: number;
   order_no: string;
-  create_time: string;
-  modify_time: string;
+  store_id: number;
   store_name: string;
+  creator_id: number;
   creator_name: string;
-  total_amount: number;
-  status: PurchaseStatus;
   expected_delivery_date: string;
+  inquiry_deadline?: string;
+  status: PurchaseStatus;
+  order_type?: number;
   remark?: string;
-  items: PurchaseDetailItem[];
-  inquiry_deadline?: string; // 询价截止时间
-  // 到货相关字段
-  arrival_date?: string; // 实际到货日期
-  arrival_confirm_time?: string; // 到货确认时间
-  delivery_cycle?: number; // 交货周期（天）
+  ctime: string;
+  mtime: string;
+  items?: PurchaseDetailItem[];
 }
 
 export interface PurchaseStatus {
@@ -25,7 +23,7 @@ export interface PurchaseStatus {
 
 // 商品类型枚举
 export enum CategoryType {
-  PARTS = 'PARTS', // 备件
+  PARTS = 1, // 备件
   // 【已删除】ACCESSORIES - 暂不支持精品模块
 }
 
@@ -74,46 +72,75 @@ export interface AccessoryInfo extends BasePartInfo {
 }
 
 export interface PurchaseDetailItem {
-  id: string;
-  part_code: string;
-  part_name: string;
-  specification: string;
+  id?: number;
+  sku_id: string;
+  product_name: string;
+  brand: string;
+  category_id?: number;
+  category_name?: string;
   quantity: number;
-  unit: string;
-  category_type: CategoryType;
-  historical_avg_price?: number;
-  // 精品专用字段
-  supplier_id?: string;
-  supplier_name?: string;
-  fixed_price?: number;
-  stock_status?: StockStatus;
+  avg_price?: number;
+  selected_supplier_id?: number;
+  selected_supplier_name?: string;
+  actual_price?: number;
+  actual_total_price?: number;
+  remark?: string;
 }
 
 export interface PurchaseParams {
   page?: number;
-  page_size?: number;
-  purchase_no?: string;
+  limit?: number;
+  order_no?: string;
   start_date?: string;
   end_date?: string;
-  store_ids?: string[];
-  creator_name?: string;
-  status?: number;
+  store_ids?: string;
+  statuses?: string;
   date_range?: any; // 用于前端表单的日期范围选择器
 }
 
 export interface CreatePurchaseParams {
+  store_id: number;
   expected_delivery_date: string;
-  remark?: string;
   inquiry_deadline?: string;
-  items: Omit<PurchaseDetailItem, 'id' | 'historical_avg_price'>[];
+  remark?: string;
+  order_type?: number;
+  items: CreatePurchaseItemParams[];
 }
 
-export interface UpdatePurchaseParams extends CreatePurchaseParams {
-  purchase_id: string;
+export interface CreatePurchaseItemParams {
+  sku_id: string;
+  product_name: string;
+  brand: string;
+  category_id?: number;
+  category_name?: string;
+  quantity: number;
+  avg_price?: number;
+  remark?: string;
 }
+
+export type UpdatePurchaseParams = CreatePurchaseParams;
 
 export interface PageInfo_PurchaseItem extends BaseListInfo {
   orders: PurchaseItem[];
+}
+
+export interface DraftListResponse {
+  drafts: PurchaseDraftItem[];
+}
+
+export interface PurchaseDraftItem {
+  store_id: number;
+  store_name: string;
+  creator_id: number;
+  creator_name: string;
+  expected_delivery_date: string;
+  inquiry_deadline?: string;
+  remark?: string;
+  status: PurchaseStatus;
+  order_type?: number;
+  item_count: number;
+  ctime: number;
+  mtime: number;
 }
 
 // 配件目录相关类型
@@ -147,10 +174,13 @@ export interface PageInfo_PartCatalog {
 }
 
 export const PurchaseStatusMap = {
-  1: { code: 1, name: '草稿' },
-  2: { code: 2, name: '待询价' },
-  3: { code: 3, name: '已报价' },
-  4: { code: 4, name: '价格待审批' },
-  5: { code: 5, name: '已下单' },
-  6: { code: 6, name: '已到货' },
+  0: { code: 0, name: '草稿' },
+  1: { code: 1, name: '待审核' },
+  2: { code: 2, name: '审核驳回' },
+  3: { code: 3, name: '询价中' },
+  4: { code: 4, name: '已报价' },
+  5: { code: 5, name: '价格待审批' },
+  6: { code: 6, name: '价格审批驳回' },
+  7: { code: 7, name: '已下单' },
+  8: { code: 8, name: '已到货' },
 };
