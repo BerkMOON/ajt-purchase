@@ -1,16 +1,4 @@
-import type { SupplierQuoteDetail } from '@/services/quote/typings';
-import type { StatusInfo } from '@/types/common';
-
-export interface SendInquiryParams {
-  order_id: number;
-  order_no: string;
-  supplier_ids: number[];
-  inquiry_deadline: string;
-  operator_id: number;
-  operator_name: string;
-  remark?: string;
-}
-
+import type { BaseListInfo, PageInfoParams, StatusInfo } from '@/types/common';
 export interface InquiryDetail {
   id: number;
   inquiry_no: string;
@@ -27,58 +15,63 @@ export interface InquiryDetail {
   create_time: string;
 }
 
-export interface SupplierInquiryItem {
-  inquiry_no: string;
-  order_no: string;
-  supplier_name: string;
-  deadline: string;
-  status: StatusInfo;
-  item_count: number;
-  created_at: string;
-}
-
-export interface SupplierInquiryDetail {
-  inquiry_no: string;
-  order_no: string;
-  order_id: number;
-  supplier_id: number;
-  supplier_name: string;
-  deadline: string;
-  status: StatusInfo;
-  item_count: number;
-  created_at: string;
-  items: SupplierInquiryDetailItem[];
-  quote?: SupplierQuoteDetail;
-}
-
-export interface SupplierInquiryDetailItem {
-  inquiry_item_id: number;
-  order_item_id: number;
-  sku_id: number;
-  product_name: string;
-  brand: string;
-  quantity: number;
-  avg_price?: number;
-}
-
-export interface SupplierInquiryListParams {
-  page?: number;
-  limit?: number;
-  status?: number;
-  supplier_code?: string;
-  inquiry_no?: string; // 询价单号
-  order_no?: string; // 采购单号
-  start_date?: string; // 开始日期（格式：YYYY-MM-DD）
-  end_date?: string; // 结束日期（格式：YYYY-MM-DD）
-}
-
 export interface SupplierInquiryDetailParams {
   inquiry_no: number | string;
-  supplier_code?: string;
 }
 
-export interface SubmitNoQuoteReasonParams {
-  inquiry_id: number;
+export interface InquiryListRequest extends PageInfoParams {
+  supplier_code: string;
+  inquiry_no?: number | string;
+  order_no?: number | string;
+  status?: number;
+  ctime_start?: string;
+  ctime_end?: string;
+}
+
+export interface SupplierInquiryItem {
+  inquiry_no: number;
+  order_no: number;
   supplier_id: number;
-  reason: string;
+  supplier_name: string;
+  status: StatusInfo;
+  deadline: string;
+  ctime: string;
+  mtime: string;
+}
+
+export interface InquiryListResponse extends BaseListInfo {
+  inquiries: SupplierInquiryItem[];
+}
+
+// InquiryItemResponse 询价单明细响应
+export interface InquiryItemResponse {
+  id: number;
+  sku_id: number;
+  sku_name: string;
+  quantity: number;
+  ctime: string;
+  mtime: string;
+}
+
+// InquiryDetailResponse 询价单详情响应
+export interface InquiryDetailResponse {
+  inquiry_no: number;
+  order_no: number;
+  supplier_id: number;
+  supplier_name: string;
+  status: StatusInfo;
+  deadline: string;
+  ctime: string;
+  mtime: string;
+  items: InquiryItemResponse[];
+  quotes: InquiryQuoteItemResponse[];
+}
+
+export interface InquiryQuoteItemResponse {
+  sku_id: number;
+  sku_name: string;
+  quantity: number;
+  quote_price: number;
+  expected_delivery_date: string;
+  remark: string;
 }

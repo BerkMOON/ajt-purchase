@@ -77,68 +77,52 @@ export interface SelectSupplierParams {
 }
 
 export interface SelectSupplierItemParams {
-  inquiry_item_id: number;
+  inquiry_item_id?: number;
   quote_no: string;
-}
-
-export interface SelectSuppliersByItemsParams {
-  order_no: string;
-  selections: SelectSupplierItemParams[];
+  sku_id?: number | string;
 }
 
 export interface SubmitSupplierQuoteParams {
   inquiry_no: number | string;
-  expected_delivery_days: number;
-  remark?: string;
-  items: SupplierQuoteItemParams[];
+  order_no: number | string;
+  items: SubmitSupplierQuoteItemParams[];
 }
 
-export interface SupplierQuoteItemParams {
-  inquiry_item_id: number;
-  quote_price: number;
-  expected_delivery_days?: number;
-  remark?: string;
-}
-
-export interface SupplierQuoteItemResponse {
-  inquiry_item_id: number;
-  order_item_id?: number;
-  sku_id: number;
-  product_name: string;
-  brand: string;
+export interface SubmitSupplierQuoteItemParams {
+  sku_id: number | string;
   quantity: number;
   quote_price: number;
-  total_price: number;
-  avg_price?: number;
-  price_diff_percent?: number;
-  expected_delivery_days: number;
-  remark: string;
+  expected_delivery_date: string;
+  remark?: string;
 }
 
-export interface SupplierQuoteDetail {
-  quote_no: number;
-  inquiry_no: number;
+// OrderQuoteDetailResponse 订单报价响应
+export interface OrderQuoteDetailResponse {
+  inquiry_no: number | string;
+  supplier_id: number;
   supplier_name: string;
-  total_amount: number;
-  expected_delivery_days: number;
+  submit_time: string;
+  items: OrderQuoteItemResponse[];
+}
+
+// OrderQuoteItemResponse 订单报价明细响应
+export interface OrderQuoteItemResponse {
+  quote_no: number | string;
+  sku_id: number;
+  sku_name: string;
+  quantity: number;
+  quote_price: number;
+  expected_delivery_date: string;
   remark: string;
-  status: StatusInfo;
-  submit_user_name: string;
-  submit_time: string;
-  items: SupplierQuoteItemResponse[];
+  inquiry_item_id?: number;
 }
 
-export interface SupplierQuoteSummary {
-  quote_no: string;
-  inquiry_no: string;
-  supplier_name: string;
-  status: StatusInfo;
-  total_amount: number;
-  submit_time: string;
-  items: SupplierQuoteItemResponse[];
+export interface SubmitOrderParams {
+  order_no: number | string;
+  items: SubmitOrderItemParams[];
 }
 
-export interface SupplierQuoteListByOrder {
-  order_no: string;
-  quotes: SupplierQuoteSummary[];
+export interface SubmitOrderItemParams {
+  order_item_id: number;
+  quote_no: number | string;
 }

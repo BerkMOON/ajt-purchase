@@ -1,5 +1,6 @@
 import { Button, Card, Empty, Radio, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import dayjs from 'dayjs';
 import React from 'react';
 import { OrderStatus } from '../constants';
 import type { ItemQuoteRow, SelectedSupplierMap } from '../utils';
@@ -13,7 +14,9 @@ interface SupplierQuotesCardProps {
     itemKey: string,
     quoteNo: string,
     supplierName: string,
-    inquiryItemId: number,
+    inquiryItemId?: number,
+    skuId?: number | string,
+    orderItemId?: number,
   ) => void;
   canConfirm: boolean;
   onOpenConfirmModal: () => void;
@@ -54,6 +57,8 @@ const SupplierQuotesCard: React.FC<SupplierQuotesCardProps> = ({
                 quote.quote_no,
                 quote.supplier_name,
                 quote.inquiry_item_id,
+                quote.sku_id,
+                item.order_item_id,
               )
             }
           />
@@ -86,11 +91,11 @@ const SupplierQuotesCard: React.FC<SupplierQuotesCardProps> = ({
       render: (val: number) => formatCurrency(val),
     },
     {
-      title: '预计交货天数',
-      dataIndex: 'expected_delivery_days',
-      key: 'expected_delivery_days',
+      title: '单项交货时间',
+      dataIndex: 'expected_delivery_date',
+      key: 'expected_delivery_date',
       align: 'center',
-      render: (val?: number) => (val ? `${val} 天` : '-'),
+      render: (val?: string) => (val ? dayjs(val).format('YYYY-MM-DD') : '-'),
     },
     {
       title: '备注',
@@ -103,15 +108,9 @@ const SupplierQuotesCard: React.FC<SupplierQuotesCardProps> = ({
   const productColumns: ColumnsType<ItemQuoteRow> = [
     {
       title: '商品名称',
-      dataIndex: 'product_name',
-      key: 'product_name',
+      dataIndex: 'sku_name',
+      key: 'sku_name',
       width: 220,
-    },
-    {
-      title: '品牌',
-      dataIndex: 'brand',
-      key: 'brand',
-      width: 120,
     },
     {
       title: '数量',

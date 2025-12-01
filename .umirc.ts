@@ -49,13 +49,6 @@ export default defineConfig({
       access: 'purchaseDetail',
     },
     {
-      name: '询价管理',
-      path: '/purchase/:id/inquiry',
-      component: './InquiryPage',
-      hideInMenu: true,
-      // access: 'purchaseInquiry',
-    },
-    {
       name: '供应商报价',
       path: '/supplier-quote/:id',
       component: './SupplierQuote',

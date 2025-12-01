@@ -74,11 +74,11 @@ const SupplierPortal: React.FC = () => {
         ...filters,
       });
 
-      setInquiries(response.data?.list || []);
+      setInquiries(response.data?.inquiries || []);
       setPagination({
         current: page,
         pageSize,
-        total: response.data?.total?.total_count || 0,
+        total: response.data?.count?.total_count || 0,
       });
     } catch (error) {
       message.error('获取询价信息失败');
@@ -149,10 +149,10 @@ const SupplierPortal: React.FC = () => {
       render: (text: string) => text,
     },
     {
-      title: '配件数量',
-      dataIndex: 'item_count',
-      key: 'item_count',
-      render: (count: number) => `${count} 项`,
+      title: '希望交货日期',
+      dataIndex: 'expected_delivery_date',
+      key: 'expected_delivery_date',
+      render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
     },
     {
       title: '询价截止时间',
@@ -207,7 +207,7 @@ const SupplierPortal: React.FC = () => {
             <Button
               type="primary"
               size="small"
-              onClick={() => goToQuote(record.inquiry_no)}
+              onClick={() => goToQuote(record.inquiry_no.toString())}
               disabled={expired && !isQuoted}
             >
               {isQuoted ? '查看报价' : expired ? '已过期' : '立即报价'}
@@ -274,7 +274,7 @@ const SupplierPortal: React.FC = () => {
               <ol>
                 <li>查看下方询价单列表，了解采购需求</li>
                 <li>点击&quot;立即报价&quot;按钮，为每个配件填写报价信息</li>
-                <li>填写单价、品牌、产地、预计交货天数等信息</li>
+                <li>填写单价、品牌、产地、单项交货时间等信息</li>
                 <li>注意询价截止时间，过期后无法提交报价</li>
                 <li>如无法报价，可点击&quot;不报价&quot;按钮并说明原因</li>
                 <li>采购方将根据价格、质量、交货期等因素选择供应商</li>
@@ -299,7 +299,7 @@ const SupplierPortal: React.FC = () => {
               status: undefined,
             }}
           >
-            <Row gutter={16} style={{ width: '100%' }}>
+            <Row gutter={[24, 12]} style={{ width: '100%' }}>
               <Col span={6}>
                 <Form.Item name="inquiry_no" label="询价单号">
                   <Input placeholder="请输入询价单号" allowClear />
@@ -325,7 +325,7 @@ const SupplierPortal: React.FC = () => {
                   />
                 </Form.Item>
               </Col>
-              <Col span={6}>
+              <Col span={8}>
                 <Form.Item name="dateRange" label="创建时间">
                   <DatePicker.RangePicker
                     style={{ width: '100%' }}
@@ -335,16 +335,14 @@ const SupplierPortal: React.FC = () => {
                 </Form.Item>
               </Col>
             </Row>
-            <Row>
-              <Col span={24} style={{ textAlign: 'right' }}>
-                <Space>
-                  <Button onClick={handleReset}>重置</Button>
-                  <Button type="primary" htmlType="submit">
-                    查询
-                  </Button>
-                </Space>
-              </Col>
-            </Row>
+            <div style={{ textAlign: 'right', width: '100%', marginTop: 16 }}>
+              <Space>
+                <Button onClick={handleReset}>重置</Button>
+                <Button type="primary" htmlType="submit">
+                  查询
+                </Button>
+              </Space>
+            </div>
           </Form>
         </Card>
 

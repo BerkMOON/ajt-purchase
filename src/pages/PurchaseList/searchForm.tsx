@@ -1,9 +1,9 @@
 import { Role } from '@/constants';
-import { PurchaseStatusMap } from '@/services/purchase/typings.d';
 import { UserInfo } from '@/services/System/user/typings';
 import { useModel } from '@umijs/max';
 import { Col, DatePicker, Form, Input, Select } from 'antd';
 import React from 'react';
+import { PurchaseStatusMap } from '../PurchaseDetail/constants';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -21,10 +21,9 @@ const StoreFilterCol: React.FC = () => {
 
   return (
     <Col span={12}>
-      <Form.Item name="store_ids" label="采购门店">
+      <Form.Item name="store_id" label="采购门店">
         <Select
-          mode="multiple"
-          placeholder="请选择采购门店（可多选）"
+          placeholder="请选择采购门店"
           allowClear
           showSearch
           optionFilterProp="children"
@@ -53,11 +52,10 @@ export const searchForm = (
     </Col>
     <StoreFilterCol />
     <Col>
-      <Form.Item name="statuses" label="采购单状态">
+      <Form.Item name="status" label="采购单状态">
         <Select
           style={{ width: '200px' }}
-          mode="multiple"
-          placeholder="请选择采购单状态（可多选）"
+          placeholder="请选择采购单状态"
           allowClear
           showSearch
           optionFilterProp="children"

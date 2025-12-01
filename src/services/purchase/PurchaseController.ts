@@ -5,22 +5,22 @@ import type {
   CreatePurchaseParams,
   DraftListResponse,
   PageInfo_PurchaseItem,
-  PurchaseItem,
+  PurchaseOrderDetailResponse,
   PurchaseParams,
   UpdatePurchaseParams,
 } from './typings';
 
-const API_PREFIX = '/api/v1/purchaseOrder';
+const API_PREFIX = '/api/v1/purchase';
 
 export const PurchaseAPI = {
   /**
    * 获取采购单列表（正式）
    * GET /api/v1/purchaseOrder/list
-   * 支持筛选：order_no, store_ids, statuses, start_date, end_date
+   * 支持筛选：order_no, store_id, status, ctime_start, ctime_end
    */
   getAllPurchases: async (params: PurchaseParams) => {
     return request<ResponseInfoType<PageInfo_PurchaseItem>>(
-      `${API_PREFIX}/list`,
+      `${API_PREFIX}/order/list`,
       {
         method: 'GET',
         params,
@@ -46,10 +46,13 @@ export const PurchaseAPI = {
    * GET /api/v1/purchaseOrder/detail
    */
   getPurchaseDetail: async (orderNo: string) => {
-    return request<ResponseInfoType<PurchaseItem>>(`${API_PREFIX}/detail`, {
-      method: 'GET',
-      params: { order_no: orderNo },
-    });
+    return request<ResponseInfoType<PurchaseOrderDetailResponse>>(
+      `${API_PREFIX}/order/detail`,
+      {
+        method: 'GET',
+        params: { order_no: orderNo },
+      },
+    );
   },
 
   /**
@@ -94,8 +97,8 @@ export const PurchaseAPI = {
    */
   deleteDraft: async (storeId: number) => {
     return request<ResponseInfoType<null>>(`${API_PREFIX}/draft/delete`, {
-      method: 'DELETE',
-      params: { store_id: storeId },
+      method: 'POST',
+      data: { store_id: storeId },
     });
   },
 
@@ -122,23 +125,15 @@ export const PurchaseAPI = {
       params: { order_no: orderNo },
     });
   },
-};
 
-// 状态变更日志类型
-export interface PurchaseStatusLog {
-  id: number;
-  order_id: number;
-  order_no: string;
-  from_status: {
-    code: number;
-    name: string;
-  };
-  to_status: {
-    code: number;
-    name: string;
-  };
-  operator_id: number;
-  operator_name: string;
-  remark: string;
-  create_time: string;
-}
+  /**
+   * 确认到货
+   * POST /api/v1/purchaseOrder/confirmArrival
+   */
+  confirmArrival: async (quoteNos: number[]) => {
+    return request<ResponseInfoType<null>>(`${API_PREFIX}/order/arrive`, {
+      method: 'POST',
+      data: { quote_nos: quoteNos },
+    });
+  },
+};

@@ -1,10 +1,10 @@
-import type { PurchaseItem } from '@/services/purchase/typings.d';
+import type { PurchaseOrderDetailResponse } from '@/services/purchase/typings.d';
 import { Card, Timeline } from 'antd';
 import React from 'react';
 import { OrderStatus } from '../constants';
 
 interface StatusTimelineCardProps {
-  purchase: PurchaseItem;
+  purchase: PurchaseOrderDetailResponse;
 }
 
 const StatusTimelineCard: React.FC<StatusTimelineCardProps> = ({
@@ -20,14 +20,23 @@ const StatusTimelineCard: React.FC<StatusTimelineCardProps> = ({
           {purchase.creator_name} 于 {purchase.ctime}
         </p>
       </Timeline.Item>
-      {purchase.status.code >= OrderStatus.PENDING_APPROVAL && (
+
+      {/* {purchase.status.code >= OrderStatus.PENDING_APPROVAL ? (
         <Timeline.Item color="processing">
           <p>
             <strong>待审核</strong>
           </p>
           <p style={{ color: '#666' }}>采购单已提交审核（第一版自动审核）</p>
         </Timeline.Item>
-      )}
+      ) : (
+        <Timeline.Item color="processing">
+          <p>
+            <strong>已审核</strong>
+          </p>
+          <p style={{ color: '#666' }}>采购单已提交审核（第一版自动审核）</p>
+        </Timeline.Item>
+      )} */}
+
       {purchase.status.code >= OrderStatus.INQUIRING && (
         <Timeline.Item color="orange">
           <p>

@@ -47,8 +47,7 @@ const SelectSupplierModal: React.FC<SelectSupplierModalProps> = ({
               }}
             >
               <div>
-                <strong>{itemData.product_name}</strong> (数量:{' '}
-                {itemData.quantity})
+                <strong>{itemData.sku_name}</strong> (数量: {itemData.quantity})
               </div>
               <div style={{ marginTop: 4 }}>
                 选择供应商: <Tag color="success">{data.supplier_name}</Tag>

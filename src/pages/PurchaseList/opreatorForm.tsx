@@ -1,3 +1,4 @@
+import SkuSelect from '@/components/BusinessComponents/SkuSelect';
 import { StoreAPI } from '@/services/System/store/StoreController';
 import type { StoreItem } from '@/services/System/store/typing';
 import { UserInfo } from '@/services/System/user/typings';
@@ -152,47 +153,17 @@ export const CreateAndModifyForm: React.FC<CreateAndModifyFormProps> = ({
                 scroll={{ x: 800 }}
                 columns={[
                   {
-                    title: '品牌',
-                    dataIndex: 'brand',
-                    width: 150,
-                    render: (_, field) => (
-                      <Form.Item
-                        {...field}
-                        name={[field.name, 'brand']}
-                        rules={[{ required: true, message: '请输入品牌' }]}
-                        style={{ margin: 0 }}
-                      >
-                        <Input placeholder="品牌" />
-                      </Form.Item>
-                    ),
-                  },
-                  {
-                    title: 'SKU ID',
+                    title: 'SKU',
                     dataIndex: 'sku_id',
-                    width: 180,
+                    width: 300,
                     render: (_, field) => (
                       <Form.Item
                         {...field}
                         name={[field.name, 'sku_id']}
-                        rules={[{ required: true, message: '请输入SKU ID' }]}
+                        rules={[{ required: true, message: '请选择SKU' }]}
                         style={{ margin: 0 }}
                       >
-                        <Input placeholder="SKU ID" />
-                      </Form.Item>
-                    ),
-                  },
-                  {
-                    title: '配件名称',
-                    dataIndex: 'product_name',
-                    width: 200,
-                    render: (_, field) => (
-                      <Form.Item
-                        {...field}
-                        name={[field.name, 'product_name']}
-                        rules={[{ required: true, message: '请输入配件名称' }]}
-                        style={{ margin: 0 }}
-                      >
-                        <Input placeholder="配件名称" />
+                        <SkuSelect placeholder="请选择SKU" />
                       </Form.Item>
                     ),
                   },
@@ -215,27 +186,6 @@ export const CreateAndModifyForm: React.FC<CreateAndModifyFormProps> = ({
                           min={1}
                           precision={0}
                           style={{ width: '100%' }}
-                        />
-                      </Form.Item>
-                    ),
-                  },
-                  {
-                    title: '采购均价',
-                    dataIndex: 'avg_price',
-                    width: 120,
-                    render: (_, field) => (
-                      <Form.Item
-                        {...field}
-                        name={[field.name, 'avg_price']}
-                        style={{ margin: 0 }}
-                      >
-                        <InputNumber
-                          placeholder="均价"
-                          min={0}
-                          precision={2}
-                          style={{ width: '100%' }}
-                          disabled
-                          addonAfter="元"
                         />
                       </Form.Item>
                     ),
@@ -280,7 +230,7 @@ export const CreateAndModifyForm: React.FC<CreateAndModifyFormProps> = ({
       </Form.Item>
 
       <div style={{ color: '#999', fontSize: 12, marginTop: -16 }}>
-        提示：选择配件后，系统会自动从商品表中获取采购均价用于后续价格审批。
+        提示：选择SKU后，系统会自动填充配件名称和采购均价，用于后续价格审批。
       </div>
     </>
   );

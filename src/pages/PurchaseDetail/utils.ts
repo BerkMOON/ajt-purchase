@@ -1,41 +1,53 @@
 import {
   PurchaseDetailItem,
-  PurchaseItem,
+  PurchaseOrderDetailResponse,
+  PurchaseOrderItemResponse,
 } from '@/services/purchase/typings.d';
-import { SupplierQuoteSummary } from '@/services/quote';
+import type { OrderQuoteDetailResponse } from '@/services/quote';
+import { OrderItemStatus, OrderStatus } from './constants';
 
 export type SelectedSupplierMap = Record<
   string,
-  { quote_no: string; supplier_name: string; inquiry_item_id: number }
+  {
+    quote_no: string;
+    supplier_name: string;
+    inquiry_item_id?: number;
+    sku_id?: number | string;
+    order_item_id?: number;
+  }
 >;
 
 export type QuoteCard = {
   quote_no: string;
   supplier_name: string;
-  inquiry_item_id: number;
+  inquiry_item_id?: number;
+  sku_id?: number | string;
   quote_price: number;
   total_price: number;
-  expected_delivery_days: number;
+  expected_delivery_date?: string;
   remark: string;
 };
 
 export type ItemQuoteRow = {
   itemKey: string;
   order_item_id?: number;
-  inquiry_item_id?: number;
   sku_id: string | number;
-  product_name: string;
-  brand: string;
+  sku_name: string;
   quantity: number;
-  avg_price?: number;
+  product_name?: string;
+  status?: { code: number; name: string };
   quotes: QuoteCard[];
 };
 
-export const getOrderItemKey = (item: PurchaseDetailItem) => {
+export const getOrderItemKey = (
+  item: PurchaseDetailItem | PurchaseOrderItemResponse,
+) => {
   if (item.id) {
     return `order_${item.id}`;
   }
-  return `sku_${item.sku_id}_${item.product_name}`;
+  const skuId =
+    typeof item.sku_id === 'number' ? item.sku_id.toString() : item.sku_id;
+  return `sku_${skuId}_${item.sku_name}`;
 };
 
 export const getQuoteItemKey = (quoteItem: any) => {
@@ -54,17 +66,49 @@ export const getQuoteItemKey = (quoteItem: any) => {
 export const formatCurrency = (val?: number | null) =>
   typeof val === 'number' ? `¥${val.toFixed(2)}` : '-';
 
+/**
+ * 根据采购单状态码获取对应的颜色
+ * @param statusCode 状态码
+ * @returns Ant Design Tag 的颜色值
+ */
+export const getPurchaseStatusColor = (statusCode: number): string => {
+  switch (statusCode) {
+    case OrderStatus.DRAFT:
+      return 'default';
+    case OrderStatus.PENDING_APPROVAL:
+      return 'processing';
+    case OrderStatus.APPROVAL_REJECTED:
+      return 'error';
+    case OrderStatus.INQUIRING:
+      return 'warning';
+    case OrderStatus.QUOTED:
+      return 'blue';
+    case OrderStatus.PRICE_PENDING_APPROVAL:
+      return 'orange';
+    case OrderStatus.PRICE_APPROVAL_REJECTED:
+      return 'error';
+    case OrderStatus.ORDERED:
+      return 'purple';
+    case OrderStatus.ARRIVED:
+      return 'success';
+    default:
+      return 'default';
+  }
+};
+
 export const buildSelectionsFromPurchaseItems = (
-  items: PurchaseDetailItem[] = [],
+  items: PurchaseOrderItemResponse[] = [],
 ): SelectedSupplierMap => {
   const result: SelectedSupplierMap = {};
   items.forEach((item) => {
-    if (item.selected_supplier_name) {
+    if (item.supplier_name) {
       const key = getOrderItemKey(item);
       result[key] = {
-        quote_no: '',
-        supplier_name: item.selected_supplier_name,
+        quote_no: item.quote_no ? String(item.quote_no) : '',
+        supplier_name: item.supplier_name,
         inquiry_item_id: 0,
+        sku_id: item.sku_id.toString(),
+        order_item_id: item.id,
       };
     }
   });
@@ -72,90 +116,108 @@ export const buildSelectionsFromPurchaseItems = (
 };
 
 export const buildItemQuoteData = (
-  purchase: PurchaseItem | null,
-  quotes: SupplierQuoteSummary[],
+  purchase: PurchaseOrderDetailResponse | null,
+  quotes: OrderQuoteDetailResponse[],
 ): ItemQuoteRow[] => {
-  if (!purchase) return [];
+  if (!purchase || !purchase.items) return [];
 
+  // 1. 首先基于采购单商品构建基础数据
   const itemMap = new Map<string, ItemQuoteRow>();
-  const skuAliasMap = new Map<string, string>();
+  const orderItemIdMap = new Map<number, string>(); // order_item_id -> itemKey
+  const skuMap = new Map<string, string>(); // sku_id -> itemKey
 
-  (purchase.items || []).forEach((item) => {
+  purchase.items.forEach((item) => {
     const key = getOrderItemKey(item);
-    if (!itemMap.has(key)) {
-      itemMap.set(key, {
-        itemKey: key,
-        order_item_id: item.id,
-        sku_id: item.sku_id,
-        product_name: item.product_name,
-        brand: item.brand,
-        quantity: item.quantity,
-        avg_price: item.avg_price,
-        quotes: [],
-      });
+    itemMap.set(key, {
+      itemKey: key,
+      order_item_id: item.id,
+      sku_id: item.sku_id,
+      sku_name: item.sku_name,
+      quantity: item.quantity,
+      product_name: item.sku_name,
+      status: item.status,
+      quotes: [],
+    });
+
+    // 建立索引映射
+    if (item.id) {
+      orderItemIdMap.set(item.id, key);
     }
-    const skuKey = `sku_${item.sku_id}_${item.product_name}`;
-    skuAliasMap.set(skuKey, key);
+    if (item.sku_id) {
+      skuMap.set(String(item.sku_id), key);
+    }
   });
 
-  (quotes || []).forEach((quote) => {
-    if (quote.status.code < 1) return;
-    quote.items.forEach((item) => {
-      const orderKey = item.order_item_id
-        ? `order_${item.order_item_id}`
-        : undefined;
-      const skuKey =
-        item.sku_id && item.product_name
-          ? `sku_${item.sku_id}_${item.product_name}`
-          : undefined;
-      const inquiryKey = item.inquiry_item_id
-        ? `inquiry_${item.inquiry_item_id}`
-        : undefined;
+  // 2. 遍历报价数据，将报价信息关联到对应的商品
+  quotes.forEach((quote) => {
+    quote.items.forEach((quoteItem) => {
+      let targetKey: string | undefined;
 
-      const candidateKeys = [
-        orderKey,
-        skuKey ? skuAliasMap.get(skuKey) : undefined,
-        skuKey,
-        inquiryKey,
-      ].filter(Boolean) as string[];
+      // 通过 sku_id 匹配
+      if (!targetKey && quoteItem.sku_id) {
+        targetKey = skuMap.get(String(quoteItem.sku_id));
+      }
 
-      let targetKey = candidateKeys.find((key) => itemMap.has(key));
-
+      // 如果仍然找不到，创建一个新的条目（这种情况应该很少见）
       if (!targetKey) {
-        targetKey = orderKey || skuKey || inquiryKey || getQuoteItemKey(item);
-        if (!itemMap.has(targetKey)) {
-          itemMap.set(targetKey, {
-            itemKey: targetKey,
-            order_item_id: item.order_item_id,
-            inquiry_item_id: item.inquiry_item_id,
-            sku_id: item.sku_id,
-            product_name: item.product_name,
-            brand: item.brand,
-            quantity: item.quantity,
-            avg_price: item.avg_price,
+        const newKey = `sku_${quoteItem.sku_id}_${quoteItem.sku_name}`;
+
+        if (!itemMap.has(newKey)) {
+          itemMap.set(newKey, {
+            itemKey: newKey,
+            sku_id: quoteItem.sku_id,
+            sku_name: quoteItem.sku_name,
+            quantity: quoteItem.quantity,
+            product_name: quoteItem.sku_name,
             quotes: [],
           });
         }
-        if (skuKey && !skuAliasMap.has(skuKey)) {
-          skuAliasMap.set(skuKey, targetKey);
-        }
+        targetKey = newKey;
       }
 
-      const itemData = itemMap.get(targetKey)!;
-      if (!itemData.inquiry_item_id) {
-        itemData.inquiry_item_id = item.inquiry_item_id;
+      // 将报价信息添加到对应商品
+      if (targetKey) {
+        const itemData = itemMap.get(targetKey);
+        if (itemData) {
+          // 添加报价信息（避免重复）
+          const existingQuote = itemData.quotes.find(
+            (q) =>
+              q.quote_no === String(quoteItem.quote_no) &&
+              q.sku_id === quoteItem.sku_id,
+          );
+
+          if (!existingQuote) {
+            const totalPrice = quoteItem.quote_price * quoteItem.quantity;
+            itemData.quotes.push({
+              quote_no: String(quoteItem.quote_no),
+              supplier_name: quote.supplier_name,
+              inquiry_item_id: quoteItem.inquiry_item_id,
+              sku_id: quoteItem.sku_id,
+              quote_price: quoteItem.quote_price,
+              total_price: totalPrice,
+              expected_delivery_date: quoteItem.expected_delivery_date,
+              remark: quoteItem.remark,
+            });
+          }
+        }
       }
-      itemData.quotes.push({
-        quote_no: quote.quote_no,
-        supplier_name: quote.supplier_name,
-        inquiry_item_id: item.inquiry_item_id,
-        quote_price: item.quote_price,
-        total_price: item.total_price,
-        expected_delivery_days: item.expected_delivery_days,
-        remark: item.remark,
-      });
     });
   });
 
   return Array.from(itemMap.values());
+};
+
+export const getItemStatusColor = (statusCode: number): string => {
+  switch (statusCode) {
+    case OrderItemStatus.PENDING_QUOTE:
+      return 'warning';
+    case OrderItemStatus.SELECTED:
+      return 'blue';
+    case OrderItemStatus.ORDERED:
+      return 'purple';
+    case OrderItemStatus.ARRIVED:
+      return 'success';
+    default:
+      return 'default';
+  }
 };

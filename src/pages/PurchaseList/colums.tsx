@@ -1,14 +1,11 @@
 import { ModalControl } from '@/hooks/useModalControl';
-import {
-  PurchaseDraftItem,
-  PurchaseItem,
-  PurchaseStatus,
-} from '@/services/purchase/typings';
-import { ColumnsProps } from '@/types/common';
+import { PurchaseDraftItem, PurchaseItem } from '@/services/purchase/typings';
+import { ColumnsProps, StatusInfo } from '@/types/common';
 import { Link } from '@umijs/max';
 import { Button, Divider, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
+import { getPurchaseStatusColor } from '../PurchaseDetail/utils';
 
 interface DraftColumnsProps extends ColumnsProps<PurchaseDraftItem> {
   onSubmit: (record: PurchaseDraftItem) => void;
@@ -27,31 +24,6 @@ interface FormalColumnsProps extends ColumnsProps<PurchaseItem> {
 export type PurchaseColumnsProps = DraftColumnsProps | FormalColumnsProps;
 
 export const getColumns = (props: PurchaseColumnsProps) => {
-  const getStatusColor = (statusCode: number) => {
-    switch (statusCode) {
-      case 0:
-        return 'default'; // 草稿
-      case 1:
-        return 'processing'; // 待审核
-      case 2:
-        return 'error'; // 审核驳回
-      case 3:
-        return 'warning'; // 询价中
-      case 4:
-        return 'blue'; // 已报价
-      case 5:
-        return 'orange'; // 价格待审批
-      case 6:
-        return 'error'; // 价格审批驳回
-      case 7:
-        return 'purple'; // 已下单
-      case 8:
-        return 'success'; // 已到货
-      default:
-        return 'default';
-    }
-  };
-
   if (props.isDraft) {
     const { handleModalOpen, deleteModal, createOrModifyModal, onSubmit } =
       props;
@@ -72,11 +44,16 @@ export const getColumns = (props: PurchaseColumnsProps) => {
         key: 'expected_delivery_date',
       },
       {
+        title: '询价截止日期',
+        dataIndex: 'inquiry_deadline',
+        key: 'inquiry_deadline',
+      },
+      {
         title: '状态',
         dataIndex: 'status',
         key: 'status',
-        render: (status: PurchaseStatus) => (
-          <Tag color={getStatusColor(status.code)}>{status.name}</Tag>
+        render: (status: StatusInfo) => (
+          <Tag color={getPurchaseStatusColor(status.code)}>{status.name}</Tag>
         ),
       },
       {
@@ -152,14 +129,19 @@ export const getColumns = (props: PurchaseColumnsProps) => {
       title: '当前状态',
       dataIndex: 'status',
       key: 'status',
-      render: (status: PurchaseStatus) => (
-        <Tag color={getStatusColor(status.code)}>{status.name}</Tag>
+      render: (status: StatusInfo) => (
+        <Tag color={getPurchaseStatusColor(status.code)}>{status.name}</Tag>
       ),
     },
     {
       title: '期望到货日期',
       dataIndex: 'expected_delivery_date',
       key: 'expected_delivery_date',
+    },
+    {
+      title: '询价截止日期',
+      dataIndex: 'inquiry_deadline',
+      key: 'inquiry_deadline',
     },
     {
       title: '操作',

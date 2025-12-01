@@ -46,7 +46,7 @@ const PurchaseList: React.FC = () => {
   const [selectedDraft, setSelectedDraft] = useState<PurchaseDraftItem | null>(
     null,
   );
-  const [activeTab, setActiveTab] = useState<'draft' | 'formal'>('draft');
+  const [activeTab, setActiveTab] = useState<'draft' | 'formal'>('formal');
 
   const handleDraftModalOpen = (
     modalControl: ReturnType<typeof useModalControl>,
@@ -136,27 +136,27 @@ const PurchaseList: React.FC = () => {
       searchParams.order_no = params.order_no;
     }
 
-    // 门店筛选（多选，转为逗号分隔）
+    // 门店筛选（单选）
     // 如果是门店用户，自动限制为自己的门店
     if (isStoreUser) {
       // 门店用户只能查看自己的门店，自动添加门店筛选
       if (userStoreIds.length > 0) {
-        searchParams.store_ids = userStoreIds.join(',');
+        searchParams.store_id = String(userStoreIds[0]);
       }
-    } else if (params.store_ids && params.store_ids.length > 0) {
+    } else if (params.store_id) {
       // 平台用户可以使用筛选的门店
-      searchParams.store_ids = params.store_ids.join(',');
+      searchParams.store_id = String(params.store_id);
     }
 
-    // 状态筛选（多选，转为逗号分隔）
-    if (params.statuses && params.statuses.length > 0) {
-      searchParams.statuses = params.statuses.join(',');
+    // 状态筛选（单选）
+    if (params.status !== undefined && params.status !== null) {
+      searchParams.status = String(params.status);
     }
 
     // 日期范围
     if (params.date_range) {
-      searchParams.start_date = params.date_range[0]?.format('YYYY-MM-DD');
-      searchParams.end_date = params.date_range[1]?.format('YYYY-MM-DD');
+      searchParams.ctime_start = params.date_range[0]?.format('YYYY-MM-DD');
+      searchParams.ctime_end = params.date_range[1]?.format('YYYY-MM-DD');
     }
 
     const response = await PurchaseAPI.getAllPurchases(searchParams);
@@ -173,7 +173,7 @@ const PurchaseList: React.FC = () => {
       expected_delivery_date:
         values.expected_delivery_date?.format('YYYY-MM-DD'),
       inquiry_deadline: values.inquiry_deadline
-        ? dayjs(values.inquiry_deadline).toISOString()
+        ? dayjs(values.inquiry_deadline).format('YYYY-MM-DD HH:mm:ss')
         : null,
       order_type: CategoryType.PARTS,
     };
@@ -234,6 +234,26 @@ const PurchaseList: React.FC = () => {
           <TabPane
             tab={
               <span>
+                📋 正式采购单
+                <span style={{ fontSize: 12, color: '#999', marginLeft: 8 }}>
+                  (已提交审核及后续状态)
+                </span>
+              </span>
+            }
+            key="formal"
+          >
+            <BaseListPage
+              ref={formalListRef}
+              title="正式采购单列表"
+              columns={formalColumns}
+              searchFormItems={searchForm}
+              fetchData={fetchFormalData}
+            />
+          </TabPane>
+
+          <TabPane
+            tab={
+              <span>
                 📝 草稿箱
                 <span style={{ fontSize: 12, color: '#999', marginLeft: 8 }}>
                   (临时保存3天后自动删除)
@@ -258,33 +278,12 @@ const PurchaseList: React.FC = () => {
               ref={draftListRef}
               title="草稿采购单"
               columns={draftColumns}
-              searchFormItems={searchForm}
               fetchData={fetchDraftData}
               rowKey="store_id"
               createButton={{
                 text: '新建采购单',
                 onClick: () => handleDraftModalOpen(createOrModifyModal),
               }}
-            />
-          </TabPane>
-
-          <TabPane
-            tab={
-              <span>
-                📋 正式采购单
-                <span style={{ fontSize: 12, color: '#999', marginLeft: 8 }}>
-                  (已提交审核及后续状态)
-                </span>
-              </span>
-            }
-            key="formal"
-          >
-            <BaseListPage
-              ref={formalListRef}
-              title="正式采购单列表"
-              columns={formalColumns}
-              searchFormItems={searchForm}
-              fetchData={fetchFormalData}
             />
           </TabPane>
         </Tabs>
