@@ -13,7 +13,6 @@ export interface PurchaseItem {
   remark?: string;
   ctime: string;
   mtime: string;
-  items?: PurchaseDetailItem[];
 }
 
 // 商品类型枚举
@@ -27,17 +26,6 @@ export enum StockStatus {
   IN_STOCK = 'IN_STOCK',
   OUT_OF_STOCK = 'OUT_OF_STOCK',
   DISCONTINUED = 'DISCONTINUED',
-}
-export interface PurchaseDetailItem {
-  id?: number;
-  sku_id: string;
-  sku_name: string;
-  quantity: number;
-  selected_supplier_id?: number;
-  selected_supplier_name?: string;
-  actual_price?: number;
-  actual_total_price?: number;
-  remark?: string;
 }
 
 export interface PurchaseParams {
@@ -67,7 +55,7 @@ export interface CreatePurchaseItemParams {
 
 export type UpdatePurchaseParams = CreatePurchaseParams;
 
-export interface PageInfo_PurchaseItem extends BaseListInfo {
+export interface PurchaseListResponse extends BaseListInfo {
   orders: PurchaseItem[];
 }
 
@@ -154,4 +142,16 @@ export interface PurchaseOrderDetailResponse {
   items: PurchaseOrderItemResponse[];
   ctime: string;
   mtime: string;
+}
+
+export interface PurchaseOrderStatusLogResponse {
+  id: number;
+  order_id: number;
+  order_no: number;
+  from_status: StatusInfo;
+  to_status: StatusInfo;
+  operator_id: number;
+  operator_name: string;
+  remark: string;
+  ctime: string;
 }

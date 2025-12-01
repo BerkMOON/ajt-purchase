@@ -1,3 +1,4 @@
+import { COMMON_STATUS } from '@/constants';
 import {
   BaseListInfo,
   PageInfoParams,
@@ -23,6 +24,7 @@ export interface StoreList extends BaseListInfo {
 export interface StoreParams extends PageInfoParams {
   store_name?: string;
   company_id: string;
+  status: COMMON_STATUS;
 }
 
 export interface StoreCreateParams {

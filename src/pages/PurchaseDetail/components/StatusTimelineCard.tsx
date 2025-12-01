@@ -1,90 +1,149 @@
-import type { PurchaseOrderDetailResponse } from '@/services/purchase/typings.d';
-import { Card, Timeline } from 'antd';
-import React from 'react';
-import { OrderStatus } from '../constants';
+import { PurchaseAPI } from '@/services/purchase';
+import type { PurchaseOrderStatusLogResponse } from '@/services/purchase/typings.d';
+import { Card, Spin, Timeline } from 'antd';
+import dayjs from 'dayjs';
+import React, { useEffect, useMemo, useState } from 'react';
+import { getPurchaseStatusColor } from '../utils';
 
 interface StatusTimelineCardProps {
-  purchase: PurchaseOrderDetailResponse;
+  orderNo: number;
 }
 
-const StatusTimelineCard: React.FC<StatusTimelineCardProps> = ({
-  purchase,
-}) => (
-  <Card title="状态流水" size="small">
-    <Timeline>
-      <Timeline.Item color="green">
-        <p>
-          <strong>创建采购单</strong>
-        </p>
-        <p style={{ color: '#666' }}>
-          {purchase.creator_name} 于 {purchase.ctime}
-        </p>
-      </Timeline.Item>
+const StatusTimelineCard: React.FC<StatusTimelineCardProps> = ({ orderNo }) => {
+  const [statusLogs, setStatusLogs] = useState<
+    PurchaseOrderStatusLogResponse[]
+  >([]);
+  const [loading, setLoading] = useState(true);
 
-      {/* {purchase.status.code >= OrderStatus.PENDING_APPROVAL ? (
-        <Timeline.Item color="processing">
-          <p>
-            <strong>待审核</strong>
-          </p>
-          <p style={{ color: '#666' }}>采购单已提交审核（第一版自动审核）</p>
-        </Timeline.Item>
-      ) : (
-        <Timeline.Item color="processing">
-          <p>
-            <strong>已审核</strong>
-          </p>
-          <p style={{ color: '#666' }}>采购单已提交审核（第一版自动审核）</p>
-        </Timeline.Item>
-      )} */}
+  useEffect(() => {
+    const fetchStatusLogs = async () => {
+      try {
+        setLoading(true);
+        const response = await PurchaseAPI.getPurchaseStatusLog(orderNo);
+        const logs = response.data.logs || [];
+        // 按时间排序，最早的在前（时间线从旧到新）
+        const sortedLogs = [...logs].sort((a, b) => {
+          return dayjs(a.ctime).valueOf() - dayjs(b.ctime).valueOf();
+        });
+        setStatusLogs(sortedLogs);
+      } catch (error) {
+        console.error('获取状态日志失败:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      {purchase.status.code >= OrderStatus.INQUIRING && (
-        <Timeline.Item color="orange">
-          <p>
-            <strong>发起询价</strong>
-          </p>
-          <p style={{ color: '#666' }}>
-            系统已自动向能提供此商品的供应商发送询价通知
-          </p>
-        </Timeline.Item>
-      )}
-      {purchase.status.code >= OrderStatus.QUOTED && (
-        <Timeline.Item color="purple">
-          <p>
-            <strong>已选择报价</strong>
-          </p>
-          <p style={{ color: '#666' }}>
-            采购员已确认选择某个供应商的报价，进入价格审批或下单流程
-          </p>
-        </Timeline.Item>
-      )}
-      {purchase.status.code >= OrderStatus.PRICE_PENDING_APPROVAL && (
-        <Timeline.Item color="cyan">
-          <p>
-            <strong>价格审批中</strong>
-          </p>
-          <p style={{ color: '#666' }}>
-            已选择供应商，价格审批中（超过均价需审批）
-          </p>
-        </Timeline.Item>
-      )}
-      {purchase.status.code >= OrderStatus.ORDERED && (
-        <Timeline.Item color="green">
-          <p>
-            <strong>订单确认</strong>
-          </p>
-          <p style={{ color: '#666' }}>价格审批通过，已正式下单</p>
-        </Timeline.Item>
-      )}
-      {purchase.status.code === OrderStatus.ARRIVED && (
-        <Timeline.Item color="green">
-          <p>
-            <strong>订单完成</strong>
-          </p>
-          <p style={{ color: '#666' }}>货物已到货，订单完成</p>
-        </Timeline.Item>
-      )}
-    </Timeline>
-  </Card>
-);
+    if (orderNo) {
+      fetchStatusLogs();
+    }
+  }, [orderNo]);
+
+  // 构建完整的状态序列：包括初始状态和所有状态变更
+  const timelineItems = useMemo(() => {
+    if (statusLogs.length === 0) return [];
+
+    const items: Array<{
+      id: number | string;
+      status: { code: number; name: string };
+      ctime: string;
+      operator_name?: string;
+      remark?: string;
+      isInitial?: boolean;
+    }> = [];
+
+    // 添加初始状态（第一条记录的 from_status）
+    const firstLog = statusLogs[0];
+    if (firstLog) {
+      items.push({
+        id: 'initial',
+        status: firstLog.from_status,
+        ctime: firstLog.ctime, // 使用第一条记录的时间作为初始状态时间
+        operator_name: firstLog.operator_name,
+        remark: '创建采购单草稿',
+        isInitial: true,
+      });
+    }
+
+    // 添加所有状态变更记录
+    statusLogs.forEach((log) => {
+      items.push({
+        id: log.id,
+        status: log.to_status,
+        ctime: log.ctime,
+        operator_name: log.operator_name,
+        remark: log.remark,
+        isInitial: false,
+      });
+    });
+
+    return items;
+  }, [statusLogs]);
+
+  if (loading) {
+    return (
+      <Card title="状态流水" size="small">
+        <Spin />
+      </Card>
+    );
+  }
+
+  if (statusLogs.length === 0) {
+    return (
+      <Card title="状态流水" size="small">
+        <div style={{ color: '#999', textAlign: 'center', padding: '20px 0' }}>
+          暂无状态流转记录
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card title="状态流水" size="small">
+      <Timeline mode="left">
+        {timelineItems.map((item) => {
+          const statusColor = getPurchaseStatusColor(item.status.code);
+          return (
+            <Timeline.Item
+              key={item.id}
+              color={statusColor}
+              label={
+                <div
+                  style={{
+                    minWidth: 160,
+                    textAlign: 'right',
+                    paddingRight: 16,
+                  }}
+                >
+                  <div style={{ color: '#666', fontSize: 12 }}>
+                    {dayjs(item.ctime).format('YYYY-MM-DD')}
+                  </div>
+                  <div style={{ color: '#999', fontSize: 12 }}>
+                    {dayjs(item.ctime).format('HH:mm:ss')}
+                  </div>
+                </div>
+              }
+            >
+              <div>
+                <p style={{ marginBottom: 4 }}>
+                  <strong>{item.status.name}</strong>
+                </p>
+                {item.operator_name && (
+                  <p style={{ color: '#666', marginBottom: 4 }}>
+                    操作人：{item.operator_name}
+                  </p>
+                )}
+                {item.remark && (
+                  <p style={{ color: '#666', marginBottom: 0 }}>
+                    备注：{item.remark}
+                  </p>
+                )}
+              </div>
+            </Timeline.Item>
+          );
+        })}
+      </Timeline>
+    </Card>
+  );
+};
 
 export default StatusTimelineCard;

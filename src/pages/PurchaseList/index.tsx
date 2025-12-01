@@ -155,8 +155,12 @@ const PurchaseList: React.FC = () => {
 
     // 日期范围
     if (params.date_range) {
-      searchParams.ctime_start = params.date_range[0]?.format('YYYY-MM-DD');
-      searchParams.ctime_end = params.date_range[1]?.format('YYYY-MM-DD');
+      searchParams.ctime_start = params.date_range[0]?.format(
+        'YYYY-MM-DD HH:mm:ss',
+      );
+      searchParams.ctime_end = params.date_range[1]?.format(
+        'YYYY-MM-DD HH:mm:ss',
+      );
     }
 
     const response = await PurchaseAPI.getAllPurchases(searchParams);

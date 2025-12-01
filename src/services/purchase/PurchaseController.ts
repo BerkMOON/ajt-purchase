@@ -4,8 +4,9 @@ import { InquiryDetail } from '../inquiry/typings';
 import type {
   CreatePurchaseParams,
   DraftListResponse,
-  PageInfo_PurchaseItem,
+  PurchaseListResponse,
   PurchaseOrderDetailResponse,
+  PurchaseOrderStatusLogResponse,
   PurchaseParams,
   UpdatePurchaseParams,
 } from './typings';
@@ -19,7 +20,7 @@ export const PurchaseAPI = {
    * 支持筛选：order_no, store_id, status, ctime_start, ctime_end
    */
   getAllPurchases: async (params: PurchaseParams) => {
-    return request<ResponseInfoType<PageInfo_PurchaseItem>>(
+    return request<ResponseInfoType<PurchaseListResponse>>(
       `${API_PREFIX}/order/list`,
       {
         method: 'GET',
@@ -134,6 +135,19 @@ export const PurchaseAPI = {
     return request<ResponseInfoType<null>>(`${API_PREFIX}/order/arrive`, {
       method: 'POST',
       data: { quote_nos: quoteNos },
+    });
+  },
+
+  /**
+   * 获取采购单状态流转记录
+   * GET /api/v1/purchaseOrder/statusLog/list
+   */
+  getPurchaseStatusLog: async (orderNo: string | number) => {
+    return request<
+      ResponseInfoType<{ logs: PurchaseOrderStatusLogResponse[] }>
+    >(`${API_PREFIX}/order/status-logs`, {
+      method: 'GET',
+      params: { order_no: orderNo },
     });
   },
 };

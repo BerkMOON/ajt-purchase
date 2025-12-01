@@ -53,7 +53,20 @@ export default defineConfig({
       path: '/supplier-quote/:id',
       component: './SupplierQuote',
       hideInMenu: true,
-      // access: 'purchaseSupplierQuote',
+      access: 'supplierPortal',
+    },
+    {
+      name: '供应商报价列表',
+      path: '/supplier-quotes',
+      component: './SupplierQuoteList',
+      access: 'supplierPortal',
+    },
+    {
+      name: '供应商报价详情',
+      path: '/supplier-quote-detail/:quoteNo',
+      component: './SupplierQuoteDetail',
+      hideInMenu: true,
+      access: 'supplierPortal',
     },
     {
       name: '供应商门户',

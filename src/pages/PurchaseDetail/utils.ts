@@ -74,23 +74,23 @@ export const formatCurrency = (val?: number | null) =>
 export const getPurchaseStatusColor = (statusCode: number): string => {
   switch (statusCode) {
     case OrderStatus.DRAFT:
-      return 'default';
+      return 'green';
     case OrderStatus.PENDING_APPROVAL:
-      return 'processing';
+      return 'blue';
     case OrderStatus.APPROVAL_REJECTED:
-      return 'error';
+      return 'red';
     case OrderStatus.INQUIRING:
-      return 'warning';
+      return 'orange';
     case OrderStatus.QUOTED:
       return 'blue';
     case OrderStatus.PRICE_PENDING_APPROVAL:
       return 'orange';
     case OrderStatus.PRICE_APPROVAL_REJECTED:
-      return 'error';
+      return 'red';
     case OrderStatus.ORDERED:
       return 'purple';
     case OrderStatus.ARRIVED:
-      return 'success';
+      return 'green';
     default:
       return 'default';
   }

@@ -1,3 +1,4 @@
+import StoreSelect from '@/components/BusinessComponents/StoreSelect';
 import { Role } from '@/constants';
 import { UserInfo } from '@/services/System/user/typings';
 import { useModel } from '@umijs/max';
@@ -20,19 +21,9 @@ const StoreFilterCol: React.FC = () => {
   }
 
   return (
-    <Col span={12}>
+    <Col span={6}>
       <Form.Item name="store_id" label="采购门店">
-        <Select
-          placeholder="请选择采购门店"
-          allowClear
-          showSearch
-          optionFilterProp="children"
-        >
-          {/* TODO: 从API获取门店列表数据 */}
-          <Option value="1">门店A</Option>
-          <Option value="2">门店B</Option>
-          <Option value="3">门店C</Option>
-        </Select>
+        <StoreSelect style={{ width: '100%' }} />
       </Form.Item>
     </Col>
   );
@@ -42,12 +33,16 @@ export const searchForm = (
   <>
     <Col>
       <Form.Item name="order_no" label="采购单号">
-        <Input placeholder="请输入采购单号（支持模糊搜索）" allowClear />
+        <Input placeholder="请输入采购单号" allowClear />
       </Form.Item>
     </Col>
     <Col>
       <Form.Item name="date_range" label="创建日期">
-        <RangePicker placeholder={['开始日期', '结束日期']} />
+        <RangePicker
+          showTime
+          format="YYYY-MM-DD HH:mm:ss"
+          placeholder={['开始日期', '结束日期']}
+        />
       </Form.Item>
     </Col>
     <StoreFilterCol />

@@ -1,5 +1,5 @@
 import { InquiryAPI, SupplierInquiryItem } from '@/services/inquiry';
-import { Navigate, useAccess, useModel } from '@umijs/max';
+import { Navigate, history, useAccess, useModel } from '@umijs/max';
 import {
   Alert,
   Button,
@@ -126,7 +126,7 @@ const SupplierPortal: React.FC = () => {
     const url = `/supplier-quote/${inquiryNo}?supplier_code=${
       selectedSupplierCode || ''
     }`;
-    window.open(url, '_blank');
+    history.push(url);
   };
 
   // 检查询价是否已过期

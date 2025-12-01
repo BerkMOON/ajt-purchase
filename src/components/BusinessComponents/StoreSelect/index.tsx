@@ -1,4 +1,5 @@
 import InfiniteSelect from '@/components/BasicComponents/InfiniteSelect';
+import { COMMON_STATUS } from '@/constants';
 import { StoreAPI } from '@/services/System/store/StoreController';
 import { StoreItem } from '@/services/System/store/typing';
 import { DefaultOptionType } from 'antd/es/select';
@@ -35,16 +36,11 @@ const StoreSelect: React.FC<StoreSelectProps> = ({
       page,
       limit: pageSize,
       company_id: companyId,
+      status: COMMON_STATUS.ACTIVE,
     });
 
-    // 在第一页添加"全部门店"选项
-    const list =
-      page === 1
-        ? [{ id: ':storeId', name: '全部门店' }, ...data.stores]
-        : data.stores;
-
     return {
-      list,
+      list: data.stores,
       total: data.count.total_count,
     };
   };

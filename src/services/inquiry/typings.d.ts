@@ -73,5 +73,12 @@ export interface InquiryQuoteItemResponse {
   quantity: number;
   quote_price: number;
   expected_delivery_date: string;
+  status: StatusInfo;
   remark: string;
+}
+
+export enum InquiryItemStatus {
+  PENDING,
+  QUOTED,
+  CANCELLED,
 }

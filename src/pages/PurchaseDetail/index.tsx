@@ -383,7 +383,7 @@ const PurchaseDetail: React.FC = () => {
           </Col>
 
           <Col span={24}>
-            <StatusTimelineCard purchase={purchase} />
+            <StatusTimelineCard orderNo={purchase.order_no} />
           </Col>
         </Row>
       </Card>

@@ -2,6 +2,7 @@ import {
   InquiryAPI,
   InquiryDetailResponse,
   InquiryItemResponse,
+  InquiryItemStatus,
   InquiryQuoteItemResponse,
 } from '@/services/inquiry';
 import { QuoteAPI } from '@/services/quote';
@@ -149,6 +150,17 @@ const SupplierQuote: React.FC = () => {
     }
   }, [statusName]);
 
+  const getInquiryItemStatusColor = (status: InquiryItemStatus) => {
+    switch (status) {
+      case InquiryItemStatus.PENDING:
+        return 'default';
+      case InquiryItemStatus.QUOTED:
+        return 'success';
+      case InquiryItemStatus.CANCELLED:
+        return 'red';
+    }
+  };
+
   const handleSubmit = async (values: Record<string, any>) => {
     if (!inquiry) return;
     try {
@@ -173,7 +185,7 @@ const SupplierQuote: React.FC = () => {
         items,
       });
       message.success('报价提交成功！');
-      // setTimeout(() => window.close(), 1500);
+      fetchData();
     } catch (error: any) {
       message.error(error?.message || '报价提交失败');
       console.error(error);
@@ -219,7 +231,7 @@ const SupplierQuote: React.FC = () => {
               <Space>
                 <Button
                   icon={<ArrowLeftOutlined />}
-                  onClick={() => window.close()}
+                  onClick={() => history.back()}
                 >
                   返回
                 </Button>
@@ -387,6 +399,22 @@ const SupplierQuote: React.FC = () => {
                       },
                     },
                     {
+                      title: '状态',
+                      key: 'status',
+                      width: 180,
+                      render: (record: InquiryQuoteItemResponse) => {
+                        return (
+                          <Tag
+                            color={getInquiryItemStatusColor(
+                              record.status?.code,
+                            )}
+                          >
+                            {record.status?.name}
+                          </Tag>
+                        );
+                      },
+                    },
+                    {
                       title: '备注',
                       key: 'item_remark',
                       width: 200,
@@ -407,7 +435,12 @@ const SupplierQuote: React.FC = () => {
                       },
                     },
                   ]}
-                  dataSource={inquiry.items}
+                  dataSource={inquiry.items.map((item) => ({
+                    ...item,
+                    status: inquiry.quotes.find(
+                      (quote) => quote.sku_id === item.sku_id,
+                    )?.status,
+                  }))}
                   rowKey={(record, index) =>
                     record.id ?? record.sku_id ?? `row_${index}`
                   }
@@ -419,7 +452,7 @@ const SupplierQuote: React.FC = () => {
                 <div style={{ marginTop: 24, textAlign: 'center' }}>
                   {canSubmit ? (
                     <Space size="large">
-                      <Button size="large" onClick={() => window.close()}>
+                      <Button size="large" onClick={() => history.back()}>
                         取消
                       </Button>
                       <Button
@@ -433,7 +466,7 @@ const SupplierQuote: React.FC = () => {
                       </Button>
                     </Space>
                   ) : (
-                    <Button size="large" onClick={() => window.close()}>
+                    <Button size="large" onClick={() => history.back()}>
                       关闭
                     </Button>
                   )}
