@@ -1,13 +1,14 @@
-import { AccessoryInfo, PartsInfo } from '@/services/purchase/typings.d';
 import { Button, Modal, Table, Tag } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import React from 'react';
+import type { CartItem } from '../hooks/useCart';
 
 interface CartModalProps {
   visible: boolean;
-  items: (PartsInfo | AccessoryInfo)[];
+  items: CartItem[];
   onCancel: () => void;
   onCreatePurchase: () => void;
-  onRemoveItem: (partId: string) => void;
+  onRemoveItem: (skuId: number) => void;
 }
 
 const CartModal: React.FC<CartModalProps> = ({
@@ -17,31 +18,36 @@ const CartModal: React.FC<CartModalProps> = ({
   onCreatePurchase,
   onRemoveItem,
 }) => {
-  const cartColumns = [
-    { title: '编码', dataIndex: 'part_code', width: 120 },
-    { title: '名称', dataIndex: 'part_name', width: 150 },
+  const cartColumns: ColumnsType<CartItem> = [
     {
-      title: '类型',
-      key: 'category_type',
-      width: 80,
-      render: () => <Tag color="blue">备件</Tag>,
-    },
-    { title: '规格', dataIndex: 'specification', width: 120 },
-    {
-      title: '品牌',
-      dataIndex: 'brand',
+      title: 'SKU ID',
+      dataIndex: 'sku_id',
+      key: 'sku_id',
       width: 100,
     },
     {
-      title: '价格',
-      key: 'price',
-      width: 100,
-      render: (_: any, record: PartsInfo | AccessoryInfo) => {
-        const part = record as PartsInfo;
-        return part.historical_avg_price ? (
-          <span>¥{part.historical_avg_price.toFixed(2)}</span>
-        ) : (
-          <Tag color="warning">待询价</Tag>
+      title: 'SKU 名称',
+      dataIndex: 'sku_name',
+      key: 'sku_name',
+      width: 200,
+    },
+    {
+      title: '销售属性',
+      key: 'attr_pairs',
+      width: 250,
+      render: (_, record) => {
+        if (!record.attr_pairs || record.attr_pairs.length === 0) {
+          return <span style={{ color: '#999' }}>-</span>;
+        }
+        return (
+          <>
+            {record.attr_pairs.map((pair, index) => (
+              <Tag key={index} color="blue" style={{ marginBottom: 4 }}>
+                {pair.attr_name || pair.attr_code || ''}:{' '}
+                {pair.value_name || pair.value_code || ''}
+              </Tag>
+            ))}
+          </>
         );
       },
     },
@@ -49,12 +55,12 @@ const CartModal: React.FC<CartModalProps> = ({
       title: '操作',
       key: 'action',
       width: 80,
-      render: (_: any, record: PartsInfo | AccessoryInfo) => (
+      render: (_, record) => (
         <Button
           type="link"
           danger
           size="small"
-          onClick={() => onRemoveItem(record.part_id)}
+          onClick={() => record.sku_id && onRemoveItem(record.sku_id)}
         >
           移除
         </Button>
@@ -84,7 +90,7 @@ const CartModal: React.FC<CartModalProps> = ({
     >
       <Table
         dataSource={items}
-        rowKey="part_id"
+        rowKey="sku_id"
         pagination={false}
         size="small"
         columns={cartColumns}

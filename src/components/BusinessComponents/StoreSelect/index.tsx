@@ -1,7 +1,7 @@
 import InfiniteSelect from '@/components/BasicComponents/InfiniteSelect';
 import { COMMON_STATUS } from '@/constants';
-import { StoreAPI } from '@/services/System/store/StoreController';
-import { StoreItem } from '@/services/System/store/typing';
+import { StoreAPI } from '@/services/system/store/StoreController';
+import { StoreItem } from '@/services/system/store/typing';
 import { DefaultOptionType } from 'antd/es/select';
 import React, { useEffect, useRef } from 'react';
 

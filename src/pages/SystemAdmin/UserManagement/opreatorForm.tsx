@@ -4,13 +4,13 @@ import {
   Role,
   USER_TYPE_OPTIONS,
 } from '@/constants';
-import { CompanyAPI } from '@/services/System/company/CompanyController';
-import { RoleAPI } from '@/services/System/role/RoleController';
-import { RoleInfo } from '@/services/System/role/typings';
-import { StoreAPI } from '@/services/System/store/StoreController';
-import { StoreItem } from '@/services/System/store/typing';
-import { SupplierAPI } from '@/services/System/supplier/supplierController';
-import { SupplierInfo } from '@/services/System/supplier/typings';
+import { CompanyAPI } from '@/services/system/company/CompanyController';
+import { RoleAPI } from '@/services/system/role/RoleController';
+import { RoleInfo } from '@/services/system/role/typings';
+import { StoreAPI } from '@/services/system/store/StoreController';
+import { StoreItem } from '@/services/system/store/typing';
+import { SupplierAPI } from '@/services/system/supplier/supplierController';
+import { SupplierInfo } from '@/services/system/supplier/typings';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Form, Input, Select, Space } from 'antd';
 import { useEffect, useMemo, useRef, useState } from 'react';

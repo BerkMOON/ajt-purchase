@@ -1,5 +1,5 @@
 import { ROLES_INFO } from '@/constants';
-import type { ApiDetail, ApiList } from '@/services/System/access/typings';
+import type { ApiDetail, ApiList } from '@/services/system/access/typings';
 import { getStatusMeta, resolveCommonStatus } from '@/utils/status';
 import type { TableProps } from 'antd';
 import { Button, Divider, Tag } from 'antd';

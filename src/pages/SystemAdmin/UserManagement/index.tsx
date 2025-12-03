@@ -10,8 +10,8 @@ import {
   SuccessCode,
 } from '@/constants';
 import { useModalControl } from '@/hooks/useModalControl';
-import type { UserInfo } from '@/services/System/user/typings';
-import { UserAPI } from '@/services/System/user/UserController';
+import type { UserInfo } from '@/services/system/user/typings';
+import { UserAPI } from '@/services/system/user/UserController';
 import { Navigate, useAccess } from '@umijs/max';
 import React, { useRef } from 'react';
 import { getColumns } from './colums';

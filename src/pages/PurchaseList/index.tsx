@@ -12,7 +12,7 @@ import {
   type PurchaseItem,
   type PurchaseParams,
 } from '@/services/purchase/typings.d';
-import { UserInfo } from '@/services/System/user/typings';
+import { UserInfo } from '@/services/system/user/typings';
 import { Navigate, useAccess, useModel } from '@umijs/max';
 import { Card, message, Modal, Result, Tabs } from 'antd';
 import dayjs from 'dayjs';
@@ -172,6 +172,15 @@ const PurchaseList: React.FC = () => {
 
   const handleFormFields = (values: any) => {
     // 处理日期格式，并设置默认 order_type 为 1（备品）
+    // 处理items数组，只保留sku_id和quantity，移除category_id和product_id
+    const processedItems = values.items
+      ? values.items.map((item: any) => ({
+          sku_id: Number(item.sku_id),
+          quantity: item.quantity,
+          remark: item.remark,
+        }))
+      : [];
+
     return {
       ...values,
       expected_delivery_date:
@@ -180,6 +189,7 @@ const PurchaseList: React.FC = () => {
         ? dayjs(values.inquiry_deadline).format('YYYY-MM-DD HH:mm:ss')
         : null,
       order_type: CategoryType.PARTS,
+      items: processedItems,
     };
   };
 

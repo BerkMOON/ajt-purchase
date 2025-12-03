@@ -44,6 +44,7 @@ const PurchaseDetail: React.FC = () => {
     useState<SelectedSupplierMap>({});
   const [confirmArrivalModalVisible, setConfirmArrivalModalVisible] =
     useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   const itemQuoteData = useMemo(
     () => buildItemQuoteData(purchase, quotes),
@@ -173,6 +174,7 @@ const PurchaseDetail: React.FC = () => {
     if (!purchase) {
       return;
     }
+    setConfirmLoading(true);
     const submitItems = Object.values(selectedSuppliers)
       .filter((item) => !!item.quote_no && item.order_item_id)
       .map((item) => ({
@@ -193,6 +195,7 @@ const PurchaseDetail: React.FC = () => {
       message.success('供应商选择成功，订单已下单');
       setSelectSupplierModalVisible(false);
       fetchPurchaseDetail();
+      setConfirmLoading(false);
     } catch (error: any) {
       message.error(error?.message || '选择供应商失败');
       console.error(error);
@@ -391,6 +394,7 @@ const PurchaseDetail: React.FC = () => {
       <SelectSupplierModal
         visible={selectSupplierModalVisible}
         onOk={confirmSelectSuppliers}
+        confirmLoading={confirmLoading}
         onCancel={() => setSelectSupplierModalVisible(false)}
         selectedSuppliers={selectedSuppliers}
         itemQuoteData={itemQuoteData}

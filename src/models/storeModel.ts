@@ -1,4 +1,4 @@
-import { RoleList } from '@/services/System/user/typings';
+import { UserStoreInfo } from '@/services/system/user/typings';
 import { useCallback, useState } from 'react';
 
 export interface CurrentStore {
@@ -15,7 +15,7 @@ export default () => {
     return saved ? JSON.parse(saved) : null;
   });
 
-  const updateCurrentStore = useCallback((roleItem: RoleList) => {
+  const updateCurrentStore = useCallback((roleItem: UserStoreInfo) => {
     const newStore: CurrentStore = {
       companyId: roleItem.company_id,
       companyName: roleItem.company_name,
@@ -28,7 +28,7 @@ export default () => {
   }, []);
 
   const initializeCurrentStore = useCallback(
-    (roleList: RoleList[]) => {
+    (roleList: UserStoreInfo[]) => {
       // 如果没有当前选择，默认选择第一个
       if (!currentStore && roleList.length > 0) {
         updateCurrentStore(roleList[0]);

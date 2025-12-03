@@ -1,22 +1,21 @@
+import PurchaseStoreSelect from '@/components/BusinessComponents/PurchaseStoreSelect';
 import SkuSelect from '@/components/BusinessComponents/SkuSelect';
-import { StoreAPI } from '@/services/System/store/StoreController';
-import type { StoreItem } from '@/services/System/store/typing';
-import { UserInfo } from '@/services/System/user/typings';
+import { UserInfo } from '@/services/system/user/typings';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Button,
+  Col,
   DatePicker,
   Form,
   Input,
   InputNumber,
   Popconfirm,
-  Select,
+  Row,
   Table,
 } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 const { TextArea } = Input;
-const { Option } = Select;
 
 interface CreateAndModifyFormProps {
   user: UserInfo & { isLogin: boolean };
@@ -26,106 +25,54 @@ interface CreateAndModifyFormProps {
 }
 
 export const CreateAndModifyForm: React.FC<CreateAndModifyFormProps> = ({
-  user,
   isStoreUser,
   isEdit,
 }) => {
-  const [storeList, setStoreList] = useState<StoreItem[]>([]);
-  const [loading, setLoading] = useState(false);
   const form = Form.useFormInstance();
-
-  // 获取门店列表
-  useEffect(() => {
-    const fetchStores = async () => {
-      if (isStoreUser) {
-        // 门店用户：只显示自己的门店
-        if (user.store_infos && user.store_infos.length > 0) {
-          const stores = user.store_infos.map((store) => ({
-            id: store.store_id,
-            company_id: store.company_id,
-            store_name: store.store_name,
-            contacts: '',
-            phone: '',
-            email: '',
-            address: '',
-            remark: '',
-            status: { code: 1, name: '生效' },
-          }));
-          setStoreList(stores);
-          // 如果只有一个门店，自动选中
-          if (stores.length === 1) {
-            form.setFieldsValue({ store_id: stores[0].id });
-          }
-        }
-      } else {
-        // 平台用户：获取所有门店
-        setLoading(true);
-        try {
-          const response = await StoreAPI.getAllStores({
-            page: 1,
-            limit: 100, // 获取前100个门店,
-            company_id: '',
-          });
-          if (response.data?.stores) {
-            setStoreList(response.data.stores);
-          }
-        } catch (error) {
-          console.error('获取门店列表失败', error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchStores();
-  }, [isStoreUser, user.store_infos, form]);
 
   return (
     <>
-      <Form.Item
-        name="store_id"
-        label="采购门店"
-        rules={[{ required: true, message: '请选择采购门店' }]}
-      >
-        <Select
-          placeholder="请选择采购门店"
-          allowClear={!isStoreUser && !isEdit}
-          showSearch
-          disabled={isEdit || (isStoreUser && storeList.length === 1)}
-          loading={loading}
-        >
-          {storeList.map((store) => (
-            <Option key={store.id} value={store.id}>
-              {store.store_name}
-            </Option>
-          ))}
-        </Select>
-      </Form.Item>
-
-      <Form.Item
-        name="expected_delivery_date"
-        label="期望到货日期"
-        rules={[{ required: true, message: '请选择期望到货日期' }]}
-      >
-        <DatePicker
-          placeholder="请选择期望到货日期"
-          style={{ width: '100%' }}
-        />
-      </Form.Item>
-
-      <Form.Item
-        name="inquiry_deadline"
-        label="询价截止时间"
-        rules={[{ required: true, message: '请选择询价截止时间' }]}
-      >
-        <DatePicker
-          showTime
-          placeholder="请选择询价截止时间"
-          style={{ width: '100%' }}
-          format="YYYY-MM-DD HH:mm:ss"
-        />
-      </Form.Item>
-
+      <Row gutter={16}>
+        <Col span={8}>
+          <Form.Item
+            name="store_id"
+            label="采购门店"
+            rules={[{ required: true, message: '请选择采购门店' }]}
+          >
+            <PurchaseStoreSelect
+              form={form}
+              disabled={isEdit}
+              allowClear={!isStoreUser && !isEdit}
+            />
+          </Form.Item>
+        </Col>
+        <Col span={8}>
+          <Form.Item
+            name="expected_delivery_date"
+            label="期望到货日期"
+            rules={[{ required: true, message: '请选择期望到货日期' }]}
+          >
+            <DatePicker
+              placeholder="请选择期望到货日期"
+              style={{ width: '100%' }}
+            />
+          </Form.Item>
+        </Col>
+        <Col span={8}>
+          <Form.Item
+            name="inquiry_deadline"
+            label="询价截止时间"
+            rules={[{ required: true, message: '请选择询价截止时间' }]}
+          >
+            <DatePicker
+              showTime
+              placeholder="请选择询价截止时间"
+              style={{ width: '100%' }}
+              format="YYYY-MM-DD HH:mm:ss"
+            />
+          </Form.Item>
+        </Col>
+      </Row>
       <Form.Item name="remark" label="备注">
         <TextArea rows={3} placeholder="请输入备注信息" maxLength={500} />
       </Form.Item>

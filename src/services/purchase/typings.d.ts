@@ -48,7 +48,7 @@ export interface CreatePurchaseParams {
 }
 
 export interface CreatePurchaseItemParams {
-  sku_id: string;
+  sku_id: number;
   quantity: number;
   remark?: string;
 }
@@ -73,9 +73,9 @@ export interface PurchaseDraftItem {
   remark?: string;
   status: PurchaseStatus;
   order_type?: number;
-  item_count: number;
   ctime: number;
   mtime: number;
+  items: CreatePurchaseItemParams[];
 }
 
 // 配件目录相关类型

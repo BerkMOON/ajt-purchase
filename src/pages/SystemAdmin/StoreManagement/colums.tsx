@@ -1,6 +1,6 @@
 import { COMMON_STATUS, COMMON_STATUS_CODE } from '@/constants';
 import { ModalControl } from '@/hooks/useModalControl';
-import { StoreItem } from '@/services/System/store/typing';
+import { StoreItem } from '@/services/system/store/typing';
 import { ColumnsProps } from '@/types/common';
 import { getStatusMeta, resolveCommonStatus } from '@/utils/status';
 import { Button, Divider, Tag } from 'antd';

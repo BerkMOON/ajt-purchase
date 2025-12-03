@@ -1,5 +1,5 @@
 import { useRequest } from '@/hooks/useRequest';
-import { AccessAPI } from '@/services/System/access/AcessController';
+import { AccessAPI } from '@/services/system/access/AcessController';
 import { Form, Input, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 

@@ -30,6 +30,16 @@ export enum COMMON_STATUS_CODE {
   DELETED = 0,
 }
 
+export enum COMMON_CATEGORY_STATUS_CODE {
+  DISABLED = 2,
+  ACTIVE = 1,
+}
+
+export enum COMMON_CATEGORY_STATUS {
+  DISABLED = 'disabled',
+  ACTIVE = 'active',
+}
+
 export enum COMMON_STATUS {
   ACTIVE = 'active',
   DELETED = 'deleted',

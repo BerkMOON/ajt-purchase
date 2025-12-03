@@ -5,12 +5,12 @@ import ChangeStatusForm from '@/components/BasicComponents/ChangeStatusForm';
 import CreateOrModifyForm from '@/components/BasicComponents/CreateOrModifyForm';
 import { Role } from '@/constants';
 import { useModalControl } from '@/hooks/useModalControl';
-import { AccessAPI } from '@/services/System/access/AcessController';
+import { AccessAPI } from '@/services/system/access/AcessController';
 import type {
   ApiAccessResponse,
   ApiDetail,
   ApiList,
-} from '@/services/System/access/typings';
+} from '@/services/system/access/typings';
 import { resolveCommonStatus } from '@/utils/status';
 import { Table } from 'antd';
 import React, { useCallback, useMemo, useRef, useState } from 'react';

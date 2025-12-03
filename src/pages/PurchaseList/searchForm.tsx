@@ -1,6 +1,6 @@
 import StoreSelect from '@/components/BusinessComponents/StoreSelect';
 import { Role } from '@/constants';
-import { UserInfo } from '@/services/System/user/typings';
+import { UserInfo } from '@/services/system/user/typings';
 import { useModel } from '@umijs/max';
 import { Col, DatePicker, Form, Input, Select } from 'antd';
 import React from 'react';

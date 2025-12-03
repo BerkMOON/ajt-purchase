@@ -1,6 +1,6 @@
 import { COMMON_STATUS, COMMON_STATUS_CODE } from '@/constants';
 import { ModalControl } from '@/hooks/useModalControl';
-import { RoleInfo } from '@/services/System/role/typings';
+import { RoleInfo } from '@/services/system/role/typings';
 import { ColumnsProps } from '@/types/common';
 import { getStatusMeta, resolveCommonStatus } from '@/utils/status';
 import { Divider, Tag } from 'antd';

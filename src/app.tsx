@@ -1,11 +1,12 @@
 // 运行时配置
-import { Button, Result } from 'antd';
+import { Button, message, Result } from 'antd';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import Login from './components/BasicComponents/Login/Login';
 import iconPng from './favicon.jpeg';
-import { UserInfo } from './services/System/user/typings';
-import { UserAPI } from './services/System/user/UserController';
+import { UserInfo } from './services/system/user/typings';
+import { UserAPI } from './services/system/user/UserController';
+import type { ResponseInfoType } from './types/common';
 
 dayjs.extend(isoWeek);
 
@@ -36,31 +37,40 @@ export const request = {
   timeout: 10000,
   requestInterceptors: [
     (config: any) => {
-      // 只对自己的API添加自定义header，跳过第三方API
-      const url = config.url || '';
-      const isThirdPartyAPI = url.includes('amap.com');
-      if (!isThirdPartyAPI || url.includes(window.location.host)) {
-        // 从localStorage获取token并添加到Authorization header
-        const token = localStorage.getItem('token');
-        if (token) {
-          config.headers = {
-            ...config.headers,
-            Authorization: `Bearer ${token}`,
-          };
-        }
+      // 从localStorage获取token并添加到Authorization header
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers = {
+          ...config.headers,
+          Authorization: `Bearer ${token}`,
+        };
+      }
 
-        // 从localStorage获取当前选中的门店和公司信息
-        const currentStore = localStorage.getItem('currentStore');
-        if (currentStore) {
-          const store = JSON.parse(currentStore);
-          config.headers = {
-            ...config.headers,
-            'X-Company-Id': store.companyId,
-            'X-Store-Id': store.storeId,
+      return config;
+    },
+  ],
+  responseInterceptors: [
+    (response: any) => {
+      // 检查响应中的 response_status.code
+      const data = response.data;
+      if (data && typeof data === 'object' && 'response_status' in data) {
+        const responseStatus = (data as ResponseInfoType<any>).response_status;
+        if (responseStatus && responseStatus.code !== 200) {
+          // 如果 response_status.code 不是 200，显示错误信息并抛出错误
+          const errorMsg = responseStatus.msg || '请求失败';
+          // message.error(errorMsg);
+          // 抛出错误，让 errorHandler 处理
+          const error = new Error(errorMsg);
+          (error as any).response = {
+            ...response,
+            status: responseStatus.code,
           };
+          (error as any).response_status = responseStatus;
+          throw error;
         }
       }
-      return config;
+
+      return response;
     },
   ],
   errorConfig: {
@@ -71,7 +81,16 @@ export const request = {
         localStorage.removeItem('token');
         const currentPath = window.location.pathname;
         localStorage.setItem('redirectPath', currentPath);
-        window.location.href = '/login';
+        // window.location.href = '/login';
+      } else if (error.response_status) {
+        // 如果已经有 response_status，说明已经在 responseInterceptors 中显示过错误信息了
+        // 这里只记录日志，不再重复显示
+        console.error('API 错误:', error.response_status);
+      } else {
+        // 其他类型的错误（网络错误、超时等）
+        // 只有在没有 response_status 的情况下才显示错误，避免重复显示
+        const errorMsg = error.message || '请求失败，请稍后重试';
+        message.error(errorMsg);
       }
     },
   },

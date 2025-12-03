@@ -1,11 +1,11 @@
 import BaseModalForm from '@/components/BasicComponents/BaseModalForm';
 import { COMMON_STATUS, COMMON_STATUS_CODE, Role } from '@/constants';
-import { CompanyAPI } from '@/services/System/company/CompanyController';
-import { StoreAPI } from '@/services/System/store/StoreController';
-import { StoreItem } from '@/services/System/store/typing';
-import { SupplierAPI } from '@/services/System/supplier/supplierController';
-import { SupplierInfo } from '@/services/System/supplier/typings';
-import { UserAPI } from '@/services/System/user/UserController';
+import { CompanyAPI } from '@/services/system/company/CompanyController';
+import { StoreAPI } from '@/services/system/store/StoreController';
+import { StoreItem } from '@/services/system/store/typing';
+import { SupplierAPI } from '@/services/system/supplier/supplierController';
+import { SupplierInfo } from '@/services/system/supplier/typings';
+import { UserAPI } from '@/services/system/user/UserController';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Form, Select, Space, Typography, message } from 'antd';
 import { useEffect, useMemo, useRef, useState } from 'react';

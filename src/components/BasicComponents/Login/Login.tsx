@@ -1,4 +1,4 @@
-import { UserInfo } from '@/services/System/user/typings';
+import { UserInfo } from '@/services/system/user/typings';
 import { LogoutOutlined } from '@ant-design/icons';
 import { history, useModel } from '@umijs/max';
 import { Dropdown } from 'antd';
@@ -16,7 +16,13 @@ const Login: React.FC = () => {
     {
       key: '1',
       label: (
-        <a target="_blank" onClick={goLogout}>
+        <a
+          target="_blank"
+          onClick={(e) => {
+            e.stopPropagation();
+            goLogout();
+          }}
+        >
           退出登录
         </a>
       ),
@@ -24,8 +30,18 @@ const Login: React.FC = () => {
     },
   ];
 
+  const goUserInfo = () => {
+    history.push('/user-info');
+  };
+
   return (
-    <div className={styles['login-container']}>
+    <div
+      className={styles['login-container']}
+      onClick={(e) => {
+        e.preventDefault();
+        goUserInfo();
+      }}
+    >
       <Dropdown menu={{ items }} placement="topLeft">
         <div className={styles['login-info']}>
           {(initialState as UserInfo)?.username}

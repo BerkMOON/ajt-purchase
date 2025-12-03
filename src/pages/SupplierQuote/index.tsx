@@ -406,10 +406,10 @@ const SupplierQuote: React.FC = () => {
                         return (
                           <Tag
                             color={getInquiryItemStatusColor(
-                              record.status?.code,
+                              record.status?.code ?? InquiryItemStatus.PENDING,
                             )}
                           >
-                            {record.status?.name}
+                            {record.status?.name ?? '待报价'}
                           </Tag>
                         );
                       },

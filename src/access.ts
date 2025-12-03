@@ -1,5 +1,5 @@
 import { Role } from './constants';
-import { UserInfo } from './services/System/user/typings';
+import { UserInfo } from './services/system/user/typings';
 
 export default (initialState: UserInfo & { isLogin: boolean }) => {
   // 在这里按照初始化数据定义项目中的权限，统一管理

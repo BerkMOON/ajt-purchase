@@ -6,6 +6,7 @@ interface SelectSupplierModalProps {
   visible: boolean;
   onOk: () => void;
   onCancel: () => void;
+  confirmLoading: boolean;
   selectedSuppliers: SelectedSupplierMap;
   itemQuoteData: ItemQuoteRow[];
 }
@@ -14,6 +15,7 @@ const SelectSupplierModal: React.FC<SelectSupplierModalProps> = ({
   visible,
   onOk,
   onCancel,
+  confirmLoading,
   selectedSuppliers,
   itemQuoteData,
 }) => (
@@ -22,6 +24,7 @@ const SelectSupplierModal: React.FC<SelectSupplierModalProps> = ({
     open={visible}
     onOk={onOk}
     onCancel={onCancel}
+    confirmLoading={confirmLoading}
     width={600}
   >
     <p>确认以下商品选择的供应商吗？</p>

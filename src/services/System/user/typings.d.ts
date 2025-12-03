@@ -15,25 +15,16 @@ export interface UserInfo {
   status: StatusInfo;
   user_type: string;
   username: string;
-  company_name?: string;
-  store_name?: string;
-  supplier_name?: string;
-  store_infos?: {
-    company_id: number;
-    company_name: string;
-    store_id: number;
-    store_name: string;
-  }[];
+  store_infos?: UserStoreInfo[];
   supplier_infos?: {
     supplier_code: string;
     supplier_name: string;
   }[];
 }
 
-export interface RoleList {
+export interface UserStoreInfo {
   company_id: number;
   company_name: string;
-  role: Role;
   store_id: number;
   store_name: string;
 }

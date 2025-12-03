@@ -1,5 +1,5 @@
-import { ROLES_INFO } from '@/constants';
-import { UserInfo } from '@/services/System/user/typings';
+import { Role, ROLES_INFO } from '@/constants';
+import { UserInfo } from '@/services/system/user/typings';
 import { getStatusMeta, resolveCommonStatus } from '@/utils/status';
 import { Navigate, useAccess, useModel } from '@umijs/max';
 import { Avatar, Card, Descriptions, Space, Tag } from 'antd';
@@ -8,7 +8,6 @@ import React from 'react';
 const UserInfoPage: React.FC = () => {
   const { isLogin } = useAccess();
   const { initialState } = useModel('@@initialState');
-  const { currentStore } = useModel('storeModel');
 
   if (!isLogin) {
     return <Navigate to="/login" />;
@@ -25,7 +24,7 @@ const UserInfoPage: React.FC = () => {
     <div style={{ padding: 16 }}>
       <Card>
         <Space align="start">
-          <Avatar size={64} src={user.header_img}>
+          <Avatar size={64} style={{ backgroundColor: '#1890ff' }}>
             {user.nickname?.[0] || user.username?.[0] || 'U'}
           </Avatar>
           <div>
@@ -79,26 +78,33 @@ const UserInfoPage: React.FC = () => {
         </Descriptions>
       </Card>
 
-      <Card title="当前门店" style={{ marginTop: 16 }}>
-        {currentStore ? (
+      {user.user_type === Role.Store && (
+        <Card title="所属门店" style={{ marginTop: 16 }}>
           <Descriptions column={2} bordered size="small">
             <Descriptions.Item label="公司">
-              {currentStore.companyName}
+              {user.store_infos?.map((store) => (
+                <div key={store.store_id}>{store.company_name}</div>
+              ))}
             </Descriptions.Item>
             <Descriptions.Item label="门店">
-              {currentStore.storeName}
-            </Descriptions.Item>
-            <Descriptions.Item label="公司ID">
-              {currentStore.companyId}
-            </Descriptions.Item>
-            <Descriptions.Item label="门店ID">
-              {currentStore.storeId}
+              {user.store_infos?.map((store) => (
+                <div key={store.store_id}>{store.store_name}</div>
+              ))}
             </Descriptions.Item>
           </Descriptions>
-        ) : (
-          <div style={{ color: '#999' }}>尚未选择门店</div>
-        )}
-      </Card>
+        </Card>
+      )}
+      {user.user_type === Role.Supplier && (
+        <Card title="所属供应商" style={{ marginTop: 16 }}>
+          <Descriptions column={2} bordered size="small">
+            <Descriptions.Item label="供应商名称">
+              {user.supplier_infos?.map((supplier) => (
+                <div key={supplier.supplier_code}>{supplier.supplier_name}</div>
+              ))}
+            </Descriptions.Item>
+          </Descriptions>
+        </Card>
+      )}
     </div>
   );
 };

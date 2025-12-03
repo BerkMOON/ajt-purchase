@@ -1,4 +1,4 @@
-import { UserInfo } from '@/services/System/user/typings';
+import { UserInfo } from '@/services/system/user/typings';
 import { DownOutlined } from '@ant-design/icons';
 import { useModel } from '@umijs/max';
 import { Button, Dropdown } from 'antd';
@@ -12,7 +12,7 @@ const StoreSelector: React.FC = () => {
   if (!initialState?.isLogin) return null;
 
   const userInfo = initialState as UserInfo & { isLogin: boolean };
-  const roleList = userInfo.role_list || [];
+  const roleList = userInfo.store_infos || [];
 
   const handleMenuClick = ({ key }: { key: string }) => {
     const [companyId, storeId] = key.split('-');

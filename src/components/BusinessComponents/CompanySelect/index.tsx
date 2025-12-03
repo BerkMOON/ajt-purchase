@@ -1,5 +1,5 @@
 import InfiniteSelect from '@/components/BasicComponents/InfiniteSelect';
-import { CompanyAPI } from '@/services/System/company/CompanyController';
+import { CompanyAPI } from '@/services/system/company/CompanyController';
 import React from 'react';
 
 interface CompanySelectProps {

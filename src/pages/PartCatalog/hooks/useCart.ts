@@ -1,19 +1,26 @@
-import { AccessoryInfo, PartsInfo } from '@/services/purchase/typings.d';
+import type { SkuListInfo } from '@/services/system/sku/typings';
 import { message } from 'antd';
 import { useState } from 'react';
 
+export interface CartItem extends SkuListInfo {
+  product_id?: number;
+}
+
 export const useCart = () => {
-  const [selectedItems, setSelectedItems] = useState<
-    (PartsInfo | AccessoryInfo)[]
-  >([]);
+  const [selectedItems, setSelectedItems] = useState<CartItem[]>([]);
 
   // 添加到购物车
-  const addToCart = (item: PartsInfo | AccessoryInfo) => {
+  const addToCart = (item: CartItem) => {
+    if (!item.sku_id) {
+      message.error('SKU信息不完整');
+      return;
+    }
+
     const existingIndex = selectedItems.findIndex(
-      (selected) => selected.part_id === item.part_id,
+      (selected) => selected.sku_id === item.sku_id,
     );
     if (existingIndex >= 0) {
-      message.warning('该配件已在购物车中');
+      message.warning('该SKU已在购物车中');
       return;
     }
 
@@ -22,8 +29,8 @@ export const useCart = () => {
   };
 
   // 从购物车移除
-  const removeFromCart = (partId: string) => {
-    setSelectedItems(selectedItems.filter((item) => item.part_id !== partId));
+  const removeFromCart = (skuId: number) => {
+    setSelectedItems(selectedItems.filter((item) => item.sku_id !== skuId));
   };
 
   // 清空购物车

@@ -1,9 +1,9 @@
 import BaseModalForm from '@/components/BasicComponents/BaseModalForm';
 import { useRequest } from '@/hooks/useRequest';
-import { AccessAPI } from '@/services/System/access/AcessController';
-import { ApiAccessResponse, ApiList } from '@/services/System/access/typings';
-import { RoleAPI } from '@/services/System/role/RoleController';
-import { RoleInfo } from '@/services/System/role/typings';
+import { AccessAPI } from '@/services/system/access/AcessController';
+import { ApiAccessResponse, ApiList } from '@/services/system/access/typings';
+import { RoleAPI } from '@/services/system/role/RoleController';
+import { RoleInfo } from '@/services/system/role/typings';
 import { Empty, Tree } from 'antd';
 import type { DataNode } from 'antd/es/tree';
 import React, { useEffect, useState } from 'react';
