@@ -10,7 +10,7 @@ import type {
   SupplierQuoteResponse,
 } from './typings';
 
-const API_PREFIX = '/api/v1/store/purchase/quote';
+const API_PREFIX = '/api/v1/supplier/order/quote';
 const ORDER_API_PREFIX = '/api/v1/store/purchase/order';
 
 export const QuoteAPI = {

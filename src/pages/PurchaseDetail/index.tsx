@@ -19,6 +19,7 @@ import BasicInfoCard from './components/BasicInfoCard';
 import ConfirmArrivalModal from './components/ConfirmArrivalModal';
 import PartListCard from './components/PartListCard';
 import SelectSupplierModal from './components/SelectSupplierModal';
+import SendInquiryModal from './components/SendInquiryModal';
 import StatusTimelineCard from './components/StatusTimelineCard';
 import SupplierQuotesCard from './components/SupplierQuotesCard';
 import { OrderStatus } from './constants';
@@ -45,6 +46,8 @@ const PurchaseDetail: React.FC = () => {
   const [confirmArrivalModalVisible, setConfirmArrivalModalVisible] =
     useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [sendInquiryModalVisible, setSendInquiryModalVisible] = useState(false);
+  const [sendInquiryLoading, setSendInquiryLoading] = useState(false);
 
   const itemQuoteData = useMemo(
     () => buildItemQuoteData(purchase, quotes),
@@ -202,17 +205,6 @@ const PurchaseDetail: React.FC = () => {
     }
   };
 
-  const handleApprovePriceRequest = async () => {
-    if (!purchase) return;
-    try {
-      // await PurchaseAPI.approvePriceRequest(purchase.id);
-      message.success('价格审批通过');
-      fetchPurchaseDetail();
-    } catch (error: any) {
-      message.error(error?.message || '审批失败');
-    }
-  };
-
   const handleConfirmArrival = () => {
     if (!purchase) return;
 
@@ -247,35 +239,47 @@ const PurchaseDetail: React.FC = () => {
     }
   };
 
+  const handleSendInquiry = () => {
+    if (!purchase) {
+      message.error('采购单信息不存在');
+      return;
+    }
+    setSendInquiryModalVisible(true);
+  };
+
+  const handleSendInquirySubmit = async (deadline: string) => {
+    if (!purchase) {
+      return;
+    }
+
+    try {
+      setSendInquiryLoading(true);
+      await PurchaseAPI.sendSupplierInquiry({
+        order_no: purchase.order_no,
+        deadline: deadline,
+      });
+      message.success('询价发送成功');
+      setSendInquiryModalVisible(false);
+      // 刷新采购单详情
+      fetchPurchaseDetail();
+    } catch (error: any) {
+      message.error(error?.message || '发起询价失败');
+      console.error('发起询价失败:', error);
+      throw error; // 重新抛出错误，让组件知道提交失败
+    } finally {
+      setSendInquiryLoading(false);
+    }
+  };
+
   const getAvailableActions = () => {
     if (!purchase) return [];
     const status = purchase.status.code;
     const actions: React.ReactNode[] = [];
 
-    if (status === OrderStatus.PENDING_APPROVAL) {
+    if (status === OrderStatus.AWAIT_INQUIRY) {
       actions.push(
-        <Button key="pending" type="default" disabled>
-          待审核（第一版自动审核）
-        </Button>,
-      );
-    }
-
-    if (status === OrderStatus.APPROVAL_REJECTED) {
-      actions.push(
-        <Button key="approval-rejected" danger disabled>
-          审核已驳回
-        </Button>,
-      );
-    }
-
-    if (status === OrderStatus.PRICE_PENDING_APPROVAL) {
-      actions.push(
-        <Button
-          key="price-approve"
-          type="primary"
-          onClick={handleApprovePriceRequest}
-        >
-          价格审批通过
+        <Button key="send-inquiry" type="primary" onClick={handleSendInquiry}>
+          发起询价
         </Button>,
       );
     }
@@ -405,6 +409,14 @@ const PurchaseDetail: React.FC = () => {
         items={purchase?.items || []}
         onOk={handleConfirmArrivalSubmit}
         onCancel={() => setConfirmArrivalModalVisible(false)}
+      />
+
+      <SendInquiryModal
+        visible={sendInquiryModalVisible}
+        defaultDeadline={purchase?.inquiry_deadline}
+        loading={sendInquiryLoading}
+        onOk={handleSendInquirySubmit}
+        onCancel={() => setSendInquiryModalVisible(false)}
       />
     </div>
   );

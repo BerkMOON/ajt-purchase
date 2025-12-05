@@ -12,6 +12,7 @@ const Login: React.FC = () => {
   const goLogout = async () => {
     localStorage.removeItem('token');
     clearCurrentStore();
+    localStorage.removeItem('currentSupplier');
     history.push('/login');
   };
 

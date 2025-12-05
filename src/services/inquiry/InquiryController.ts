@@ -8,7 +8,7 @@ import type {
   SupplierInquiryDetailParams,
 } from './typings';
 
-const SUPPLIER_API_PREFIX = '/api/v1/store/purchase/inquiry';
+const SUPPLIER_API_PREFIX = '/api/v1/supplier/order/inquiry';
 
 export const InquiryAPI = {
   /**

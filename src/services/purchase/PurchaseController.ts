@@ -1,15 +1,15 @@
 import type { ResponseInfoType } from '@/types/common';
 import { request } from '@umijs/max';
-import { InquiryDetail } from '../inquiry/typings';
 import type {
   CreatePurchaseParams,
   PurchaseListResponse,
   PurchaseOrderDetailResponse,
   PurchaseOrderStatusLogResponse,
   PurchaseParams,
+  SendSupplierInquiryParams,
 } from './typings';
 
-const API_PREFIX = '/api/v1/store/purchase';
+const API_PREFIX = '/api/v1/store/purchase/order';
 
 export const PurchaseAPI = {
   /**
@@ -19,7 +19,7 @@ export const PurchaseAPI = {
    */
   getAllPurchases: async (params: PurchaseParams) => {
     return request<ResponseInfoType<PurchaseListResponse>>(
-      `${API_PREFIX}/order/list`,
+      `${API_PREFIX}/list`,
       {
         method: 'GET',
         params,
@@ -33,7 +33,7 @@ export const PurchaseAPI = {
    */
   getPurchaseDetail: async (orderNo: string) => {
     return request<ResponseInfoType<PurchaseOrderDetailResponse>>(
-      `${API_PREFIX}/order/detail`,
+      `${API_PREFIX}/detail`,
       {
         method: 'GET',
         params: { order_no: orderNo },
@@ -42,35 +42,11 @@ export const PurchaseAPI = {
   },
 
   /**
-   * 提交草稿
-   * POST /api/v1/purchaseOrder/draft/submit
-   */
-  submitDraft: async (storeId: number) => {
-    return request<ResponseInfoType<null>>(`${API_PREFIX}/draft/submit`, {
-      method: 'POST',
-      data: { store_id: storeId },
-    });
-  },
-
-  /**
-   * 查询采购单的询价列表
-   * GET /api/v1/inquiry/list
-   */
-  getInquiriesByOrder: async (orderNo: string | number) => {
-    return request<
-      ResponseInfoType<{ order_no: string; quotes: InquiryDetail[] }>
-    >(`${API_PREFIX}/quote/list`, {
-      method: 'GET',
-      params: { order_no: orderNo },
-    });
-  },
-
-  /**
    * 确认到货
    * POST /api/v1/purchaseOrder/confirmArrival
    */
   confirmArrival: async (quoteNos: number[]) => {
-    return request<ResponseInfoType<null>>(`${API_PREFIX}/order/arrive`, {
+    return request<ResponseInfoType<null>>(`${API_PREFIX}/arrive`, {
       method: 'POST',
       data: { quote_nos: quoteNos },
     });
@@ -83,14 +59,21 @@ export const PurchaseAPI = {
   getPurchaseStatusLog: async (orderNo: string | number) => {
     return request<
       ResponseInfoType<{ logs: PurchaseOrderStatusLogResponse[] }>
-    >(`${API_PREFIX}/order/status-logs`, {
+    >(`${API_PREFIX}/statusLogs`, {
       method: 'GET',
       params: { order_no: orderNo },
     });
   },
 
   createOrder: async (params: CreatePurchaseParams) => {
-    return request<ResponseInfoType<null>>(`${API_PREFIX}/order/create`, {
+    return request<ResponseInfoType<null>>(`${API_PREFIX}/create`, {
+      method: 'POST',
+      data: params,
+    });
+  },
+
+  sendSupplierInquiry: async (params: SendSupplierInquiryParams) => {
+    return request<ResponseInfoType<null>>(`${API_PREFIX}/launch-inquiry`, {
       method: 'POST',
       data: params,
     });

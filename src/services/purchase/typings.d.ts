@@ -152,3 +152,8 @@ export interface PurchaseOrderStatusLogResponse {
   remark: string;
   ctime: string;
 }
+
+export interface SendSupplierInquiryParams {
+  order_no: number;
+  deadline: string;
+}

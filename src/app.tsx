@@ -55,6 +55,42 @@ export async function getInitialState(): Promise<
         }
       }
 
+      if (data.user_type === Role.Supplier) {
+        const saved = localStorage.getItem('currentSupplier');
+        if (!saved) {
+          const supplierInfo = data.supplier_infos?.[0];
+          if (supplierInfo) {
+            const defaultSupplier = {
+              supplierCode: supplierInfo.supplier_code,
+              supplierName: supplierInfo.supplier_name,
+            };
+            localStorage.setItem(
+              'currentSupplier',
+              JSON.stringify(defaultSupplier),
+            );
+          }
+        } else {
+          const parsed = JSON.parse(saved);
+          const match = data.supplier_infos?.find(
+            (supplierInfo) =>
+              supplierInfo.supplier_code === parsed.supplierCode,
+          );
+          if (!match) {
+            const supplierInfo = data.supplier_infos?.[0];
+            if (supplierInfo) {
+              const defaultSupplier = {
+                supplierCode: supplierInfo.supplier_code,
+                supplierName: supplierInfo.supplier_name,
+              };
+              localStorage.setItem(
+                'currentSupplier',
+                JSON.stringify(defaultSupplier),
+              );
+            }
+          }
+        }
+      }
+
       return { ...data, isLogin: true };
     } else {
       return { isLogin: false };
@@ -72,6 +108,7 @@ export const request = {
       // 从localStorage获取token并添加到Authorization header
       const token = localStorage.getItem('token');
       const currentStore = localStorage.getItem('currentStore');
+      const currentSupplier = localStorage.getItem('currentSupplier');
       if (token) {
         config.headers = {
           ...config.headers,
@@ -85,6 +122,14 @@ export const request = {
           ...config.headers,
           'x-store-id': storeInfo.storeId,
           'x-company-id': storeInfo.companyId,
+        };
+      }
+
+      if (currentSupplier) {
+        const supplierInfo = JSON.parse(currentSupplier);
+        config.headers = {
+          ...config.headers,
+          'x-supplier-code': supplierInfo.supplierCode,
         };
       }
 
