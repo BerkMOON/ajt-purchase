@@ -2,8 +2,7 @@ import { SupplierQuoteResponse } from '@/services/quote';
 import { history } from '@umijs/max';
 import { Tag } from 'antd';
 import { ColumnsType } from 'antd/es/table';
-import dayjs from 'dayjs';
-import { getPurchaseStatusColor } from '../PurchaseDetail/utils';
+import { formatDate, getPurchaseStatusColor } from '../PurchaseDetail/utils';
 
 export const columns: ColumnsType<SupplierQuoteResponse> = [
   {
@@ -67,20 +66,18 @@ export const columns: ColumnsType<SupplierQuoteResponse> = [
     title: '预计交货日期',
     dataIndex: 'expected_delivery_date',
     key: 'expected_delivery_date',
-    render: (date: string) => (date ? dayjs(date).format('YYYY-MM-DD') : '-'),
+    render: (date: string) => formatDate(date, true),
   },
   {
     title: '提交时间',
     dataIndex: 'submit_time',
     key: 'submit_time',
-    render: (time: string) =>
-      time ? dayjs(time).format('YYYY-MM-DD HH:mm:ss') : '-',
+    render: (time: string) => formatDate(time),
   },
   {
     title: '创建时间',
     dataIndex: 'ctime',
     key: 'ctime',
-    render: (time: string) =>
-      time ? dayjs(time).format('YYYY-MM-DD HH:mm:ss') : '-',
+    render: (time: string) => formatDate(time),
   },
 ];

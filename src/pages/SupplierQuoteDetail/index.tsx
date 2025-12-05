@@ -14,9 +14,8 @@ import {
   Spin,
   Tag,
 } from 'antd';
-import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
-import { getPurchaseStatusColor } from '../PurchaseDetail/utils';
+import { formatDate, getPurchaseStatusColor } from '../PurchaseDetail/utils';
 
 const SupplierQuoteDetail: React.FC = () => {
   const { isLogin } = useAccess();
@@ -131,19 +130,13 @@ const SupplierQuoteDetail: React.FC = () => {
                   </Tag>
                 </Descriptions.Item>
                 <Descriptions.Item label="预计交货日期">
-                  {quote.expected_delivery_date
-                    ? dayjs(quote.expected_delivery_date).format('YYYY-MM-DD')
-                    : '-'}
+                  {formatDate(quote.expected_delivery_date, true)}
                 </Descriptions.Item>
                 <Descriptions.Item label="提交时间">
-                  {quote.submit_time
-                    ? dayjs(quote.submit_time).format('YYYY-MM-DD HH:mm:ss')
-                    : '-'}
+                  {formatDate(quote.submit_time)}
                 </Descriptions.Item>
                 <Descriptions.Item label="创建时间">
-                  {quote.ctime
-                    ? dayjs(quote.ctime).format('YYYY-MM-DD HH:mm:ss')
-                    : '-'}
+                  {formatDate(quote.ctime)}
                 </Descriptions.Item>
                 <Descriptions.Item label="备注" span={3}>
                   {quote.remark || '-'}

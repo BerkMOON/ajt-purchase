@@ -1,14 +1,15 @@
-export const OrderStatus = {
-  DRAFT: 0,
-  PENDING_APPROVAL: 1,
-  APPROVAL_REJECTED: 2,
-  INQUIRING: 3,
-  QUOTED: 4,
-  PRICE_PENDING_APPROVAL: 5,
-  PRICE_APPROVAL_REJECTED: 6,
-  ORDERED: 7,
-  ARRIVED: 8,
-} as const;
+export const enum OrderStatus {
+  DRAFT,
+  PENDING_APPROVAL,
+  APPROVAL_REJECTED,
+  AWAIT_INQUIRY,
+  INQUIRING,
+  QUOTED,
+  PRICE_PENDING_APPROVAL,
+  PRICE_APPROVAL_REJECTED,
+  ORDERED,
+  ARRIVED,
+}
 
 export type OrderStatusEnum = (typeof OrderStatus)[keyof typeof OrderStatus];
 
@@ -21,6 +22,10 @@ export const PurchaseStatusMap = {
   [OrderStatus.APPROVAL_REJECTED]: {
     code: OrderStatus.APPROVAL_REJECTED,
     name: '审核驳回',
+  },
+  [OrderStatus.AWAIT_INQUIRY]: {
+    code: OrderStatus.AWAIT_INQUIRY,
+    name: '待询价',
   },
   [OrderStatus.INQUIRING]: { code: OrderStatus.INQUIRING, name: '询价中' },
   [OrderStatus.QUOTED]: { code: OrderStatus.QUOTED, name: '已报价' },

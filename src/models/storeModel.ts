@@ -37,9 +37,15 @@ export default () => {
     [currentStore, updateCurrentStore],
   );
 
+  const clearCurrentStore = useCallback(() => {
+    setCurrentStore(null);
+    localStorage.removeItem('currentStore');
+  }, []);
+
   return {
     currentStore,
     updateCurrentStore,
+    clearCurrentStore,
     initializeCurrentStore,
   };
 };

@@ -1,4 +1,5 @@
-import PurchaseStoreSelect from '@/components/BusinessComponents/PurchaseStoreSelect';
+import { CartAPI } from '@/services/cart/CartController';
+import type { CartItem } from '@/services/cart/typings';
 import {
   Button,
   Col,
@@ -8,20 +9,17 @@ import {
   InputNumber,
   Modal,
   Row,
-  Space,
   Table,
-  Tag,
+  message,
 } from 'antd';
 import { FormInstance } from 'antd/es/form';
 import dayjs from 'dayjs';
-import React, { useEffect } from 'react';
-import type { CartItem } from '../hooks/useCart';
+import React, { useEffect, useState } from 'react';
 
 interface CreatePurchaseModalProps {
   visible: boolean;
   loading: boolean;
   form: FormInstance;
-  selectedItems: CartItem[];
   onCancel: () => void;
   onSubmit: (values: any) => void;
 }
@@ -30,31 +28,52 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
   visible,
   loading,
   form,
-  selectedItems,
   onCancel,
   onSubmit,
 }) => {
-  // 初始化表单值
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [loadingCart, setLoadingCart] = useState(false);
+
+  // 获取购物车数据
   useEffect(() => {
     if (visible) {
-      // 初始化数量表单值
-      const initialQuantities: Record<number, number> = {};
-      selectedItems.forEach((item) => {
-        if (item.sku_id !== undefined && item.sku_id !== null) {
-          initialQuantities[item.sku_id] = 1;
+      const fetchCartList = async () => {
+        setLoadingCart(true);
+        try {
+          const response = await CartAPI.getCartList();
+          if (response.response_status.code === 200 && response.data) {
+            const items = response.data.sku_list || [];
+            setCartItems(items);
+
+            // 初始化数量表单值，使用购物车中的数量
+            const initialQuantities: Record<number, number> = {};
+            items.forEach((item) => {
+              if (item.sku_id !== undefined && item.sku_id !== null) {
+                initialQuantities[item.sku_id] = item.quantity || 1;
+              }
+            });
+            form.setFieldsValue({
+              quantities: initialQuantities,
+              expected_delivery_date: dayjs().add(7, 'days'),
+              inquiry_deadline: dayjs().add(30, 'minutes'),
+              remark: '',
+            });
+          }
+        } catch (error) {
+          console.error('获取购物车数据失败:', error);
+          message.error('获取购物车数据失败');
+        } finally {
+          setLoadingCart(false);
         }
-      });
-      form.setFieldsValue({
-        quantities: initialQuantities,
-        expected_delivery_date: dayjs().add(7, 'days'),
-        inquiry_deadline: dayjs().add(30, 'minutes'),
-        remark: '',
-      });
+      };
+
+      fetchCartList();
     } else {
       // 关闭弹窗时重置表单
       form.resetFields();
+      setCartItems([]);
     }
-  }, [visible, form, selectedItems]);
+  }, [visible, form]);
 
   const columns = [
     {
@@ -67,32 +86,13 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
       title: 'SKU 名称',
       dataIndex: 'sku_name',
       key: 'sku_name',
-      width: 150,
-    },
-    {
-      title: '销售属性',
-      key: 'attr_pairs',
-      width: 200,
-      render: (_: any, record: CartItem) => {
-        if (!record.attr_pairs || record.attr_pairs.length === 0) {
-          return <span style={{ color: '#999' }}>-</span>;
-        }
-        return (
-          <Space wrap>
-            {record.attr_pairs.map((pair, index) => (
-              <Tag key={index} color="blue">
-                {pair.attr_name || pair.attr_code || ''}:{' '}
-                {pair.value_name || pair.value_code || ''}
-              </Tag>
-            ))}
-          </Space>
-        );
-      },
+      width: 300,
+      ellipsis: true,
     },
     {
       title: '数量',
       key: 'quantity',
-      width: 100,
+      width: 150,
       render: (_: any, record: CartItem) => {
         // 确保 sku_id 存在
         if (record.sku_id === undefined || record.sku_id === null) {
@@ -107,7 +107,12 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
               { type: 'number', min: 1, message: '数量不能小于1' },
             ]}
           >
-            <InputNumber min={1} max={999} size="small" style={{ width: 70 }} />
+            <InputNumber
+              min={1}
+              max={999}
+              size="small"
+              style={{ width: 100 }}
+            />
           </Form.Item>
         );
       },
@@ -137,15 +142,6 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
     >
       <Form form={form} layout="vertical" onFinish={onSubmit}>
         <Row gutter={16}>
-          <Col span={8}>
-            <Form.Item
-              name="store_id"
-              label="采购门店"
-              rules={[{ required: true, message: '请选择采购门店' }]}
-            >
-              <PurchaseStoreSelect form={form} />
-            </Form.Item>
-          </Col>
           <Col span={8}>
             <Form.Item
               label="期望到货日期"
@@ -187,12 +183,16 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
         <div style={{ marginTop: 16 }}>
           <h4>SKU清单</h4>
           <Table
-            dataSource={selectedItems}
+            dataSource={cartItems}
             rowKey="sku_id"
             pagination={false}
             size="small"
             scroll={{ y: 300 }}
             columns={columns}
+            loading={loadingCart}
+            locale={{
+              emptyText: '购物车是空的',
+            }}
           />
         </div>
       </Form>

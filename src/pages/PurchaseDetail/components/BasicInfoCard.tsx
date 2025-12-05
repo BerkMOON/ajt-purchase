@@ -2,6 +2,7 @@ import type { PurchaseOrderDetailResponse } from '@/services/purchase/typings.d'
 import { Card, Descriptions, Tag } from 'antd';
 import dayjs from 'dayjs';
 import React from 'react';
+import { formatDate } from '../utils';
 
 interface BasicInfoCardProps {
   purchase: PurchaseOrderDetailResponse;
@@ -49,20 +50,16 @@ const BasicInfoCard: React.FC<BasicInfoCardProps> = ({
           {purchase.creator_name}
         </Descriptions.Item>
         <Descriptions.Item label="创建时间">
-          {dayjs(purchase.ctime).format('YYYY-MM-DD HH:mm:ss')}
+          {formatDate(purchase.ctime)}
         </Descriptions.Item>
         <Descriptions.Item label="全部商品到货时间">
-          {latestDeliveryDate
-            ? dayjs(latestDeliveryDate).format('YYYY-MM-DD HH:mm:ss')
-            : '-'}
+          {formatDate(latestDeliveryDate)}
         </Descriptions.Item>
         <Descriptions.Item label="期望到货日期">
           {purchase.expected_delivery_date}
         </Descriptions.Item>
         <Descriptions.Item label="询价截止时间">
-          {purchase.inquiry_deadline
-            ? dayjs(purchase.inquiry_deadline).format('YYYY-MM-DD HH:mm:ss')
-            : '-'}
+          {formatDate(purchase.inquiry_deadline)}
         </Descriptions.Item>
         <Descriptions.Item label="配件数量">
           {purchase.items?.length || 0}

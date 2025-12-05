@@ -1,28 +1,39 @@
 import { UserInfo } from '@/services/system/user/typings';
-import { LogoutOutlined } from '@ant-design/icons';
+import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { history, useModel } from '@umijs/max';
 import { Dropdown } from 'antd';
+import StoreSelector from '../StoreSelector';
 import styles from './Login.scss';
 
 const Login: React.FC = () => {
   const { initialState } = useModel('@@initialState');
+  const { clearCurrentStore } = useModel('storeModel');
 
   const goLogout = async () => {
     localStorage.removeItem('token');
+    clearCurrentStore();
     history.push('/login');
   };
 
   const items = [
     {
-      key: '1',
+      key: '0',
       label: (
         <a
-          target="_blank"
-          onClick={(e) => {
-            e.stopPropagation();
-            goLogout();
+          type="link"
+          onClick={() => {
+            history.push('/user-info');
           }}
         >
+          个人信息
+        </a>
+      ),
+      icon: <UserOutlined />,
+    },
+    {
+      key: '1',
+      label: (
+        <a target="_blank" onClick={goLogout}>
           退出登录
         </a>
       ),
@@ -30,18 +41,9 @@ const Login: React.FC = () => {
     },
   ];
 
-  const goUserInfo = () => {
-    history.push('/user-info');
-  };
-
   return (
-    <div
-      className={styles['login-container']}
-      onClick={(e) => {
-        e.preventDefault();
-        goUserInfo();
-      }}
-    >
+    <div className={styles['login-container']}>
+      <StoreSelector />
       <Dropdown menu={{ items }} placement="topLeft">
         <div className={styles['login-info']}>
           {(initialState as UserInfo)?.username}

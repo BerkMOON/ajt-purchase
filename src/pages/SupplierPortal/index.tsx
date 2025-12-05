@@ -17,8 +17,8 @@ import {
   Tag,
   message,
 } from 'antd';
-import dayjs from 'dayjs';
 import React, { useEffect, useMemo, useState } from 'react';
+import { formatDate } from '../PurchaseDetail/utils';
 
 const SupplierPortal: React.FC = () => {
   const { isLogin } = useAccess();
@@ -108,8 +108,8 @@ const SupplierPortal: React.FC = () => {
       newFilters.status = values.status;
     }
     if (values.dateRange && values.dateRange.length === 2) {
-      newFilters.start_date = values.dateRange[0].format('YYYY-MM-DD');
-      newFilters.end_date = values.dateRange[1].format('YYYY-MM-DD');
+      newFilters.start_date = formatDate(values.dateRange[0], true);
+      newFilters.end_date = formatDate(values.dateRange[1], true);
     }
     setFilters(newFilters);
     setPagination((prev) => ({ ...prev, current: 1 }));
@@ -152,7 +152,7 @@ const SupplierPortal: React.FC = () => {
       title: '希望交货日期',
       dataIndex: 'expected_delivery_date',
       key: 'expected_delivery_date',
-      render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
+      render: (date: string) => formatDate(date, true),
     },
     {
       title: '询价截止时间',
@@ -162,7 +162,7 @@ const SupplierPortal: React.FC = () => {
         const expired = isInquiryExpired(deadline);
         return (
           <span style={{ color: expired ? 'red' : 'inherit' }}>
-            {dayjs(deadline).format('YYYY-MM-DD HH:mm:ss')}
+            {formatDate(deadline)}
             {expired && (
               <Tag color="red" style={{ marginLeft: 8 }}>
                 已过期
@@ -193,7 +193,7 @@ const SupplierPortal: React.FC = () => {
       title: '创建时间',
       dataIndex: 'created_at',
       key: 'created_at',
-      render: (time: string) => dayjs(time).format('YYYY-MM-DD HH:mm:ss'),
+      render: (time: string) => formatDate(time),
     },
     {
       title: '操作',

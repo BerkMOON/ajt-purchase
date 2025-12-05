@@ -82,6 +82,12 @@ export default defineConfig({
       access: 'partCatalog',
     },
     {
+      name: '购物车',
+      path: '/cart',
+      component: './Cart',
+      access: 'partCatalog',
+    },
+    {
       name: '系统管理',
       path: '/admin',
       component: './SystemAdmin',

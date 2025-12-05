@@ -1,9 +1,9 @@
 import {
-  PurchaseDetailItem,
   PurchaseOrderDetailResponse,
   PurchaseOrderItemResponse,
 } from '@/services/purchase/typings.d';
 import type { OrderQuoteDetailResponse } from '@/services/quote';
+import dayjs from 'dayjs';
 import { OrderItemStatus, OrderStatus } from './constants';
 
 export type SelectedSupplierMap = Record<
@@ -39,9 +39,7 @@ export type ItemQuoteRow = {
   quotes: QuoteCard[];
 };
 
-export const getOrderItemKey = (
-  item: PurchaseDetailItem | PurchaseOrderItemResponse,
-) => {
+export const getOrderItemKey = (item: PurchaseOrderItemResponse) => {
   if (item.id) {
     return `order_${item.id}`;
   }
@@ -79,6 +77,8 @@ export const getPurchaseStatusColor = (statusCode: number): string => {
       return 'blue';
     case OrderStatus.APPROVAL_REJECTED:
       return 'red';
+    case OrderStatus.AWAIT_INQUIRY:
+      return 'orange';
     case OrderStatus.INQUIRING:
       return 'orange';
     case OrderStatus.QUOTED:
@@ -220,4 +220,13 @@ export const getItemStatusColor = (statusCode: number): string => {
     default:
       return 'default';
   }
+};
+
+export const formatDate = (
+  date: string | undefined | null,
+  isDate: boolean = false,
+): string => {
+  return date && date !== '1970-01-01 00:00:00'
+    ? dayjs(date).format(isDate ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:mm:ss')
+    : '-';
 };

@@ -1,10 +1,10 @@
-import { PurchaseAPI } from '@/services/purchase/PurchaseController';
-import { CreatePurchaseParams } from '@/services/purchase/typings.d';
+import { formatDate } from '@/pages/PurchaseDetail/utils';
+import { CartAPI } from '@/services/cart/CartController';
+import { SubmitCartParams } from '@/services/cart/typings';
+import { CategoryType } from '@/services/purchase/typings.d';
 import { history } from '@umijs/max';
 import { Form, message } from 'antd';
-import dayjs from 'dayjs';
 import { useState } from 'react';
-import type { CartItem } from './useCart';
 
 export const usePurchaseCreation = () => {
   const [createModalVisible, setCreateModalVisible] = useState(false);
@@ -12,67 +12,44 @@ export const usePurchaseCreation = () => {
   const [form] = Form.useForm();
 
   // 处理创建采购单
-  const handleCreatePurchase = (selectedItems: CartItem[]) => {
-    if (selectedItems.length === 0) {
-      message.error('请先选择SKU');
-      return;
-    }
-
-    setCreateModalVisible(true);
-  };
-
-  // 提交创建采购单
-  const handleSubmitPurchase = async (
-    values: any,
-    selectedItems: CartItem[],
-    clearCart: () => void,
-  ) => {
+  const handleCreatePurchase = async () => {
     try {
-      setCreateLoading(true);
-
-      // 确定门店ID（从表单值中获取）
-      const storeId = values.store_id;
-      if (!storeId) {
-        message.error('请选择采购门店');
-        setCreateLoading(false);
+      // 获取购物车数据
+      const response = await CartAPI.getCartList();
+      if (
+        response.response_status.code !== 200 ||
+        !response.data ||
+        response.data.sku_list.length === 0
+      ) {
+        message.error('购物车为空，请先添加商品');
         return;
       }
 
-      // 转换购物车数据为采购单详情
-      const items = selectedItems
-        .filter(
-          (item): item is CartItem & { sku_id: number } =>
-            item.sku_id !== undefined && item.sku_id !== null,
-        )
-        .map((item) => {
-          const skuId = item.sku_id;
-          const quantity = values.quantities?.[skuId] || 1;
-          return {
-            sku_id: skuId,
-            quantity: quantity,
-          };
-        });
+      setCreateModalVisible(true);
+    } catch (error) {
+      console.error('获取购物车数据失败:', error);
+      message.error('获取购物车数据失败');
+    }
+  };
 
-      const createParams: CreatePurchaseParams = {
-        store_id: storeId,
-        expected_delivery_date:
-          values.expected_delivery_date.format('YYYY-MM-DD'),
-        inquiry_deadline: values.inquiry_deadline
-          ? dayjs(values.inquiry_deadline).format('YYYY-MM-DD HH:mm:ss')
-          : undefined,
+  // 提交创建采购单
+  const handleSubmitPurchase = async (values: any) => {
+    try {
+      setCreateLoading(true);
+
+      const createParams: SubmitCartParams = {
+        expected_delivery_date: formatDate(values.expected_delivery_date, true),
+        inquiry_deadline: formatDate(values.inquiry_deadline),
         remark: values.remark,
-        order_type: 1, // 备件类型
-        items: items,
+        order_type: CategoryType.PARTS, // 备件类型
       };
 
-      const response = await PurchaseAPI.createDraft(createParams);
+      const response = await CartAPI.submitCart(createParams);
 
       if (response.response_status.code === 200) {
-        message.success('草稿采购单创建成功');
+        message.success('采购单创建成功');
         setCreateModalVisible(false);
-        clearCart();
         form.resetFields();
-
         // 跳转到采购单列表页
         history.push(`/purchase`);
       } else {

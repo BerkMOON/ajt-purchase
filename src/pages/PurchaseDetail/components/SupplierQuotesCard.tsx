@@ -1,10 +1,9 @@
 import { Button, Card, Empty, Radio, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import dayjs from 'dayjs';
 import React from 'react';
 import { OrderStatus } from '../constants';
 import type { ItemQuoteRow, SelectedSupplierMap } from '../utils';
-import { formatCurrency } from '../utils';
+import { formatCurrency, formatDate } from '../utils';
 
 interface SupplierQuotesCardProps {
   visible: boolean;
@@ -95,7 +94,7 @@ const SupplierQuotesCard: React.FC<SupplierQuotesCardProps> = ({
       dataIndex: 'expected_delivery_date',
       key: 'expected_delivery_date',
       align: 'center',
-      render: (val?: string) => (val ? dayjs(val).format('YYYY-MM-DD') : '-'),
+      render: (val?: string) => formatDate(val),
     },
     {
       title: '备注',

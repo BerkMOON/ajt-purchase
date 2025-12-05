@@ -4,8 +4,8 @@ import BaseListPage, {
 import { QuoteAPI } from '@/services/quote';
 import type { GetSupplierQuotesParams } from '@/services/quote/typings.d';
 import { Card } from 'antd';
-import dayjs from 'dayjs';
 import React, { useRef } from 'react';
+import { formatDate } from '../PurchaseDetail/utils';
 import { columns } from './column';
 import { searchForm } from './searchForm';
 
@@ -40,10 +40,10 @@ const SupplierQuoteList: React.FC = () => {
     if (params.ctime_range) {
       const [start, end] = params.ctime_range || [];
       if (start) {
-        result.ctime_start = dayjs(start).format('YYYY-MM-DD HH:mm:ss');
+        result.ctime_start = formatDate(start);
       }
       if (end) {
-        result.ctime_end = dayjs(end).format('YYYY-MM-DD HH:mm:ss');
+        result.ctime_end = formatDate(end);
       }
     }
 

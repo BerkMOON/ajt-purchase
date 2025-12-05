@@ -3,6 +3,7 @@ import { Button, message, Result } from 'antd';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import Login from './components/BasicComponents/Login/Login';
+import { Role } from './constants';
 import iconPng from './favicon.jpeg';
 import { UserInfo } from './services/system/user/typings';
 import { UserAPI } from './services/system/user/UserController';
@@ -23,6 +24,37 @@ export async function getInitialState(): Promise<
     const userInfo = await UserAPI.getUserDetail();
     const { data } = userInfo;
     if (data) {
+      if (data.user_type === Role.Store) {
+        const saved = localStorage.getItem('currentStore');
+        if (!saved) {
+          const storeInfo = data.store_infos?.[0];
+          const defaultStore = {
+            companyId: storeInfo?.company_id || 0,
+            companyName: storeInfo?.company_name,
+            storeId: storeInfo?.store_id,
+            storeName: storeInfo?.store_name,
+          };
+          localStorage.setItem('currentStore', JSON.stringify(defaultStore));
+        } else {
+          const parsed = JSON.parse(saved);
+          const match = data.store_infos?.find(
+            (storeInfo) =>
+              storeInfo.company_id === parsed.companyId &&
+              storeInfo.store_id === parsed.storeId,
+          );
+          if (!match) {
+            const storeInfo = data.store_infos?.[0];
+            const defaultStore = {
+              companyId: storeInfo?.company_id,
+              companyName: storeInfo?.company_name,
+              storeId: storeInfo?.store_id,
+              storeName: storeInfo?.store_name,
+            };
+            localStorage.setItem('currentStore', JSON.stringify(defaultStore));
+          }
+        }
+      }
+
       return { ...data, isLogin: true };
     } else {
       return { isLogin: false };
@@ -39,10 +71,20 @@ export const request = {
     (config: any) => {
       // 从localStorage获取token并添加到Authorization header
       const token = localStorage.getItem('token');
+      const currentStore = localStorage.getItem('currentStore');
       if (token) {
         config.headers = {
           ...config.headers,
           Authorization: `Bearer ${token}`,
+        };
+      }
+
+      if (currentStore) {
+        const storeInfo = JSON.parse(currentStore);
+        config.headers = {
+          ...config.headers,
+          'x-store-id': storeInfo.storeId,
+          'x-company-id': storeInfo.companyId,
         };
       }
 
@@ -58,7 +100,7 @@ export const request = {
         if (responseStatus && responseStatus.code !== 200) {
           // 如果 response_status.code 不是 200，显示错误信息并抛出错误
           const errorMsg = responseStatus.msg || '请求失败';
-          // message.error(errorMsg);
+          message.error(errorMsg);
           // 抛出错误，让 errorHandler 处理
           const error = new Error(errorMsg);
           (error as any).response = {

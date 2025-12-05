@@ -33,6 +33,7 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { formatDate } from '../PurchaseDetail/utils';
 
 const { TextArea } = Input;
 
@@ -172,9 +173,7 @@ const SupplierQuote: React.FC = () => {
           sku_id: item.sku_id,
           quantity: item.quantity,
           quote_price: values[`quote_price_${fieldKey}`],
-          expected_delivery_date: deliveryDateValue
-            ? dayjs(deliveryDateValue).format('YYYY-MM-DD')
-            : '',
+          expected_delivery_date: formatDate(deliveryDateValue, true),
           remark: values[`item_remark_${fieldKey}`] || '',
         };
       });
@@ -286,7 +285,7 @@ const SupplierQuote: React.FC = () => {
                 </Descriptions.Item>
                 <Descriptions.Item label="截止时间">
                   <span style={{ color: isDeadlinePassed ? 'red' : 'inherit' }}>
-                    {dayjs(inquiry.deadline).format('YYYY-MM-DD HH:mm:ss')}
+                    {formatDate(inquiry.deadline)}
                   </span>
                 </Descriptions.Item>
                 <Descriptions.Item label="采购单号">
@@ -296,10 +295,10 @@ const SupplierQuote: React.FC = () => {
                   <Tag color={statusTagColor}>{statusName || '未知状态'}</Tag>
                 </Descriptions.Item>
                 <Descriptions.Item label="创建时间">
-                  {dayjs(inquiry.ctime).format('YYYY-MM-DD HH:mm:ss')}
+                  {formatDate(inquiry.ctime)}
                 </Descriptions.Item>
                 <Descriptions.Item label="更新时间">
-                  {dayjs(inquiry.mtime).format('YYYY-MM-DD HH:mm:ss')}
+                  {formatDate(inquiry.mtime)}
                 </Descriptions.Item>
               </Descriptions>
             </Card>

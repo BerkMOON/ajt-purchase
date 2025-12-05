@@ -17,7 +17,7 @@ export interface PurchaseItem {
 
 // 商品类型枚举
 export enum CategoryType {
-  PARTS = 1, // 备件
+  PARTS = 'parts', // 备件
   // 【已删除】ACCESSORIES - 暂不支持精品模块
 }
 
@@ -39,7 +39,6 @@ export interface PurchaseParams {
 }
 
 export interface CreatePurchaseParams {
-  store_id: number;
   expected_delivery_date: string;
   inquiry_deadline?: string;
   remark?: string;
@@ -52,8 +51,6 @@ export interface CreatePurchaseItemParams {
   quantity: number;
   remark?: string;
 }
-
-export type UpdatePurchaseParams = CreatePurchaseParams;
 
 export interface PurchaseListResponse extends BaseListInfo {
   orders: PurchaseItem[];

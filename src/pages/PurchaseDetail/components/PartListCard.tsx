@@ -2,9 +2,8 @@ import type { PurchaseOrderItemResponse } from '@/services/purchase/typings.d';
 import { StatusInfo } from '@/types/common';
 import { Card, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import dayjs from 'dayjs';
 import React from 'react';
-import { formatCurrency, getItemStatusColor } from '../utils';
+import { formatCurrency, formatDate, getItemStatusColor } from '../utils';
 
 interface PartListCardProps {
   items?: PurchaseOrderItemResponse[];
@@ -71,14 +70,13 @@ const columns: ColumnsType<PurchaseOrderItemResponse> = [
     title: '预计交货日期',
     dataIndex: 'quote_delivery_date',
     key: 'quote_delivery_date',
-    render: (date?: string) => (date ? dayjs(date).format('YYYY-MM-DD') : '-'),
+    render: (date?: string) => formatDate(date),
   },
   {
     title: '到货时间',
     dataIndex: 'delivery_date',
     key: 'delivery_date',
-    render: (date?: string) =>
-      date ? dayjs(date).format('YYYY-MM-DD HH:mm:ss') : '-',
+    render: (date?: string) => formatDate(date),
   },
   {
     title: '备注',

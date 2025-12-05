@@ -1,6 +1,7 @@
 import BaseListPage, {
   BaseListPageRef,
 } from '@/components/BasicComponents/BaseListPage';
+import { CartAPI } from '@/services/cart/CartController';
 import { ProductAPI } from '@/services/system/product/ProductController';
 import type {
   GetProductListParams,
@@ -8,12 +9,12 @@ import type {
 } from '@/services/system/product/typings';
 import { ShoppingCartOutlined } from '@ant-design/icons';
 import { Navigate, useAccess } from '@umijs/max';
-import { Button, Space } from 'antd';
+import { Button, message, Space } from 'antd';
 import React, { useRef, useState } from 'react';
 import { getColumns, SkuExpandableTable } from './columns';
 import CartModal from './components/CartModal';
 import CreatePurchaseModal from './components/CreatePurchaseModal';
-import { useCart } from './hooks/useCart';
+import { useCartData } from './hooks/useCartData';
 import { usePurchaseCreation } from './hooks/usePurchaseCreation';
 import { searchForm } from './searchForm';
 
@@ -22,8 +23,38 @@ const PartCatalog: React.FC = () => {
   const baseListRef = useRef<BaseListPageRef>(null);
   const [cartVisible, setCartVisible] = useState(false);
 
-  // 使用自定义Hooks管理状态和逻辑
-  const { selectedItems, addToCart, removeFromCart, clearCart } = useCart();
+  // 使用购物车数据 hook
+  const {
+    cartItems,
+    cartItemCount,
+    loading: cartLoading,
+    refreshCartData,
+  } = useCartData(isLogin);
+
+  // 添加到购物车
+  const handleAddToCart = async (sku: {
+    sku_id?: number;
+    product_id?: number;
+  }) => {
+    if (!sku.sku_id) {
+      message.error('SKU信息不完整');
+      return;
+    }
+
+    try {
+      // 每次添加数量为1，如果商品已存在，后端会累加数量
+      await CartAPI.addToCart({
+        sku_id: sku.sku_id,
+        quantity: 1,
+      });
+      message.success('已添加到购物车');
+      // 刷新购物车数据
+      refreshCartData();
+    } catch (error) {
+      console.error('添加到购物车失败:', error);
+      message.error('添加到购物车失败');
+    }
+  };
 
   const {
     createModalVisible,
@@ -52,13 +83,13 @@ const PartCatalog: React.FC = () => {
 
   // 处理创建采购单
   const onCreatePurchase = () => {
-    handleCreatePurchase(selectedItems);
+    handleCreatePurchase();
     setCartVisible(false);
   };
 
   // 处理提交采购单
   const onSubmitPurchase = (values: any) => {
-    handleSubmitPurchase(values, selectedItems, clearCart);
+    handleSubmitPurchase(values);
   };
 
   const columns = getColumns();
@@ -85,9 +116,11 @@ const PartCatalog: React.FC = () => {
           <Button
             type="primary"
             icon={<ShoppingCartOutlined />}
-            onClick={() => setCartVisible(true)}
+            onClick={() => {
+              setCartVisible(true);
+            }}
           >
-            购物车 ({selectedItems.length})
+            购物车 ({cartItemCount})
           </Button>
         }
         rowKey="product_id"
@@ -105,7 +138,7 @@ const PartCatalog: React.FC = () => {
           expandedRowRender: (record: ProductInfo) => (
             <SkuExpandableTable
               productId={record.product_id!}
-              onAddToCart={addToCart}
+              onAddToCart={handleAddToCart}
               expanded={expandedRowKeys.includes(record.product_id!)}
             />
           ),
@@ -116,10 +149,11 @@ const PartCatalog: React.FC = () => {
       {/* 购物车弹窗 */}
       <CartModal
         visible={cartVisible}
-        items={selectedItems}
+        cartItems={cartItems}
+        loading={cartLoading}
         onCancel={() => setCartVisible(false)}
         onCreatePurchase={onCreatePurchase}
-        onRemoveItem={removeFromCart}
+        onRefresh={refreshCartData}
       />
 
       {/* 创建采购单弹窗 */}
@@ -127,7 +161,6 @@ const PartCatalog: React.FC = () => {
         visible={createModalVisible}
         loading={createLoading}
         form={form}
-        selectedItems={selectedItems}
         onCancel={handleCancelCreate}
         onSubmit={onSubmitPurchase}
       />
