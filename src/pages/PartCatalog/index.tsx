@@ -2,7 +2,7 @@ import BaseListPage, {
   BaseListPageRef,
 } from '@/components/BasicComponents/BaseListPage';
 import { CartAPI } from '@/services/cart/CartController';
-import { ProductAPI } from '@/services/system/product/ProductController';
+import { PurchaseAPI } from '@/services/purchase';
 import type {
   GetProductListParams,
   ProductInfo,
@@ -74,7 +74,7 @@ const PartCatalog: React.FC = () => {
         ? params.category_id[params.category_id.length - 1]
         : params.category_id,
     };
-    const { data } = await ProductAPI.getProductList(processedParams);
+    const { data } = await PurchaseAPI.getProductList(processedParams);
     return {
       list: data.product_list || [],
       total: (data as any).count?.total_count || 0,

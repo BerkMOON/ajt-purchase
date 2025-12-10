@@ -15,7 +15,7 @@ export const searchForm = () => (
     </Col>
     <Col>
       <Form.Item name="category_id" label="所属品类">
-        <CategoryCascader style={{ width: 200 }} />
+        <CategoryCascader isPurchase={true} style={{ width: 200 }} />
       </Form.Item>
     </Col>
   </>

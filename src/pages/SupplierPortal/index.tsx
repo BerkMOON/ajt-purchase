@@ -1,4 +1,6 @@
 import { InquiryAPI, SupplierInquiryItem } from '@/services/inquiry';
+import { InquiryStatusTagColor } from '@/services/inquiry/constant';
+import { UserInfo } from '@/services/system/user/typings';
 import { Navigate, history, useAccess, useModel } from '@umijs/max';
 import {
   Alert,
@@ -23,24 +25,21 @@ import { formatDate } from '../PurchaseDetail/utils';
 const SupplierPortal: React.FC = () => {
   const { isLogin } = useAccess();
   const { initialState } = useModel('@@initialState');
-  const rawSupplierInfos =
-    (initialState as any)?.supplier_infos ??
-    (initialState as any)?.currentUser?.supplier_infos ??
-    [];
+  const rawSupplierInfos = (initialState as UserInfo)?.supplier_infos ?? [];
   const supplierInfos = (rawSupplierInfos || []).map((info: any) => ({
-    supplier_code: info?.supplier_code ?? info?.code ?? '',
+    supplier_id: info?.supplier_id ?? info?.id ?? 0,
     supplier_name: info?.supplier_name ?? info?.name ?? '',
   }));
-  const [selectedSupplierCode, setSelectedSupplierCode] = useState<string>(
-    supplierInfos?.[0]?.supplier_code || '',
+  const [selectedSupplierId, setSelectedSupplierId] = useState<number>(
+    supplierInfos?.[0]?.supplier_id || 0,
   );
   const selectedSupplierName = useMemo(() => {
     return (
       supplierInfos?.find(
-        (item: any) => item?.supplier_code === selectedSupplierCode,
+        (item: any) => item?.supplier_id === selectedSupplierId,
       )?.supplier_name || supplierInfos?.[0]?.supplier_name
     );
-  }, [selectedSupplierCode, supplierInfos]);
+  }, [selectedSupplierId, supplierInfos]);
 
   const [inquiries, setInquiries] = useState<SupplierInquiryItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -64,13 +63,12 @@ const SupplierPortal: React.FC = () => {
     page = pagination.current,
     pageSize = pagination.pageSize,
   ) => {
-    if (!selectedSupplierCode) return;
+    if (!selectedSupplierId) return;
     try {
       setLoading(true);
       const response = await InquiryAPI.getSupplierInquiries({
         page,
         limit: pageSize,
-        supplier_code: selectedSupplierCode,
         ...filters,
       });
 
@@ -89,11 +87,11 @@ const SupplierPortal: React.FC = () => {
   };
 
   useEffect(() => {
-    if (selectedSupplierCode) {
+    if (selectedSupplierId) {
       fetchInquiries(1, pagination.pageSize);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSupplierCode, filters]);
+  }, [selectedSupplierId, filters]);
 
   // 处理筛选
   const handleFilter = (values: any) => {
@@ -123,8 +121,8 @@ const SupplierPortal: React.FC = () => {
 
   // 进入报价页面
   const goToQuote = (inquiryNo: string) => {
-    const url = `/supplier-quote/${inquiryNo}?supplier_code=${
-      selectedSupplierCode || ''
+    const url = `/supplier-quote/${inquiryNo}?supplier_id=${
+      selectedSupplierId || ''
     }`;
     history.push(url);
   };
@@ -140,7 +138,9 @@ const SupplierPortal: React.FC = () => {
       title: '询价单号',
       dataIndex: 'inquiry_no',
       key: 'inquiry_no',
-      render: (text: string) => <strong>{text}</strong>,
+      render: (inquiryNo: number) => (
+        <a onClick={() => goToQuote(inquiryNo.toString())}>{inquiryNo}</a>
+      ),
     },
     {
       title: '采购单号',
@@ -176,14 +176,14 @@ const SupplierPortal: React.FC = () => {
       title: '询价状态',
       key: 'status',
       render: (_: any, record: SupplierInquiryItem) => {
-        const statusColors: { [key: number]: string } = {
-          0: 'warning',
-          1: 'success',
-          2: 'default',
-          3: 'blue',
-        };
         return (
-          <Tag color={statusColors[record.status.code] || 'default'}>
+          <Tag
+            color={
+              InquiryStatusTagColor[
+                record.status.code as keyof typeof InquiryStatusTagColor
+              ] || 'default'
+            }
+          >
             {record.status.name}
           </Tag>
         );
@@ -191,8 +191,8 @@ const SupplierPortal: React.FC = () => {
     },
     {
       title: '创建时间',
-      dataIndex: 'created_at',
-      key: 'created_at',
+      dataIndex: 'ctime',
+      key: 'ctime',
       render: (time: string) => formatDate(time),
     },
     {
@@ -242,14 +242,14 @@ const SupplierPortal: React.FC = () => {
               {selectedSupplierName || supplierInfos?.[0]?.supplier_name}
             </Descriptions.Item>
             <Descriptions.Item label="供应商ID">
-              {selectedSupplierCode || supplierInfos?.[0]?.supplier_code}
+              {selectedSupplierId || supplierInfos?.[0]?.supplier_id}
             </Descriptions.Item>
             {supplierInfos.length > 1 && (
               <Descriptions.Item label="切换供应商" span={2}>
                 <Select
-                  value={selectedSupplierCode}
+                  value={selectedSupplierId}
                   onChange={(value) => {
-                    setSelectedSupplierCode(value);
+                    setSelectedSupplierId(value);
                     setPagination((prev) => ({ ...prev, current: 1 }));
                   }}
                   style={{ width: 260 }}

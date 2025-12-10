@@ -1,3 +1,4 @@
+import { PurchaseStatusColorMap } from '@/pages/PurchaseDetail/utils';
 import { BaseListInfo, StatusInfo } from '@/types/common';
 export interface PurchaseItem {
   id: number;
@@ -8,7 +9,7 @@ export interface PurchaseItem {
   creator_name: string;
   expected_delivery_date: string;
   inquiry_deadline?: string;
-  status: PurchaseStatus;
+  status: StatusInfo<keyof typeof PurchaseStatusColorMap>;
   order_type?: number;
   remark?: string;
   ctime: string;
@@ -68,7 +69,7 @@ export interface PurchaseDraftItem {
   expected_delivery_date: string;
   inquiry_deadline?: string;
   remark?: string;
-  status: PurchaseStatus;
+  status: StatusInfo<keyof typeof PurchaseStatusColorMap>;
   order_type?: number;
   ctime: number;
   mtime: number;
@@ -134,7 +135,7 @@ export interface PurchaseOrderDetailResponse {
   expected_delivery_date: string;
   inquiry_deadline: string;
   remark: string;
-  status: StatusInfo;
+  status: StatusInfo<keyof typeof PurchaseStatusColorMap>;
   order_type: number;
   items: PurchaseOrderItemResponse[];
   ctime: string;
@@ -145,8 +146,8 @@ export interface PurchaseOrderStatusLogResponse {
   id: number;
   order_id: number;
   order_no: number;
-  from_status: StatusInfo;
-  to_status: StatusInfo;
+  from_status: StatusInfo<keyof typeof PurchaseStatusColorMap>;
+  to_status: StatusInfo<keyof typeof PurchaseStatusColorMap>;
   operator_id: number;
   operator_name: string;
   remark: string;
@@ -156,4 +157,60 @@ export interface PurchaseOrderStatusLogResponse {
 export interface SendSupplierInquiryParams {
   order_no: number;
   deadline: string;
+}
+
+// OrderQuoteDetailResponse 订单报价响应
+export interface OrderQuoteDetailResponse {
+  sku_list: SkuList[];
+}
+
+export interface SkuList {
+  quantity: number;
+  quote_items: QuoteItem[];
+  sku_id: number;
+  sku_name: string;
+}
+
+export interface QuoteItem {
+  expected_delivery_date: string;
+  inquiry_no: number;
+  quote_no: number;
+  quote_price: number | number;
+  remark: string;
+  submit_time: string;
+  supplier_id: number;
+  supplier_name: string;
+}
+
+// OrderQuoteItemResponse 订单报价明细响应
+export interface OrderQuoteItemResponse {
+  quote_no: number | string;
+  sku_id: number;
+  sku_name: string;
+  quantity: number;
+  quote_price: number;
+  expected_delivery_date: string;
+  remark: string;
+  inquiry_item_id?: number;
+}
+
+export interface SubmitOrderParams {
+  order_no: number | string;
+  items: SubmitOrderItemParams[];
+}
+
+export interface SubmitOrderItemParams {
+  sku_id: number;
+  quote_no: number | string;
+}
+
+export interface ConfirmArrivalParams {
+  order_no: number;
+  items: ConfirmArrivalItemParams[];
+}
+
+export interface ConfirmArrivalItemParams {
+  sku_id: number;
+  quote_no: number | string;
+  delivery_date: string;
 }

@@ -1,3 +1,4 @@
+import { Role } from '@/constants';
 import { UserInfo } from '@/services/system/user/typings';
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { history, useModel } from '@umijs/max';
@@ -44,7 +45,9 @@ const Login: React.FC = () => {
 
   return (
     <div className={styles['login-container']}>
-      <StoreSelector />
+      {(initialState as UserInfo)?.user_type === Role.Store && (
+        <StoreSelector />
+      )}
       <Dropdown menu={{ items }} placement="topLeft">
         <div className={styles['login-info']}>
           {(initialState as UserInfo)?.username}

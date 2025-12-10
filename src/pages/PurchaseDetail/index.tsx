@@ -1,5 +1,9 @@
-import { PurchaseAPI, PurchaseOrderDetailResponse } from '@/services/purchase';
-import { OrderQuoteDetailResponse, QuoteAPI } from '@/services/quote';
+import {
+  ConfirmArrivalItemParams,
+  PurchaseAPI,
+  PurchaseOrderDetailResponse,
+  SkuList,
+} from '@/services/purchase';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { history, Navigate, useAccess, useParams } from '@umijs/max';
 import {
@@ -27,7 +31,7 @@ import {
   buildItemQuoteData,
   buildSelectionsFromPurchaseItems,
   getOrderItemKey,
-  getPurchaseStatusColor,
+  PurchaseStatusColorMap,
   SelectedSupplierMap,
 } from './utils';
 
@@ -38,7 +42,7 @@ const PurchaseDetail: React.FC = () => {
     null,
   );
   const [loading, setLoading] = useState(true);
-  const [quotes, setQuotes] = useState<OrderQuoteDetailResponse[]>([]);
+  const [quotes, setQuotes] = useState<SkuList[]>([]);
   const [selectSupplierModalVisible, setSelectSupplierModalVisible] =
     useState(false);
   const [selectedSuppliers, setSelectedSuppliers] =
@@ -68,10 +72,10 @@ const PurchaseDetail: React.FC = () => {
 
       if (purchaseData.status.code >= OrderStatus.INQUIRING) {
         try {
-          const quoteResponse = await QuoteAPI.getSupplierQuotesByOrder(
+          const quoteResponse = await PurchaseAPI.getSupplierQuotesByOrder(
             purchaseData.order_no,
           );
-          const quotesData = quoteResponse.data || [];
+          const quotesData = quoteResponse.data?.sku_list || [];
           setQuotes(quotesData);
 
           // 构建 selectedSuppliers，从报价数据中获取 quote_no
@@ -82,41 +86,33 @@ const PurchaseDetail: React.FC = () => {
                 return;
               }
               const key = getOrderItemKey(item);
-              const matchedQuote = quotesData.find(
-                (quote) => quote.supplier_name === item.supplier_name,
-              );
-              if (!matchedQuote) {
-                selections[key] = {
-                  quote_no: '',
-                  supplier_name: item.supplier_name,
-                  inquiry_item_id: 0,
-                  sku_id: item.sku_id.toString(),
-                  order_item_id: item.id,
-                };
-                return;
-              }
 
-              const matchedQuoteItem = matchedQuote.items.find(
-                (quoteItem) => String(quoteItem.sku_id) === String(item.sku_id),
+              // 从新的报价数据结构中查找匹配的报价
+              let matchedQuoteNo = '';
+              let matchedInquiryNo = 0;
+
+              const skuQuote = quotesData.find(
+                (sq) => sq.sku_id === item.sku_id,
               );
 
-              if (matchedQuoteItem) {
-                selections[key] = {
-                  quote_no: String(matchedQuoteItem.quote_no),
-                  supplier_name: matchedQuote.supplier_name,
-                  inquiry_item_id: matchedQuoteItem.inquiry_item_id || 0,
-                  sku_id: matchedQuoteItem.sku_id,
-                  order_item_id: item.id,
-                };
-              } else {
-                selections[key] = {
-                  quote_no: '',
-                  supplier_name: item.supplier_name,
-                  inquiry_item_id: 0,
-                  sku_id: item.sku_id.toString(),
-                  order_item_id: item.id,
-                };
+              if (skuQuote) {
+                const matchedQuoteItem = skuQuote.quote_items.find(
+                  (qi) => qi.supplier_name === item.supplier_name,
+                );
+
+                if (matchedQuoteItem) {
+                  matchedQuoteNo = String(matchedQuoteItem.quote_no);
+                  matchedInquiryNo = matchedQuoteItem.inquiry_no;
+                }
               }
+
+              selections[key] = {
+                quote_no: matchedQuoteNo,
+                supplier_name: item.supplier_name,
+                inquiry_item_id: matchedInquiryNo,
+                sku_id: item.sku_id.toString(),
+                order_item_id: item.id,
+              };
             });
             setSelectedSuppliers(selections);
           } else {
@@ -181,8 +177,8 @@ const PurchaseDetail: React.FC = () => {
     const submitItems = Object.values(selectedSuppliers)
       .filter((item) => !!item.quote_no && item.order_item_id)
       .map((item) => ({
-        order_item_id: item.order_item_id as number,
-        quote_no: Number(item.quote_no.toString()),
+        sku_id: item.sku_id as number,
+        quote_no: Number(item.quote_no),
       }));
 
     if (submitItems.length === 0) {
@@ -191,7 +187,7 @@ const PurchaseDetail: React.FC = () => {
     }
 
     try {
-      await QuoteAPI.selectSuppliersByItems({
+      await PurchaseAPI.selectSuppliersByItems({
         order_no: purchase.order_no,
         items: submitItems,
       });
@@ -202,6 +198,7 @@ const PurchaseDetail: React.FC = () => {
     } catch (error: any) {
       message.error(error?.message || '选择供应商失败');
       console.error(error);
+      setConfirmLoading(false);
     }
   };
 
@@ -223,14 +220,19 @@ const PurchaseDetail: React.FC = () => {
     setConfirmArrivalModalVisible(true);
   };
 
-  const handleConfirmArrivalSubmit = async (quoteNos: number[]) => {
-    if (quoteNos.length === 0) {
+  const handleConfirmArrivalSubmit = async (
+    arrivalItems: ConfirmArrivalItemParams[],
+  ) => {
+    if (!purchase || arrivalItems.length === 0) {
       message.warning('请至少选择一个配件');
       return;
     }
 
     try {
-      await PurchaseAPI.confirmArrival(quoteNos);
+      await PurchaseAPI.confirmArrival({
+        order_no: purchase.order_no,
+        items: arrivalItems,
+      });
       message.success('到货确认成功');
       setConfirmArrivalModalVisible(false);
       fetchPurchaseDetail();
@@ -265,9 +267,32 @@ const PurchaseDetail: React.FC = () => {
     } catch (error: any) {
       message.error(error?.message || '发起询价失败');
       console.error('发起询价失败:', error);
-      throw error; // 重新抛出错误，让组件知道提交失败
     } finally {
       setSendInquiryLoading(false);
+    }
+  };
+
+  const handleEndInquiry = async () => {
+    if (!purchase) return;
+    try {
+      await PurchaseAPI.endInquiry(purchase.order_no);
+      message.success('已结束询价，请选择供应商报价');
+      fetchPurchaseDetail();
+    } catch (error: any) {
+      message.error(error?.message || '结束询价失败');
+      console.error('结束询价失败:', error);
+    }
+  };
+
+  const handleOrder = async () => {
+    if (!purchase) return;
+    try {
+      await PurchaseAPI.submitOrder(purchase.order_no);
+      message.success('下单成功');
+      fetchPurchaseDetail();
+    } catch (error: any) {
+      message.error(error?.message || '下单失败');
+      console.error('下单失败:', error);
     }
   };
 
@@ -284,10 +309,26 @@ const PurchaseDetail: React.FC = () => {
       );
     }
 
+    if (status === OrderStatus.INQUIRING) {
+      actions.push(
+        <Button key="end-inquiry" type="primary" onClick={handleEndInquiry}>
+          结束询价
+        </Button>,
+      );
+    }
+
     if (status === OrderStatus.PRICE_APPROVAL_REJECTED) {
       actions.push(
         <Button key="price-rejected" danger disabled>
           价格审批已驳回
+        </Button>,
+      );
+    }
+
+    if (status === OrderStatus.QUOTED) {
+      actions.push(
+        <Button key="quote-completed" type="primary" onClick={handleOrder}>
+          下单
         </Button>,
       );
     }
@@ -300,14 +341,6 @@ const PurchaseDetail: React.FC = () => {
           onClick={handleConfirmArrival}
         >
           确认到货
-        </Button>,
-      );
-    }
-
-    if (status === OrderStatus.ARRIVED) {
-      actions.push(
-        <Button key="completed" type="default" disabled>
-          已完成
         </Button>,
       );
     }
@@ -354,7 +387,7 @@ const PurchaseDetail: React.FC = () => {
             <span style={{ fontSize: 16, fontWeight: 'bold' }}>
               采购单详情 - {String(purchase.order_no)}
             </span>
-            <Tag color={getPurchaseStatusColor(purchase.status.code)}>
+            <Tag color={PurchaseStatusColorMap[purchase.status?.code]}>
               {purchase.status.name}
             </Tag>
           </Space>
@@ -366,10 +399,7 @@ const PurchaseDetail: React.FC = () => {
 
         <Row gutter={[24, 24]}>
           <Col span={24}>
-            <BasicInfoCard
-              purchase={purchase}
-              getStatusColor={getPurchaseStatusColor}
-            />
+            <BasicInfoCard purchase={purchase} />
           </Col>
 
           <Col span={24}>
@@ -385,7 +415,9 @@ const PurchaseDetail: React.FC = () => {
               canConfirm={hasSupplierSelection}
               onOpenConfirmModal={() => setSelectSupplierModalVisible(true)}
               purchaseStatus={purchase.status.code}
-              selectionEnabled={purchase.status.code === OrderStatus.INQUIRING}
+              selectionEnabled={
+                purchase.status.code === OrderStatus.INQUIRY_COMPLETED
+              }
             />
           </Col>
 

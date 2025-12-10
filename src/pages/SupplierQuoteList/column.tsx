@@ -1,8 +1,9 @@
 import { SupplierQuoteResponse } from '@/services/quote';
+import { QuoteStatusTagColor } from '@/services/quote/constant';
 import { history } from '@umijs/max';
 import { Tag } from 'antd';
 import { ColumnsType } from 'antd/es/table';
-import { formatDate, getPurchaseStatusColor } from '../PurchaseDetail/utils';
+import { formatDate } from '../PurchaseDetail/utils';
 
 export const columns: ColumnsType<SupplierQuoteResponse> = [
   {
@@ -58,9 +59,10 @@ export const columns: ColumnsType<SupplierQuoteResponse> = [
     title: '状态',
     dataIndex: 'status',
     key: 'status',
-    render: (status: { code: number; name: string }) => (
-      <Tag color={getPurchaseStatusColor(status.code)}>{status.name}</Tag>
-    ),
+    render: (status: {
+      code: keyof typeof QuoteStatusTagColor;
+      name: string;
+    }) => <Tag color={QuoteStatusTagColor[status.code]}>{status.name}</Tag>,
   },
   {
     title: '预计交货日期',

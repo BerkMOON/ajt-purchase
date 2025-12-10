@@ -4,6 +4,7 @@ export const enum OrderStatus {
   APPROVAL_REJECTED,
   AWAIT_INQUIRY,
   INQUIRING,
+  INQUIRY_COMPLETED,
   QUOTED,
   PRICE_PENDING_APPROVAL,
   PRICE_APPROVAL_REJECTED,
@@ -28,7 +29,11 @@ export const PurchaseStatusMap = {
     name: '待询价',
   },
   [OrderStatus.INQUIRING]: { code: OrderStatus.INQUIRING, name: '询价中' },
-  [OrderStatus.QUOTED]: { code: OrderStatus.QUOTED, name: '已报价' },
+  [OrderStatus.INQUIRY_COMPLETED]: {
+    code: OrderStatus.INQUIRY_COMPLETED,
+    name: '询价完成',
+  },
+  [OrderStatus.QUOTED]: { code: OrderStatus.QUOTED, name: '已选择报价' },
   [OrderStatus.PRICE_PENDING_APPROVAL]: {
     code: OrderStatus.PRICE_PENDING_APPROVAL,
     name: '价格待审批',

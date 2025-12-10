@@ -2,7 +2,7 @@ import { PurchaseItem } from '@/services/purchase/typings';
 import { StatusInfo } from '@/types/common';
 import { Link } from '@umijs/max';
 import { Button, Tag } from 'antd';
-import { formatDate, getPurchaseStatusColor } from '../PurchaseDetail/utils';
+import { formatDate, PurchaseStatusColorMap } from '../PurchaseDetail/utils';
 
 export const columns = [
   {
@@ -33,8 +33,8 @@ export const columns = [
     title: '当前状态',
     dataIndex: 'status',
     key: 'status',
-    render: (status: StatusInfo) => (
-      <Tag color={getPurchaseStatusColor(status.code)}>{status.name}</Tag>
+    render: (status: StatusInfo<keyof typeof PurchaseStatusColorMap>) => (
+      <Tag color={PurchaseStatusColorMap[status.code]}>{status.name}</Tag>
     ),
   },
   {

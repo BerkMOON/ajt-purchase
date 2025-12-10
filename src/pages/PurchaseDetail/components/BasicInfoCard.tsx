@@ -2,17 +2,13 @@ import type { PurchaseOrderDetailResponse } from '@/services/purchase/typings.d'
 import { Card, Descriptions, Tag } from 'antd';
 import dayjs from 'dayjs';
 import React from 'react';
-import { formatDate } from '../utils';
+import { formatDate, PurchaseStatusColorMap } from '../utils';
 
 interface BasicInfoCardProps {
   purchase: PurchaseOrderDetailResponse;
-  getStatusColor: (statusCode: number) => string;
 }
 
-const BasicInfoCard: React.FC<BasicInfoCardProps> = ({
-  purchase,
-  getStatusColor,
-}) => {
+const BasicInfoCard: React.FC<BasicInfoCardProps> = ({ purchase }) => {
   // 计算最晚的到货时间
   const latestDeliveryDate = React.useMemo(() => {
     if (!purchase.items || purchase.items.length === 0) {
@@ -65,7 +61,7 @@ const BasicInfoCard: React.FC<BasicInfoCardProps> = ({
           {purchase.items?.length || 0}
         </Descriptions.Item>
         <Descriptions.Item label="当前状态">
-          <Tag color={getStatusColor(purchase.status.code)}>
+          <Tag color={PurchaseStatusColorMap[purchase.status?.code]}>
             {purchase.status.name}
           </Tag>
         </Descriptions.Item>

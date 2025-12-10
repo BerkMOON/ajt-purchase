@@ -169,8 +169,8 @@ export default defineConfig({
     '/api': {
       // 标识需要进行转换的请求的url
       // target: 'http://59.110.38.103:8999',
-      target: 'http://192.168.8.66:8888',
-      // target: 'http://192.168.8.232:8888',
+      // target: 'http://192.168.8.66:8888',
+      target: 'http://192.168.8.232:8888',
       changeOrigin: true, // 允许域名进行转换
     },
   },

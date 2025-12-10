@@ -1,5 +1,5 @@
+import { PurchaseAPI } from '@/services/purchase';
 import type { ProductInfo } from '@/services/system/product/typings';
-import { SkuAPI } from '@/services/system/sku/SkuController';
 import type { SkuListInfo } from '@/services/system/sku/typings';
 import { ShoppingCartOutlined } from '@ant-design/icons';
 import { Button, Space, Spin, Table, Tag } from 'antd';
@@ -59,7 +59,7 @@ export const SkuExpandableTable: React.FC<{
       if (!productId) return;
       setLoading(true);
       try {
-        const response = await SkuAPI.getSkuListByProduct({
+        const response = await PurchaseAPI.getSkuListByProduct({
           product_id: productId,
         });
         setSkus(response.data.sku_list || []);

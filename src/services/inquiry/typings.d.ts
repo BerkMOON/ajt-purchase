@@ -1,3 +1,4 @@
+import { QuoteStatusTagColor } from '@/services/quote/constant';
 import type { BaseListInfo, PageInfoParams, StatusInfo } from '@/types/common';
 export interface InquiryDetail {
   id: number;
@@ -20,7 +21,6 @@ export interface SupplierInquiryDetailParams {
 }
 
 export interface InquiryListRequest extends PageInfoParams {
-  supplier_code: string;
   inquiry_no?: number | string;
   order_no?: number | string;
   status?: number;
@@ -45,12 +45,14 @@ export interface InquiryListResponse extends BaseListInfo {
 
 // InquiryItemResponse 询价单明细响应
 export interface InquiryItemResponse {
-  id: number;
   sku_id: number;
   sku_name: string;
   quantity: number;
-  ctime: string;
-  mtime: string;
+  quote_price: number;
+  status: StatusInfo<keyof typeof QuoteStatusTagColor>;
+  expected_delivery_date: string;
+  submit_time: string;
+  remark: string;
 }
 
 // InquiryDetailResponse 询价单详情响应

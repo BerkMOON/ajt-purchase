@@ -94,7 +94,7 @@ const SupplierQuotesCard: React.FC<SupplierQuotesCardProps> = ({
       dataIndex: 'expected_delivery_date',
       key: 'expected_delivery_date',
       align: 'center',
-      render: (val?: string) => formatDate(val),
+      render: (val?: string) => formatDate(val, true),
     },
     {
       title: '备注',
@@ -146,7 +146,7 @@ const SupplierQuotesCard: React.FC<SupplierQuotesCardProps> = ({
       title="供应商报价"
       size="small"
       extra={
-        purchaseStatus === OrderStatus.INQUIRING &&
+        purchaseStatus === OrderStatus.INQUIRY_COMPLETED &&
         canConfirm && (
           <Button type="primary" onClick={onOpenConfirmModal}>
             确认选择供应商

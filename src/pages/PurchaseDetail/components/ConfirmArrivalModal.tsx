@@ -1,14 +1,18 @@
-import type { PurchaseOrderItemResponse } from '@/services/purchase/typings.d';
-import { Checkbox, Modal, Table } from 'antd';
+import type {
+  ConfirmArrivalItemParams,
+  PurchaseOrderItemResponse,
+} from '@/services/purchase/typings.d';
+import { Checkbox, DatePicker, Form, Modal, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import React, { useState } from 'react';
+import dayjs from 'dayjs';
+import React, { useEffect, useState } from 'react';
 import { OrderItemStatus } from '../constants';
-import { formatCurrency } from '../utils';
+import { formatCurrency, formatDate } from '../utils';
 
 interface ConfirmArrivalModalProps {
   visible: boolean;
   items: PurchaseOrderItemResponse[];
-  onOk: (selectedQuoteNos: number[]) => void;
+  onOk: (arrivalItems: ConfirmArrivalItemParams[]) => void;
   onCancel: () => void;
 }
 
@@ -18,7 +22,16 @@ const ConfirmArrivalModal: React.FC<ConfirmArrivalModalProps> = ({
   onOk,
   onCancel,
 }) => {
+  const [form] = Form.useForm();
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+
+  // 当弹窗打开时，重置表单和选择
+  useEffect(() => {
+    if (visible) {
+      form.resetFields();
+      setSelectedItems(new Set());
+    }
+  }, [visible, form]);
 
   // 只显示已选中供应商的配件
   const displayItems = items.filter((item) => !!item.supplier_name);
@@ -47,26 +60,45 @@ const ConfirmArrivalModal: React.FC<ConfirmArrivalModalProps> = ({
     }
   };
 
-  const handleOk = () => {
-    // 根据选中的配件，找到对应的 quote_no
-    const quoteNos: number[] = [];
-    selectedItems.forEach((itemId) => {
-      const item = items.find((i) => i.id === itemId);
-      if (item?.quote_no) {
-        quoteNos.push(item.quote_no);
+  const handleOk = async () => {
+    try {
+      // 验证表单
+      const values = await form.validateFields();
+
+      // 根据选中的配件，构建确认到货的数据
+      const arrivalItems: ConfirmArrivalItemParams[] = [];
+      selectedItems.forEach((itemId) => {
+        const item = items.find((i) => i.id === itemId);
+        if (item?.quote_no && item?.sku_id) {
+          const deliveryDateKey = `delivery_date_${itemId}`;
+          const deliveryDate = values[deliveryDateKey];
+
+          if (deliveryDate) {
+            arrivalItems.push({
+              sku_id: item.sku_id,
+              quote_no: item.quote_no,
+              delivery_date: formatDate(deliveryDate, true),
+            });
+          }
+        }
+      });
+
+      if (arrivalItems.length === 0) {
+        return;
       }
-    });
 
-    if (quoteNos.length === 0) {
-      return;
+      onOk(arrivalItems);
+      setSelectedItems(new Set());
+      form.resetFields();
+    } catch (error) {
+      // 表单验证失败，不处理
+      console.error('表单验证失败:', error);
     }
-
-    onOk(quoteNos);
-    setSelectedItems(new Set());
   };
 
   const handleCancel = () => {
     setSelectedItems(new Set());
+    form.resetFields();
     onCancel();
   };
 
@@ -130,6 +162,36 @@ const ConfirmArrivalModal: React.FC<ConfirmArrivalModalProps> = ({
       align: 'right',
       render: (price: number) => formatCurrency(price),
     },
+    {
+      title: '到货日期 *',
+      key: 'delivery_date',
+      width: 180,
+      render: (_: any, record: PurchaseOrderItemResponse) => {
+        const isArrived = record.status.code === OrderItemStatus.ARRIVED;
+        const isSelected = selectedItems.has(record.id);
+
+        if (!isSelected || isArrived) {
+          return <span style={{ color: '#999' }}>-</span>;
+        }
+
+        return (
+          <Form.Item
+            name={`delivery_date_${record.id}`}
+            rules={[{ required: true, message: '请选择到货日期' }]}
+            style={{ margin: 0 }}
+          >
+            <DatePicker
+              style={{ width: '100%' }}
+              format="YYYY-MM-DD"
+              placeholder="选择日期"
+              disabledDate={(current) =>
+                current && current < dayjs().startOf('day')
+              }
+            />
+          </Form.Item>
+        );
+      },
+    },
   ];
 
   return (
@@ -138,29 +200,31 @@ const ConfirmArrivalModal: React.FC<ConfirmArrivalModalProps> = ({
       open={visible}
       onOk={handleOk}
       onCancel={handleCancel}
-      width={800}
+      width={1000}
       okText="确认到货"
       cancelText="取消"
       okButtonProps={{
         disabled: selectedItems.size === 0,
       }}
     >
-      <div style={{ marginBottom: 16 }}>
-        <span style={{ color: '#666' }}>
-          请选择已到货的配件，确认后将更新对应配件的到货状态。
-        </span>
-      </div>
-      <Table
-        columns={columns}
-        dataSource={displayItems}
-        rowKey="id"
-        pagination={false}
-        size="small"
-        rowClassName={(record) => {
-          const isArrived = record.status.code === OrderItemStatus.ARRIVED;
-          return isArrived ? 'arrived-item-disabled' : '';
-        }}
-      />
+      <Form form={form} layout="vertical">
+        <div style={{ marginBottom: 16 }}>
+          <span style={{ color: '#666' }}>
+            请选择已到货的配件并填写到货日期，确认后将更新对应配件的到货状态。
+          </span>
+        </div>
+        <Table
+          columns={columns}
+          dataSource={displayItems}
+          rowKey="id"
+          pagination={false}
+          size="small"
+          rowClassName={(record) => {
+            const isArrived = record.status.code === OrderItemStatus.ARRIVED;
+            return isArrived ? 'arrived-item-disabled' : '';
+          }}
+        />
+      </Form>
     </Modal>
   );
 };

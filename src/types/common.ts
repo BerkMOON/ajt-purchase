@@ -70,7 +70,7 @@ export interface ColumnsProps<T> {
   bindingModal?: ModalControl;
 }
 
-export interface StatusInfo {
-  code: number;
+export interface StatusInfo<T = number> {
+  code: T;
   name: string;
 }

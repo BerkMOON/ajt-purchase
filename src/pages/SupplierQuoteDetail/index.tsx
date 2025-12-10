@@ -1,4 +1,5 @@
 import { QuoteAPI } from '@/services/quote';
+import { QuoteStatusTagColor } from '@/services/quote/constant';
 import type { SupplierQuoteResponse } from '@/services/quote/typings.d';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { history, useAccess, useParams } from '@umijs/max';
@@ -15,7 +16,7 @@ import {
   Tag,
 } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { formatDate, getPurchaseStatusColor } from '../PurchaseDetail/utils';
+import { formatDate } from '../PurchaseDetail/utils';
 
 const SupplierQuoteDetail: React.FC = () => {
   const { isLogin } = useAccess();
@@ -84,7 +85,7 @@ const SupplierQuoteDetail: React.FC = () => {
             <span style={{ fontSize: 16, fontWeight: 'bold' }}>
               报价单详情 - {quote.quote_no}
             </span>
-            <Tag color={getPurchaseStatusColor(quote.status.code)}>
+            <Tag color={QuoteStatusTagColor[quote.status?.code]}>
               {quote.status.name}
             </Tag>
           </Space>
@@ -125,7 +126,7 @@ const SupplierQuoteDetail: React.FC = () => {
                   ¥{quote.total_price.toFixed(2)}
                 </Descriptions.Item>
                 <Descriptions.Item label="状态">
-                  <Tag color={getPurchaseStatusColor(quote.status.code)}>
+                  <Tag color={QuoteStatusTagColor[quote.status?.code]}>
                     {quote.status.name}
                   </Tag>
                 </Descriptions.Item>

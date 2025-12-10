@@ -19,6 +19,7 @@ export interface UserInfo {
   supplier_infos?: {
     supplier_code: string;
     supplier_name: string;
+    supplier_id: number;
   }[];
 }
 

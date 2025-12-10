@@ -3,7 +3,7 @@ import type { PurchaseOrderStatusLogResponse } from '@/services/purchase/typings
 import { Card, Spin, Timeline } from 'antd';
 import dayjs from 'dayjs';
 import React, { useEffect, useMemo, useState } from 'react';
-import { getPurchaseStatusColor } from '../utils';
+import { PurchaseStatusColorMap } from '../utils';
 
 interface StatusTimelineCardProps {
   orderNo: number;
@@ -44,7 +44,7 @@ const StatusTimelineCard: React.FC<StatusTimelineCardProps> = ({ orderNo }) => {
 
     const items: Array<{
       id: number | string;
-      status: { code: number; name: string };
+      status: { code: keyof typeof PurchaseStatusColorMap; name: string };
       ctime: string;
       operator_name?: string;
       remark?: string;
@@ -101,7 +101,7 @@ const StatusTimelineCard: React.FC<StatusTimelineCardProps> = ({ orderNo }) => {
     <Card title="状态流水" size="small">
       <Timeline mode="left">
         {timelineItems.map((item) => {
-          const statusColor = getPurchaseStatusColor(item.status.code);
+          const statusColor = PurchaseStatusColorMap[item.status?.code];
           return (
             <Timeline.Item
               key={item.id}

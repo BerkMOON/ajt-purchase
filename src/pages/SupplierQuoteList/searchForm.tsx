@@ -19,11 +19,11 @@ export const searchForm = (
       <Form.Item name="status" label="状态">
         <Select style={{ width: '200px' }} placeholder="请选择状态" allowClear>
           <Select.Option value={InquiryItemStatus.PENDING}>
-            未选择
+            待报价
           </Select.Option>
-          <Select.Option value={InquiryItemStatus.QUOTED}>已选中</Select.Option>
+          <Select.Option value={InquiryItemStatus.QUOTED}>已报价</Select.Option>
           <Select.Option value={InquiryItemStatus.CANCELLED}>
-            未选中
+            未报价
           </Select.Option>
         </Select>
       </Form.Item>

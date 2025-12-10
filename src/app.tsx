@@ -61,6 +61,7 @@ export async function getInitialState(): Promise<
           const supplierInfo = data.supplier_infos?.[0];
           if (supplierInfo) {
             const defaultSupplier = {
+              supplierId: supplierInfo.supplier_id,
               supplierCode: supplierInfo.supplier_code,
               supplierName: supplierInfo.supplier_name,
             };
@@ -79,6 +80,7 @@ export async function getInitialState(): Promise<
             const supplierInfo = data.supplier_infos?.[0];
             if (supplierInfo) {
               const defaultSupplier = {
+                supplierId: supplierInfo.supplier_id,
                 supplierCode: supplierInfo.supplier_code,
                 supplierName: supplierInfo.supplier_name,
               };
@@ -129,7 +131,7 @@ export const request = {
         const supplierInfo = JSON.parse(currentSupplier);
         config.headers = {
           ...config.headers,
-          'x-supplier-code': supplierInfo.supplierCode,
+          'x-supplier-id': supplierInfo.supplierId,
         };
       }
 
@@ -145,7 +147,6 @@ export const request = {
         if (responseStatus && responseStatus.code !== 200) {
           // 如果 response_status.code 不是 200，显示错误信息并抛出错误
           const errorMsg = responseStatus.msg || '请求失败';
-          message.error(errorMsg);
           // 抛出错误，让 errorHandler 处理
           const error = new Error(errorMsg);
           (error as any).response = {

@@ -1,3 +1,4 @@
+import { PurchaseAPI } from '@/services/purchase';
 import { CategoryAPI } from '@/services/system/category/CategoryController';
 import type { CategoryInfo } from '@/services/system/category/typing';
 import { Cascader, message } from 'antd';
@@ -11,12 +12,14 @@ interface CategoryCascaderProps extends Omit<CascaderProps<any>, 'options'> {
   options?: any[];
   /** 加载状态，如果提供则使用外部状态 */
   loading?: boolean;
+  isPurchase?: boolean;
 }
 
 const CategoryCascader: React.FC<CategoryCascaderProps> = ({
   autoLoad = true,
   options: externalOptions,
   loading: externalLoading,
+  isPurchase = false,
   ...restProps
 }) => {
   const [categoryOptions, setCategoryOptions] = useState<any[]>([]);
@@ -26,14 +29,15 @@ const CategoryCascader: React.FC<CategoryCascaderProps> = ({
   const loadCategoryTree = async () => {
     setLoading(true);
     try {
-      const response = await CategoryAPI.getChildren({ parent_id: 0 });
+      const Api = isPurchase ? PurchaseAPI : CategoryAPI;
+      const response = await Api.getChildren({ parent_id: 0 });
       const categories = response.data.categories || [];
 
       // 递归加载所有层级的品类
       const loadCategoryRecursively = async (
         parentId: number,
       ): Promise<any[]> => {
-        const children = await CategoryAPI.getChildren({ parent_id: parentId });
+        const children = await Api.getChildren({ parent_id: parentId });
         const childCategories = children.data.categories || [];
 
         const result = await Promise.all(

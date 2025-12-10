@@ -1,8 +1,9 @@
 import {
   PurchaseOrderDetailResponse,
   PurchaseOrderItemResponse,
+  QuoteItem,
+  SkuList,
 } from '@/services/purchase/typings.d';
-import type { OrderQuoteDetailResponse } from '@/services/quote';
 import dayjs from 'dayjs';
 import { OrderItemStatus, OrderStatus } from './constants';
 
@@ -64,36 +65,18 @@ export const getQuoteItemKey = (quoteItem: any) => {
 export const formatCurrency = (val?: number | null) =>
   typeof val === 'number' ? `¥${val.toFixed(2)}` : '-';
 
-/**
- * 根据采购单状态码获取对应的颜色
- * @param statusCode 状态码
- * @returns Ant Design Tag 的颜色值
- */
-export const getPurchaseStatusColor = (statusCode: number): string => {
-  switch (statusCode) {
-    case OrderStatus.DRAFT:
-      return 'green';
-    case OrderStatus.PENDING_APPROVAL:
-      return 'blue';
-    case OrderStatus.APPROVAL_REJECTED:
-      return 'red';
-    case OrderStatus.AWAIT_INQUIRY:
-      return 'orange';
-    case OrderStatus.INQUIRING:
-      return 'orange';
-    case OrderStatus.QUOTED:
-      return 'blue';
-    case OrderStatus.PRICE_PENDING_APPROVAL:
-      return 'orange';
-    case OrderStatus.PRICE_APPROVAL_REJECTED:
-      return 'red';
-    case OrderStatus.ORDERED:
-      return 'purple';
-    case OrderStatus.ARRIVED:
-      return 'green';
-    default:
-      return 'default';
-  }
+export const PurchaseStatusColorMap = {
+  [OrderStatus.DRAFT]: 'green',
+  [OrderStatus.PENDING_APPROVAL]: 'blue',
+  [OrderStatus.APPROVAL_REJECTED]: 'red',
+  [OrderStatus.AWAIT_INQUIRY]: 'orange',
+  [OrderStatus.INQUIRING]: 'orange',
+  [OrderStatus.INQUIRY_COMPLETED]: 'blue',
+  [OrderStatus.QUOTED]: 'blue',
+  [OrderStatus.PRICE_PENDING_APPROVAL]: 'orange',
+  [OrderStatus.PRICE_APPROVAL_REJECTED]: 'red',
+  [OrderStatus.ORDERED]: 'purple',
+  [OrderStatus.ARRIVED]: 'green',
 };
 
 export const buildSelectionsFromPurchaseItems = (
@@ -117,9 +100,10 @@ export const buildSelectionsFromPurchaseItems = (
 
 export const buildItemQuoteData = (
   purchase: PurchaseOrderDetailResponse | null,
-  quotes: OrderQuoteDetailResponse[],
+  quotes: SkuList[],
 ): ItemQuoteRow[] => {
   if (!purchase || !purchase.items) return [];
+  if (!quotes || quotes.length === 0) return [];
 
   // 1. 首先基于采购单商品构建基础数据
   const itemMap = new Map<string, ItemQuoteRow>();
@@ -149,59 +133,35 @@ export const buildItemQuoteData = (
   });
 
   // 2. 遍历报价数据，将报价信息关联到对应的商品
-  quotes.forEach((quote) => {
-    quote.items.forEach((quoteItem) => {
-      let targetKey: string | undefined;
+  quotes.forEach((skuQuote: SkuList) => {
+    const targetKey = skuMap.get(String(skuQuote.sku_id));
 
-      // 通过 sku_id 匹配
-      if (!targetKey && quoteItem.sku_id) {
-        targetKey = skuMap.get(String(quoteItem.sku_id));
-      }
-
-      // 如果仍然找不到，创建一个新的条目（这种情况应该很少见）
-      if (!targetKey) {
-        const newKey = `sku_${quoteItem.sku_id}_${quoteItem.sku_name}`;
-
-        if (!itemMap.has(newKey)) {
-          itemMap.set(newKey, {
-            itemKey: newKey,
-            sku_id: quoteItem.sku_id,
-            sku_name: quoteItem.sku_name,
-            quantity: quoteItem.quantity,
-            product_name: quoteItem.sku_name,
-            quotes: [],
-          });
-        }
-        targetKey = newKey;
-      }
-
-      // 将报价信息添加到对应商品
-      if (targetKey) {
-        const itemData = itemMap.get(targetKey);
-        if (itemData) {
-          // 添加报价信息（避免重复）
+    if (targetKey) {
+      const itemData = itemMap.get(targetKey);
+      if (itemData) {
+        // 遍历该 SKU 的所有报价项
+        skuQuote.quote_items.forEach((quoteItem: QuoteItem) => {
+          // 检查是否已存在相同的报价（避免重复）
           const existingQuote = itemData.quotes.find(
-            (q) =>
-              q.quote_no === String(quoteItem.quote_no) &&
-              q.sku_id === quoteItem.sku_id,
+            (q) => q.quote_no === String(quoteItem.quote_no),
           );
 
           if (!existingQuote) {
-            const totalPrice = quoteItem.quote_price * quoteItem.quantity;
+            const totalPrice = quoteItem.quote_price * skuQuote.quantity;
             itemData.quotes.push({
               quote_no: String(quoteItem.quote_no),
-              supplier_name: quote.supplier_name,
-              inquiry_item_id: quoteItem.inquiry_item_id,
-              sku_id: quoteItem.sku_id,
+              supplier_name: quoteItem.supplier_name,
+              inquiry_item_id: quoteItem.inquiry_no, // 使用 inquiry_no 作为 inquiry_item_id
+              sku_id: skuQuote.sku_id,
               quote_price: quoteItem.quote_price,
               total_price: totalPrice,
               expected_delivery_date: quoteItem.expected_delivery_date,
-              remark: quoteItem.remark,
+              remark: quoteItem.remark || '',
             });
           }
-        }
+        });
       }
-    });
+    }
   });
 
   return Array.from(itemMap.values());
@@ -226,7 +186,9 @@ export const formatDate = (
   date: string | undefined | null,
   isDate: boolean = false,
 ): string => {
-  return date && date !== '1970-01-01 00:00:00'
+  return date &&
+    date !== '1970-01-01 00:00:00' &&
+    date !== '0001-01-01 00:00:00'
     ? dayjs(date).format(isDate ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:mm:ss')
     : '-';
 };
