@@ -49,7 +49,9 @@ export const columns = [
     dataIndex: 'inquiry_deadline',
     key: 'inquiry_deadline',
     render: (deadline: string, record: PurchaseItem) => {
-      const expired = new Date(deadline) < new Date();
+      const expired =
+        new Date(deadline) < new Date() &&
+        record.status.code === OrderStatus.INQUIRING;
       return (
         <span style={{ color: expired ? 'red' : 'inherit' }}>
           <CountdownText

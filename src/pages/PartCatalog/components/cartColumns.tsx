@@ -1,10 +1,10 @@
+import QuantityControl from '@/components/BasicComponents/QuantityControl';
 import { COMMON_CATEGORY_STATUS_CODE } from '@/constants';
 import type { CartItem } from '@/services/cart/typings';
 import type { CategoryTree } from '@/services/system/product/typings';
-import { DeleteOutlined, MinusOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, InputNumber, Popconfirm, Space, Tag } from 'antd';
+import { DeleteOutlined } from '@ant-design/icons';
+import { Button, Popconfirm, Space, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import React, { useState } from 'react';
 
 export interface CartColumnsHandlers {
   handleQuantityChange: (skuId: number, newQuantity: number) => void;
@@ -97,112 +97,13 @@ export const getCartColumns = ({
       key: 'quantity',
       width: 200,
       render: (_: any, record: CartItem) => {
-        // 数量控制组件：乐观更新UI，防抖发送请求
-        const QuantityControl: React.FC<{ record: CartItem }> = ({
-          record,
-        }) => {
-          const [localQuantity, setLocalQuantity] = useState<number>(
-            record.quantity || 1,
-          );
-          const [inputValue, setInputValue] = useState<number | null>(
-            record.quantity || 1,
-          );
-          const debounceTimerRef = React.useRef<ReturnType<
-            typeof setTimeout
-          > | null>(null);
-
-          // 当服务器数据更新时，同步本地状态
-          React.useEffect(() => {
-            setLocalQuantity(record.quantity || 1);
-            setInputValue(record.quantity || 1);
-          }, [record.quantity]);
-
-          // 防抖发送请求
-          const debouncedQuantityChange = (newQuantity: number) => {
-            if (debounceTimerRef.current) {
-              clearTimeout(debounceTimerRef.current);
-            }
-
-            debounceTimerRef.current = setTimeout(() => {
-              if (newQuantity > 0 && newQuantity !== record.quantity) {
-                handleQuantityChange(record.sku_id, newQuantity);
-              }
-            }, 300); // 停止操作后300ms发送请求
-          };
-
-          // 处理增减按钮点击
-          const handleButtonClick = (delta: number) => {
-            if (loading) return;
-
-            const newQuantity = Math.max(1, localQuantity + delta);
-            // 立即更新UI（乐观更新）
-            setLocalQuantity(newQuantity);
-            setInputValue(newQuantity);
-            // 防抖发送请求
-            debouncedQuantityChange(newQuantity);
-          };
-
-          // 处理输入框变化
-          const handleInputChange = (value: number | null) => {
-            setInputValue(value);
-          };
-
-          // 处理输入框失焦或回车
-          const handleInputBlur = () => {
-            const finalValue = inputValue;
-            if (finalValue && finalValue > 0) {
-              setLocalQuantity(finalValue);
-              // 立即发送请求（用户主动输入）
-              if (debounceTimerRef.current) {
-                clearTimeout(debounceTimerRef.current);
-              }
-              if (finalValue !== record.quantity) {
-                handleQuantityChange(record.sku_id, finalValue);
-              }
-            } else {
-              // 如果输入无效，恢复原值
-              setInputValue(localQuantity);
-            }
-          };
-
-          // 清理定时器
-          React.useEffect(() => {
-            return () => {
-              if (debounceTimerRef.current) {
-                clearTimeout(debounceTimerRef.current);
-              }
-            };
-          }, []);
-
-          return (
-            <Space>
-              <Button
-                icon={<MinusOutlined />}
-                size="small"
-                onClick={() => handleButtonClick(-1)}
-                disabled={loading || localQuantity <= 1}
-              />
-              <InputNumber
-                value={inputValue}
-                min={1}
-                precision={0}
-                style={{ width: 80 }}
-                onChange={handleInputChange}
-                onBlur={handleInputBlur}
-                onPressEnter={handleInputBlur}
-                disabled={loading}
-              />
-              <Button
-                icon={<PlusOutlined />}
-                size="small"
-                onClick={() => handleButtonClick(1)}
-                disabled={loading}
-              />
-            </Space>
-          );
-        };
-
-        return <QuantityControl record={record} />;
+        return (
+          <QuantityControl
+            record={record}
+            loading={loading}
+            onQuantityChange={handleQuantityChange}
+          />
+        );
       },
     },
     {
