@@ -1,5 +1,6 @@
 import { Role } from '@/constants';
 import { UserInfo } from '@/services/system/user/typings';
+import { UserAPI } from '@/services/system/user/UserController';
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { history, useModel } from '@umijs/max';
 import { Dropdown } from 'antd';
@@ -11,6 +12,7 @@ const Login: React.FC = () => {
   const { clearCurrentStore } = useModel('storeModel');
 
   const goLogout = async () => {
+    await UserAPI.logout();
     localStorage.removeItem('token');
     clearCurrentStore();
     localStorage.removeItem('currentSupplier');

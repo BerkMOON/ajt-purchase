@@ -1,14 +1,26 @@
 import { CartAPI } from '@/services/cart/CartController';
 import type { CartItem } from '@/services/cart/typings';
 import { Navigate, useAccess } from '@umijs/max';
-import { Card, Table, message } from 'antd';
+import { Button, Card, Space, Table, message } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 import { getCartColumns } from '../PartCatalog/components/cartColumns';
+import CreatePurchaseModal from '../PartCatalog/components/CreatePurchaseModal';
+import { usePurchaseCreation } from '../PartCatalog/hooks/usePurchaseCreation';
 
 const Cart: React.FC = () => {
   const { isLogin } = useAccess();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // 使用创建采购单的 hook
+  const {
+    createModalVisible,
+    createLoading,
+    form,
+    handleCreatePurchase,
+    handleSubmitPurchase,
+    handleCancelCreate,
+  } = usePurchaseCreation();
 
   // 获取购物车列表
   const fetchCartList = useCallback(async () => {
@@ -83,6 +95,13 @@ const Cart: React.FC = () => {
     }
   };
 
+  // 处理创建采购单提交
+  const handleSubmitPurchaseWithRefresh = async (values: any) => {
+    await handleSubmitPurchase(values);
+    // 创建成功后刷新购物车列表
+    fetchCartList();
+  };
+
   const columns = getCartColumns({
     handleQuantityChange,
     handleIncrease,
@@ -100,18 +119,41 @@ const Cart: React.FC = () => {
   }
 
   return (
-    <Card title="购物车">
-      <Table
-        columns={columns}
-        dataSource={cartItems}
-        rowKey="sku_id"
-        loading={loading}
-        pagination={false}
-        locale={{
-          emptyText: '购物车是空的',
-        }}
+    <>
+      <Card
+        title="购物车"
+        extra={
+          <Space>
+            <Button
+              type="primary"
+              onClick={handleCreatePurchase}
+              disabled={cartItems.length === 0}
+            >
+              创建采购单
+            </Button>
+          </Space>
+        }
+      >
+        <Table
+          columns={columns}
+          dataSource={cartItems}
+          rowKey="sku_id"
+          loading={loading}
+          pagination={false}
+          locale={{
+            emptyText: '购物车是空的',
+          }}
+        />
+      </Card>
+
+      <CreatePurchaseModal
+        visible={createModalVisible}
+        loading={createLoading}
+        form={form}
+        onCancel={handleCancelCreate}
+        onSubmit={handleSubmitPurchaseWithRefresh}
       />
-    </Card>
+    </>
   );
 };
 

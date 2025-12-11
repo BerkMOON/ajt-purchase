@@ -1,3 +1,4 @@
+import CountdownText from '@/components/BasicComponents/CountdownText';
 import { InquiryAPI, SupplierInquiryItem } from '@/services/inquiry';
 import { InquiryStatusTagColor } from '@/services/inquiry/constant';
 import { UserInfo } from '@/services/system/user/typings';
@@ -162,12 +163,7 @@ const SupplierPortal: React.FC = () => {
         const expired = isInquiryExpired(deadline);
         return (
           <span style={{ color: expired ? 'red' : 'inherit' }}>
-            {formatDate(deadline)}
-            {expired && (
-              <Tag color="red" style={{ marginLeft: 8 }}>
-                已过期
-              </Tag>
-            )}
+            <CountdownText deadline={deadline} />
           </span>
         );
       },

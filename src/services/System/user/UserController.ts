@@ -55,6 +55,11 @@ export const UserAPI = {
       data: params,
     }),
 
+  logout: () =>
+    request<ResponseInfoType<null>>('/api/v1/logout', {
+      method: 'POST',
+    }),
+
   /**
    * 重置用户密码
    * POST /api/v1/platform/user/password/reset

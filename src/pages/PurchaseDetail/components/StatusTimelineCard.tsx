@@ -59,7 +59,7 @@ const StatusTimelineCard: React.FC<StatusTimelineCardProps> = ({ orderNo }) => {
         status: firstLog.from_status,
         ctime: firstLog.ctime, // 使用第一条记录的时间作为初始状态时间
         operator_name: firstLog.operator_name,
-        remark: '创建采购单草稿',
+        remark: '创建采购单',
         isInitial: true,
       });
     }

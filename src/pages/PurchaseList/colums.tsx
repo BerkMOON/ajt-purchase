@@ -1,7 +1,9 @@
+import CountdownText from '@/components/BasicComponents/CountdownText';
 import { PurchaseItem } from '@/services/purchase/typings';
 import { StatusInfo } from '@/types/common';
 import { Link } from '@umijs/max';
 import { Button, Tag } from 'antd';
+import { OrderStatus } from '../PurchaseDetail/constants';
 import { formatDate, PurchaseStatusColorMap } from '../PurchaseDetail/utils';
 
 export const columns = [
@@ -43,9 +45,20 @@ export const columns = [
     key: 'expected_delivery_date',
   },
   {
-    title: '询价截止日期',
+    title: '询价截止时间',
     dataIndex: 'inquiry_deadline',
     key: 'inquiry_deadline',
+    render: (deadline: string, record: PurchaseItem) => {
+      const expired = new Date(deadline) < new Date();
+      return (
+        <span style={{ color: expired ? 'red' : 'inherit' }}>
+          <CountdownText
+            deadline={deadline}
+            isInquiring={record.status.code === OrderStatus.INQUIRING}
+          />
+        </span>
+      );
+    },
   },
   {
     title: '操作',

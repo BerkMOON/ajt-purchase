@@ -9,6 +9,6 @@ export const InquiryStatusMap = {
 };
 
 export const InquiryStatusTagColor = {
-  [InquiryStatus.Quoting]: 'warning',
+  [InquiryStatus.Quoting]: 'orange',
   [InquiryStatus.End]: 'blue',
 };
