@@ -142,6 +142,18 @@ const SupplierQuoteDetail: React.FC = () => {
                 <Descriptions.Item label="备注" span={3}>
                   {quote.remark || '-'}
                 </Descriptions.Item>
+                {quote.tracking_info && (
+                  <Descriptions.Item label="物流信息" span={3}>
+                    <Descriptions column={1} bordered>
+                      <Descriptions.Item label="物流单号">
+                        {quote.tracking_info.tracking_no_list.join(',')}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="备注">
+                        {quote.tracking_info.remark || '-'}
+                      </Descriptions.Item>
+                    </Descriptions>
+                  </Descriptions.Item>
+                )}
               </Descriptions>
             </Card>
           </Col>

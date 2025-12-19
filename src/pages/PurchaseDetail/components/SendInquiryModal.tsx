@@ -34,8 +34,8 @@ const SendInquiryModal: React.FC<SendInquiryModalProps> = ({
 
   const handleOk = async () => {
     try {
-      const values = await form.validateFields();
-      const deadline = values.deadline.format('YYYY-MM-DD HH:mm:ss');
+      const values = form.getFieldValue('deadline');
+      const deadline = values.format('YYYY-MM-DD HH:mm:ss');
       await onOk(deadline);
     } catch (error: any) {
       // 表单验证错误，不处理（由 Form 自动显示错误信息）

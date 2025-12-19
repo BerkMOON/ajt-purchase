@@ -65,8 +65,8 @@ export interface InquiryDetailResponse {
   deadline: string;
   ctime: string;
   mtime: string;
+  expected_delivery_date: string;
   items: InquiryItemResponse[];
-  quotes: InquiryQuoteItemResponse[];
 }
 
 export interface InquiryQuoteItemResponse {

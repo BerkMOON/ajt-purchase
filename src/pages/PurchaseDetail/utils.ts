@@ -27,6 +27,10 @@ export type QuoteCard = {
   total_price: number;
   expected_delivery_date?: string;
   remark: string;
+  tracking_info?: {
+    tracking_no_list: string[];
+    remark: string;
+  };
 };
 
 export type ItemQuoteRow = {
@@ -157,6 +161,7 @@ export const buildItemQuoteData = (
               total_price: totalPrice,
               expected_delivery_date: quoteItem.expected_delivery_date,
               remark: quoteItem.remark || '',
+              tracking_info: quoteItem.tracking_info,
             });
           }
         });

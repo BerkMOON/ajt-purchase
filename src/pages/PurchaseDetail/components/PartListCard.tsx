@@ -1,12 +1,16 @@
-import type { PurchaseOrderItemResponse } from '@/services/purchase/typings.d';
+import type {
+  PurchaseOrderItemResponse,
+  SkuList,
+} from '@/services/purchase/typings.d';
 import { StatusInfo } from '@/types/common';
-import { Card, Table, Tag } from 'antd';
+import { Card, Space, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { formatCurrency, formatDate, getItemStatusColor } from '../utils';
 
 interface PartListCardProps {
   items?: PurchaseOrderItemResponse[];
+  quotes?: SkuList[]; // 报价数据，用于获取物流信息
 }
 
 const columns: ColumnsType<PurchaseOrderItemResponse> = [
@@ -86,16 +90,97 @@ const columns: ColumnsType<PurchaseOrderItemResponse> = [
   },
 ];
 
-const PartListCard: React.FC<PartListCardProps> = ({ items }) => (
-  <Card title="配件清单" size="small">
-    <Table
-      columns={columns}
-      dataSource={items}
-      rowKey={(item) => `${item.id}-${item.sku_id}-${item.sku_name}`}
-      pagination={false}
-      size="small"
-    />
-  </Card>
-);
+const PartListCard: React.FC<PartListCardProps> = ({ items, quotes = [] }) => {
+  // 构建一个映射：itemKey (基于 id 或 sku_id+sku_name) -> tracking_info
+  // 根据 item.id 或 sku_id + quote_no 来匹配对应的报价项的物流信息
+  const trackingInfoMap = useMemo(() => {
+    const map = new Map<
+      string,
+      { tracking_no_list: string[]; remark: string }
+    >();
+
+    if (!items || !quotes) return map;
+
+    items.forEach((item) => {
+      if (item.supplier_name && item.quote_no) {
+        // 找到对应的 SKU 报价
+        const skuQuote = quotes.find((q) => q.sku_id === item.sku_id);
+        if (skuQuote) {
+          // 找到对应 quote_no 的报价项
+          const quoteItem = skuQuote.quote_items.find(
+            (qi) => String(qi.quote_no) === String(item.quote_no),
+          );
+          if (quoteItem?.tracking_info) {
+            // 使用 itemKey 作为 map 的 key，确保唯一性
+            const itemKey = item.id
+              ? `order_${item.id}`
+              : `sku_${item.sku_id}_${item.sku_name}`;
+            map.set(itemKey, quoteItem.tracking_info);
+          }
+        }
+      }
+    });
+
+    return map;
+  }, [items, quotes]);
+
+  const columnsWithTracking: ColumnsType<PurchaseOrderItemResponse> = [
+    ...columns,
+    {
+      title: '物流信息',
+      key: 'tracking_info',
+      width: 250,
+      render: (_: any, record: PurchaseOrderItemResponse) => {
+        // 构建 itemKey 用于查找物流信息
+        const itemKey = record.id
+          ? `order_${record.id}`
+          : `sku_${String(record.sku_id)}_${record.sku_name}`;
+        const trackingInfo = trackingInfoMap.get(itemKey);
+        if (!trackingInfo) {
+          return <span style={{ color: '#bfbfbf' }}>-</span>;
+        }
+
+        const { tracking_no_list, remark } = trackingInfo;
+
+        return (
+          <div>
+            {tracking_no_list && tracking_no_list.length > 0 && (
+              <div style={{ marginBottom: remark ? 8 : 0 }}>
+                <div style={{ marginBottom: 4, fontWeight: 500 }}>
+                  快递单号：
+                </div>
+                <Space wrap>
+                  {tracking_no_list.map((trackingNo: string, index: number) => (
+                    <Tag key={index} color="blue">
+                      {trackingNo}
+                    </Tag>
+                  ))}
+                </Space>
+              </div>
+            )}
+            {remark && (
+              <div>
+                <div style={{ marginBottom: 4, fontWeight: 500 }}>备注：</div>
+                <div style={{ color: '#666', fontSize: '12px' }}>{remark}</div>
+              </div>
+            )}
+          </div>
+        );
+      },
+    },
+  ];
+
+  return (
+    <Card title="配件清单" size="small">
+      <Table
+        columns={columnsWithTracking}
+        dataSource={items}
+        rowKey={(item) => `${item.id}-${item.sku_id}-${item.sku_name}`}
+        pagination={false}
+        size="small"
+      />
+    </Card>
+  );
+};
 
 export default PartListCard;

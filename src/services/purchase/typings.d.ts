@@ -180,6 +180,10 @@ export interface QuoteItem {
   submit_time: string;
   supplier_id: number;
   supplier_name: string;
+  tracking_info?: {
+    tracking_no_list: string[];
+    remark: string;
+  };
 }
 
 // OrderQuoteItemResponse 订单报价明细响应

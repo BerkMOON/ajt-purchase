@@ -252,6 +252,9 @@ const SupplierQuote: React.FC = () => {
                 <Descriptions.Item label="询价单号">
                   {inquiry.inquiry_no}
                 </Descriptions.Item>
+                <Descriptions.Item label="期望到货时间">
+                  {inquiry.expected_delivery_date}
+                </Descriptions.Item>
                 <Descriptions.Item label="截止时间">
                   <span style={{ color: isDeadlinePassed ? 'red' : 'inherit' }}>
                     {formatDate(inquiry.deadline)}

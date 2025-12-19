@@ -49,7 +49,7 @@ const BasicInfoCard: React.FC<BasicInfoCardProps> = ({ purchase }) => {
           {formatDate(purchase.ctime)}
         </Descriptions.Item>
         <Descriptions.Item label="全部商品到货时间">
-          {formatDate(latestDeliveryDate)}
+          {formatDate(latestDeliveryDate, true)}
         </Descriptions.Item>
         <Descriptions.Item label="期望到货日期">
           {purchase.expected_delivery_date}

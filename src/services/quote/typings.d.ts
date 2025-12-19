@@ -37,6 +37,10 @@ export interface SupplierQuoteResponse {
   total_price: number;
   status: StatusInfo<keyof typeof QuoteStatusTagColor>;
   expected_delivery_date: string;
+  tracking_info: {
+    tracking_no_list: string[];
+    remark: string;
+  };
   remark: string;
   submit_time: string;
   ctime: string;
@@ -45,4 +49,10 @@ export interface SupplierQuoteResponse {
 
 export interface GetSupplierQuotesResponse extends BaseListInfo {
   quotes: SupplierQuoteResponse[];
+}
+
+export interface DispatchQuoteParams {
+  quote_no: number;
+  tracking_no_list: string[];
+  remark: string;
 }

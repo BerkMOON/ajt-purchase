@@ -156,23 +156,6 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
               />
             </Form.Item>
           </Col>
-          <Col span={8}>
-            <Form.Item
-              label="询价截止时间"
-              name="inquiry_deadline"
-              rules={[{ required: true, message: '请选择询价截止时间' }]}
-            >
-              <DatePicker
-                showTime
-                style={{ width: '100%' }}
-                format="YYYY-MM-DD HH:mm:ss"
-                placeholder="请选择询价截止时间"
-                disabledDate={(current) =>
-                  current && current < dayjs().startOf('day')
-                }
-              />
-            </Form.Item>
-          </Col>
           <Col span={24}>
             <Form.Item label="备注" name="remark">
               <Input.TextArea rows={3} placeholder="请输入备注信息（可选）" />

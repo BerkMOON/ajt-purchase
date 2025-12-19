@@ -1,11 +1,17 @@
 import { SupplierQuoteResponse } from '@/services/quote';
-import { QuoteStatusTagColor } from '@/services/quote/constant';
+import { QuoteStatus, QuoteStatusTagColor } from '@/services/quote/constant';
 import { history } from '@umijs/max';
-import { Tag } from 'antd';
+import { Button, Space, Tag } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { formatDate } from '../PurchaseDetail/utils';
 
-export const columns: ColumnsType<SupplierQuoteResponse> = [
+interface ColumnsHandlers {
+  onShip: (record: SupplierQuoteResponse) => void;
+}
+
+export const getColumns = ({
+  onShip,
+}: ColumnsHandlers): ColumnsType<SupplierQuoteResponse> => [
   {
     title: '报价单号',
     dataIndex: 'quote_no',
@@ -81,5 +87,27 @@ export const columns: ColumnsType<SupplierQuoteResponse> = [
     dataIndex: 'ctime',
     key: 'ctime',
     render: (time: string) => formatDate(time),
+  },
+  {
+    title: '操作',
+    key: 'action',
+    width: 120,
+    fixed: 'right',
+    render: (_: any, record: SupplierQuoteResponse) => {
+      const isPendingShipment =
+        record.status.code === QuoteStatus.PENDING_SHIPMENT;
+
+      if (!isPendingShipment) {
+        return null;
+      }
+
+      return (
+        <Space>
+          <Button type="primary" size="small" onClick={() => onShip(record)}>
+            发货
+          </Button>
+        </Space>
+      );
+    },
   },
 ];

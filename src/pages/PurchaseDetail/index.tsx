@@ -403,7 +403,7 @@ const PurchaseDetail: React.FC = () => {
           </Col>
 
           <Col span={24}>
-            <PartListCard items={purchase.items} />
+            <PartListCard items={purchase.items} quotes={quotes} />
           </Col>
 
           <Col span={24}>

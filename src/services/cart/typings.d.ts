@@ -27,7 +27,6 @@ export interface RemoveFromCartParams {
 
 export interface SubmitCartParams {
   expected_delivery_date: string;
-  inquiry_deadline: string;
   /**
    * parts备件
    */
