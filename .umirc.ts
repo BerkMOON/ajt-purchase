@@ -122,6 +122,20 @@ export default defineConfig({
       access: 'systemAdmin',
     },
     {
+      name: '品牌管理',
+      path: '/admin/brand',
+      component: './SystemAdmin/BrandManagement',
+      hideInMenu: true,
+      access: 'systemAdmin',
+    },
+    {
+      name: 'SKU文件上传',
+      path: '/admin/sku-upload',
+      component: './SystemAdmin/SkuUpload',
+      hideInMenu: true,
+      access: 'systemAdmin',
+    },
+    {
       name: '公司管理',
       path: '/admin/company',
       component: './SystemAdmin/CompanyManagement',

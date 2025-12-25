@@ -1,8 +1,10 @@
 import {
   ApartmentOutlined,
   AppstoreOutlined,
+  CloudUploadOutlined,
   SafetyCertificateOutlined,
   ShopOutlined,
+  TagOutlined,
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
@@ -36,6 +38,18 @@ const SystemAdmin: React.FC = () => {
       description: '管理产品信息和销售属性配置',
       icon: <AppstoreOutlined style={{ fontSize: 48, color: '#52c41a' }} />,
       path: '/admin/product',
+    },
+    {
+      title: '品牌管理',
+      description: '管理品牌信息',
+      icon: <TagOutlined style={{ fontSize: 48, color: '#f5222d' }} />,
+      path: '/admin/brand',
+    },
+    {
+      title: 'SKU文件上传',
+      description: '批量上传SKU文件',
+      icon: <CloudUploadOutlined style={{ fontSize: 48, color: '#722ed1' }} />,
+      path: '/admin/sku-upload',
     },
     {
       title: '公司管理',

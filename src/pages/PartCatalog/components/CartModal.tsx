@@ -99,7 +99,7 @@ const CartModal: React.FC<CartModalProps> = ({
     loading,
     showDeleteConfirm: false,
     actionColumnWidth: 80,
-    skuIdColumnWidth: 110,
+    skuIdColumnWidth: 150,
     fixedActionColumn: false,
   });
 

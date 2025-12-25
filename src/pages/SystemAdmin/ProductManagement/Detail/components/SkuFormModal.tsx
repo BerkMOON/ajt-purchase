@@ -4,7 +4,7 @@ import type { Attr, AttrValueInfo } from '@/services/system/attr/typings';
 import type { SkuDetailResponse } from '@/services/system/sku/typings';
 import { StatusInfo } from '@/types/common';
 import { UploadOutlined } from '@ant-design/icons';
-import { Form, Input, Modal, Select, Upload, message } from 'antd';
+import { Form, Input, InputNumber, Modal, Select, Upload, message } from 'antd';
 import type { UploadFile } from 'antd/es/upload/interface';
 import React, { useEffect, useState } from 'react';
 
@@ -95,6 +95,7 @@ const SkuFormModal: React.FC<SkuFormModalProps> = ({
         remark: editingSku.remark,
         specification: editingSku.specification,
         attr_pairs: attrPairsObj,
+        third_code: editingSku.third_code,
       });
 
       // 设置图片列表
@@ -170,6 +171,49 @@ const SkuFormModal: React.FC<SkuFormModalProps> = ({
               ))}
             </div>
           </Form.Item>
+        )}
+
+        <Form.Item
+          label="产品编码"
+          name="third_code"
+          rules={[{ required: true, message: '请输入产品编码' }]}
+        >
+          <Input placeholder="请输入产品编码" />
+        </Form.Item>
+
+        {editingSku ? null : (
+          <>
+            <Form.Item
+              label="原厂价"
+              name="origin_price"
+              rules={[{ required: true, message: '请输入原厂价' }]}
+            >
+              <InputNumber
+                addonBefore="¥"
+                addonAfter="元"
+                precision={2}
+                placeholder="请输入原厂价"
+              />
+            </Form.Item>
+
+            <Form.Item label="建议零售价" name="ceiling_price">
+              <InputNumber
+                addonBefore="¥"
+                addonAfter="元"
+                precision={2}
+                placeholder="请输入建议零售价"
+              />
+            </Form.Item>
+
+            <Form.Item label="回采价" name="return_purchase_price">
+              <InputNumber
+                addonBefore="¥"
+                addonAfter="元"
+                precision={2}
+                placeholder="请输入回采价"
+              />
+            </Form.Item>
+          </>
         )}
 
         <Form.Item label="SKU 图片" name="photos">

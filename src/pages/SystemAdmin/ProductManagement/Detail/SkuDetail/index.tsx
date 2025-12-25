@@ -2,7 +2,12 @@ import RichTextViewer from '@/components/BasicComponents/RichTextViewer';
 import { COMMON_CATEGORY_STATUS_CODE } from '@/constants';
 import { SkuAPI } from '@/services/system/sku/SkuController';
 import type { SkuDetailResponse } from '@/services/system/sku/typings';
-import { ArrowLeftOutlined, EditOutlined } from '@ant-design/icons';
+import { formatPriceToYuan } from '@/utils/prince';
+import {
+  ArrowLeftOutlined,
+  EditOutlined,
+  PayCircleOutlined,
+} from '@ant-design/icons';
 import { history, Navigate, useAccess, useParams } from '@umijs/max';
 import {
   Button,
@@ -17,6 +22,7 @@ import {
   Tag,
 } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
+import PriceEditModal from '../components/PriceEditModal';
 import SkuFormModal from '../components/SkuFormModal';
 
 const SkuDetail: React.FC = () => {
@@ -25,6 +31,8 @@ const SkuDetail: React.FC = () => {
   const [sku, setSku] = useState<SkuDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [priceEditModalVisible, setPriceEditModalVisible] = useState(false);
+  const [priceEditLoading, setPriceEditLoading] = useState(false);
   const [skuForm] = Form.useForm();
 
   const fetchSkuDetail = useCallback(async () => {
@@ -58,6 +66,7 @@ const SkuDetail: React.FC = () => {
         photos: values.photos,
         remark: values.remark,
         specification: values.specification,
+        third_code: values.third_code,
       });
       message.success('更新成功');
       setEditModalVisible(false);
@@ -65,6 +74,39 @@ const SkuDetail: React.FC = () => {
     } catch (error) {
       console.error('更新 SKU 失败:', error);
       message.error('更新失败');
+    }
+  };
+
+  // 打开价格编辑弹窗
+  const handleEditPrice = () => {
+    if (sku) {
+      setPriceEditModalVisible(true);
+    }
+  };
+
+  // 提交价格编辑
+  const handleSubmitPrice = async (values: {
+    origin_price: number;
+    ceiling_price: number;
+    return_purchase_price: number;
+  }) => {
+    if (!sku?.sku_id) return;
+    try {
+      setPriceEditLoading(true);
+      await SkuAPI.createOrUpdatePrice({
+        sku_id: sku.sku_id,
+        origin_price: values.origin_price,
+        ceiling_price: values.ceiling_price,
+        return_purchase_price: values.return_purchase_price,
+      });
+      message.success('价格更新成功');
+      setPriceEditModalVisible(false);
+      fetchSkuDetail();
+    } catch (error: any) {
+      console.error('更新价格失败:', error);
+      message.error(error?.message || '更新价格失败');
+    } finally {
+      setPriceEditLoading(false);
     }
   };
 
@@ -107,16 +149,41 @@ const SkuDetail: React.FC = () => {
             返回
           </Button>
           {sku && (
-            <Button type="primary" icon={<EditOutlined />} onClick={handleEdit}>
-              编辑
-            </Button>
+            <>
+              <Button
+                type="primary"
+                icon={<EditOutlined />}
+                onClick={handleEdit}
+              >
+                编辑
+              </Button>
+              <Button
+                type="default"
+                icon={<PayCircleOutlined />}
+                onClick={handleEditPrice}
+              >
+                编辑价格
+              </Button>
+            </>
           )}
         </Space>
 
         <Descriptions title="SKU 信息" bordered>
           <Descriptions.Item label="SKU ID">{sku.sku_id}</Descriptions.Item>
+          <Descriptions.Item label="产品编码">
+            {sku.third_code || '-'}
+          </Descriptions.Item>
           <Descriptions.Item label="SKU 名称">
             {sku.sku_name || '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="原厂价">
+            {formatPriceToYuan(sku.price_info?.origin_price)}
+          </Descriptions.Item>
+          <Descriptions.Item label="建议零售价">
+            {formatPriceToYuan(sku.price_info?.ceiling_price)}
+          </Descriptions.Item>
+          <Descriptions.Item label="回采价">
+            {formatPriceToYuan(sku.price_info?.return_purchase_price)}
           </Descriptions.Item>
           <Descriptions.Item label="状态">
             {isActive ? (
@@ -178,14 +245,23 @@ const SkuDetail: React.FC = () => {
       </Card>
 
       {sku && (
-        <SkuFormModal
-          visible={editModalVisible}
-          productId={sku.product_id || 0}
-          editingSku={sku}
-          form={skuForm}
-          onSubmit={handleSubmitEdit}
-          onCancel={() => setEditModalVisible(false)}
-        />
+        <>
+          <SkuFormModal
+            visible={editModalVisible}
+            productId={sku.product_id || 0}
+            editingSku={sku}
+            form={skuForm}
+            onSubmit={handleSubmitEdit}
+            onCancel={() => setEditModalVisible(false)}
+          />
+          <PriceEditModal
+            visible={priceEditModalVisible}
+            loading={priceEditLoading}
+            defaultPrices={sku.price_info}
+            onOk={handleSubmitPrice}
+            onCancel={() => setPriceEditModalVisible(false)}
+          />
+        </>
       )}
     </div>
   );

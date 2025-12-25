@@ -1,6 +1,7 @@
 import { ResponseInfoType } from '@/types/common';
 import { request } from '@umijs/max';
 import {
+  CreateOrUpdatePriceParams,
   CreateSkuParams,
   GetSkuListByProductParams,
   SkuDetailResponse,
@@ -88,5 +89,17 @@ export const SkuAPI = {
       data: {
         sku_id: sku_id,
       },
+    }),
+
+  /**
+   * 设置sku价格信息
+   * POST /api/v1/platform/product/sku/createOrUpdatePrice
+   * 接口ID：394193516
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-394193516
+   */
+  createOrUpdatePrice: (params: CreateOrUpdatePriceParams) =>
+    request<ResponseInfoType<null>>(`${API_PREFIX}/createOrUpdatePrice`, {
+      method: 'POST',
+      data: params,
     }),
 };

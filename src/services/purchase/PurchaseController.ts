@@ -1,5 +1,6 @@
 import type { ResponseInfoType } from '@/types/common';
 import { request } from '@umijs/max';
+import { BrandListResponse, GetBrandListParams } from '../system/brand/typings';
 import { CategoryParams, CategoryResponse } from '../system/category/typing';
 import {
   GetProductListParams,
@@ -12,12 +13,14 @@ import {
 import type {
   ConfirmArrivalParams,
   CreatePurchaseParams,
+  GetSkuListParams,
   OrderQuoteDetailResponse,
   PurchaseListResponse,
   PurchaseOrderDetailResponse,
   PurchaseOrderStatusLogResponse,
   PurchaseParams,
   SendSupplierInquiryParams,
+  SkuInfoResponse,
   SubmitOrderParams,
 } from './typings';
 
@@ -178,4 +181,34 @@ export const PurchaseAPI = {
       data: { order_no: orderNo },
     });
   },
+
+  /**
+   * sku列表
+   * GET /api/v1/store/purchase/shop/sku/list
+   * 接口ID：396453466
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-396453466
+   */
+  getSkuList: (params: GetSkuListParams) =>
+    request<ResponseInfoType<SkuInfoResponse>>(
+      `${PRODUCT_API_PREFIX}/sku/list`,
+      {
+        method: 'GET',
+        params,
+      },
+    ),
+
+  /**
+   * 品牌列表
+   * GET /api/v1/store/purchase/shop/brand/list
+   * 接口ID：396474021
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-396474021
+   */
+  getBrandList: (params: GetBrandListParams) =>
+    request<ResponseInfoType<BrandListResponse>>(
+      `${PRODUCT_API_PREFIX}/brand/list`,
+      {
+        method: 'GET',
+        params,
+      },
+    ),
 };

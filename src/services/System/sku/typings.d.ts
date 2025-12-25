@@ -6,9 +6,17 @@ export interface GetSkuListByProductParams {
 
 export interface SkuListInfo {
   attr_pairs?: AttrPair[];
+  third_code?: string;
+  price_info?: PriceInfo;
   sku_id?: number;
   sku_name?: string;
   status?: StatusInfo;
+}
+
+export interface PriceInfo {
+  origin_price?: number;
+  ceiling_price?: number;
+  return_purchase_price?: number;
 }
 
 export interface SkuListResponse {
@@ -29,9 +37,12 @@ export interface CreateSkuParams {
   remark?: string;
   sku_name: string;
   specification?: string;
+  price_info?: PriceInfo;
+  third_code: string;
 }
 
 export interface UpdateSkuParams {
+  third_code: string;
   photos?: string[];
   remark?: string;
   sku_id: number;
@@ -41,6 +52,8 @@ export interface UpdateSkuParams {
 
 export interface SkuDetailResponse {
   attr_pairs?: AttrPair[];
+  third_code?: string;
+  price_info?: PriceInfo;
   create_time?: string;
   modify_time?: string;
   photos?: {
@@ -49,7 +62,7 @@ export interface SkuDetailResponse {
   }[];
   product_id?: number;
   remark?: string;
-  sku_id?: number;
+  sku_id: number;
   sku_name?: string;
   specification?: string;
   status?: StatusInfo;
@@ -58,4 +71,11 @@ export interface SkuDetailResponse {
 export interface UpdateSkuStatusParams {
   sku_id: number;
   status: COMMON_CATEGORY_STATUS;
+}
+
+interface CreateOrUpdatePriceParams {
+  sku_id: number;
+  origin_price: number;
+  ceiling_price: number;
+  return_purchase_price: number;
 }

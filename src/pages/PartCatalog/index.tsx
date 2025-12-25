@@ -1,17 +1,14 @@
 import BaseListPage, {
   BaseListPageRef,
 } from '@/components/BasicComponents/BaseListPage';
+import { COMMON_STATUS } from '@/constants';
 import { CartAPI } from '@/services/cart/CartController';
-import { PurchaseAPI } from '@/services/purchase';
-import type {
-  GetProductListParams,
-  ProductInfo,
-} from '@/services/system/product/typings';
+import { GetSkuListParams, PurchaseAPI } from '@/services/purchase';
 import { ShoppingCartOutlined } from '@ant-design/icons';
 import { Navigate, useAccess } from '@umijs/max';
 import { Button, message, Space } from 'antd';
 import React, { useRef, useState } from 'react';
-import { getColumns, SkuExpandableTable } from './columns';
+import { getColumns } from './columns';
 import CartModal from './components/CartModal';
 import CreatePurchaseModal from './components/CreatePurchaseModal';
 import { useCartData } from './hooks/useCartData';
@@ -65,19 +62,12 @@ const PartCatalog: React.FC = () => {
     handleCancelCreate,
   } = usePurchaseCreation();
 
-  // 获取产品列表数据
-  const fetchProductData = async (params: GetProductListParams) => {
-    // 处理 category_id：如果是数组，取最后一个值
-    const processedParams = {
-      ...params,
-      category_id: Array.isArray(params.category_id)
-        ? params.category_id[params.category_id.length - 1]
-        : params.category_id,
-    };
-    const { data } = await PurchaseAPI.getProductList(processedParams);
+  // 获取 SKU 列表数据
+  const fetchSkuData = async (params: GetSkuListParams) => {
+    const { data } = await PurchaseAPI.getSkuList(params);
     return {
-      list: data.product_list || [],
-      total: (data as any).count?.total_count || 0,
+      list: data.sku_list || [],
+      total: data.count?.total_count || 0,
     };
   };
 
@@ -92,8 +82,7 @@ const PartCatalog: React.FC = () => {
     handleSubmitPurchase(values);
   };
 
-  const columns = getColumns();
-  const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([]);
+  const columns = getColumns({ onAddToCart: handleAddToCart });
 
   if (!isLogin) {
     return <Navigate to="/login" />;
@@ -110,8 +99,12 @@ const PartCatalog: React.FC = () => {
           </Space>
         }
         columns={columns}
-        searchFormItems={searchForm()}
-        fetchData={fetchProductData}
+        searchFormItems={searchForm}
+        fetchData={fetchSkuData}
+        defaultSearchParams={{
+          product_type: 'parts',
+          status: COMMON_STATUS.ACTIVE,
+        }}
         extraButtons={
           <Button
             type="primary"
@@ -123,27 +116,7 @@ const PartCatalog: React.FC = () => {
             购物车 ({cartItemCount})
           </Button>
         }
-        rowKey="product_id"
-        expandable={{
-          expandedRowKeys,
-          onExpand: (expanded, record) => {
-            if (expanded) {
-              setExpandedRowKeys([...expandedRowKeys, record.product_id!]);
-            } else {
-              setExpandedRowKeys(
-                expandedRowKeys.filter((key) => key !== record.product_id),
-              );
-            }
-          },
-          expandedRowRender: (record: ProductInfo) => (
-            <SkuExpandableTable
-              productId={record.product_id!}
-              onAddToCart={handleAddToCart}
-              expanded={expandedRowKeys.includes(record.product_id!)}
-            />
-          ),
-          rowExpandable: (record: ProductInfo) => !!record.product_id,
-        }}
+        rowKey="sku_id"
       />
 
       {/* 购物车弹窗 */}

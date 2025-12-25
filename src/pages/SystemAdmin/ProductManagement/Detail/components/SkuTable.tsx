@@ -1,5 +1,6 @@
 import { COMMON_CATEGORY_STATUS_CODE } from '@/constants';
 import type { SkuListInfo } from '@/services/system/sku/typings';
+import { formatPriceToDiscount, formatPriceToYuan } from '@/utils/prince';
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -27,7 +28,11 @@ const SkuTable: React.FC<SkuTableProps> = ({
       title: 'SKU ID',
       dataIndex: 'sku_id',
       key: 'sku_id',
-      width: 100,
+    },
+    {
+      title: '产品编码',
+      dataIndex: 'third_code',
+      key: 'third_code',
     },
     {
       title: 'SKU 名称',
@@ -35,23 +40,71 @@ const SkuTable: React.FC<SkuTableProps> = ({
       key: 'sku_name',
     },
     {
-      title: '销售属性',
-      key: 'attr_pairs',
-      render: (_: any, record: SkuListInfo) => {
-        if (!record.attr_pairs || record.attr_pairs.length === 0) {
-          return <span style={{ color: '#999' }}>-</span>;
-        }
+      title: '原厂价',
+      dataIndex: ['price_info', 'origin_price'],
+      key: 'price_info.origin_price',
+      render: (text: string) => {
+        return <span>{formatPriceToYuan(Number(text))}</span>;
+      },
+    },
+    {
+      title: '建议零售价',
+      dataIndex: ['price_info', 'ceiling_price'],
+      key: 'price_info.ceiling_price',
+      render: (text: string, record: SkuListInfo) => {
         return (
-          <Space wrap>
-            {record.attr_pairs.map((pair, index) => (
-              <Tag key={index} color="blue">
-                {pair.attr_name}: {pair.value_name}
-              </Tag>
-            ))}
-          </Space>
+          <>
+            <span>{formatPriceToYuan(Number(text))}</span>
+            <span>
+              (
+              {formatPriceToDiscount(
+                record.price_info?.origin_price,
+                record.price_info?.ceiling_price,
+              )}
+              )
+            </span>
+          </>
         );
       },
     },
+    {
+      title: '回采价',
+      dataIndex: ['price_info', 'return_purchase_price'],
+      key: 'price_info.return_purchase_price',
+      render: (text: string, record: SkuListInfo) => {
+        return (
+          <>
+            <span>{formatPriceToYuan(Number(text))}</span>
+            <span>
+              (
+              {formatPriceToDiscount(
+                record.price_info?.origin_price,
+                record.price_info?.return_purchase_price,
+              )}
+              )
+            </span>
+          </>
+        );
+      },
+    },
+    // {
+    //   title: '销售属性',
+    //   key: 'attr_pairs',
+    //   render: (_: any, record: SkuListInfo) => {
+    //     if (!record.attr_pairs || record.attr_pairs.length === 0) {
+    //       return <span style={{ color: '#999' }}>-</span>;
+    //     }
+    //     return (
+    //       <Space wrap>
+    //         {record.attr_pairs.map((pair, index) => (
+    //           <Tag key={index} color="blue">
+    //             {pair.attr_name}: {pair.value_name}
+    //           </Tag>
+    //         ))}
+    //       </Space>
+    //     );
+    //   },
+    // },
     {
       title: '状态',
       key: 'status',

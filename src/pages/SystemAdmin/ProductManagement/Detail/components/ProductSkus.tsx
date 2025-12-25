@@ -1,4 +1,5 @@
 import { SkuAPI } from '@/services/system/sku/SkuController';
+import { formatPriceToFen } from '@/utils/prince';
 import { PlusOutlined, SyncOutlined } from '@ant-design/icons';
 import { Button, Card, Form, message, Space } from 'antd';
 import React, { useState } from 'react';
@@ -50,6 +51,20 @@ const ProductSkus: React.FC<ProductSkusProps> = ({ productId }) => {
         photos: values.photos,
         remark: values.remark,
         specification: values.specification,
+        third_code: values.third_code,
+        price_info: {
+          origin_price: formatPriceToFen(values.origin_price),
+          ...(values.ceiling_price
+            ? { ceiling_price: formatPriceToFen(values.ceiling_price) }
+            : {}),
+          ...(values.return_purchase_price
+            ? {
+                return_purchase_price: formatPriceToFen(
+                  values.return_purchase_price,
+                ),
+              }
+            : {}),
+        },
       });
       message.success('新增成功');
       setSkuModalVisible(false);

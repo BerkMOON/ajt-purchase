@@ -1,5 +1,6 @@
+import { COMMON_STATUS_CODE } from '@/constants';
 import { PurchaseStatusColorMap } from '@/pages/PurchaseDetail/utils';
-import { BaseListInfo, StatusInfo } from '@/types/common';
+import { BaseListInfo, PageInfoParams, StatusInfo } from '@/types/common';
 export interface PurchaseItem {
   id: number;
   order_no: string;
@@ -217,4 +218,42 @@ export interface ConfirmArrivalItemParams {
   sku_id: number;
   quote_no: number | string;
   delivery_date: string;
+}
+
+export interface GetSkuListParams extends PageInfoParams {
+  brand_id?: number;
+  product_id?: number;
+  /**
+   * parts，boutique
+   */
+  product_type?: string;
+  sku_id?: number;
+  sku_name?: string;
+  /**
+   * active，disabled
+   */
+  status?: string;
+  third_code?: string;
+}
+
+export interface SkuInfoResponse extends BaseListInfo {
+  sku_list: SkuListInfo[];
+}
+
+export interface SkuListInfo {
+  attr_pairs?: string;
+  brand_name?: string;
+  create_time?: string;
+  modify_time?: string;
+  price_info?: {
+    origin_price?: number;
+    ceiling_price?: number;
+    return_purchase_price?: number;
+  };
+  product_id?: number;
+  product_type?: string;
+  sku_id?: number;
+  sku_name?: string;
+  status?: StatusInfo<COMMON_STATUS_CODE>;
+  third_code?: string;
 }

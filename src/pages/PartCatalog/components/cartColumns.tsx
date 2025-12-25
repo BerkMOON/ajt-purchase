@@ -3,7 +3,7 @@ import { COMMON_CATEGORY_STATUS_CODE } from '@/constants';
 import type { CartItem } from '@/services/cart/typings';
 import type { CategoryTree } from '@/services/system/product/typings';
 import { DeleteOutlined } from '@ant-design/icons';
-import { Button, Popconfirm, Space, Tag } from 'antd';
+import { Button, Popconfirm, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
 export interface CartColumnsHandlers {
@@ -28,39 +28,45 @@ export const getCartColumns = ({
   fixedActionColumn = false,
 }: CartColumnsHandlers): ColumnsType<CartItem> => {
   return [
+    // {
+    //   title: 'SKU ID',
+    //   dataIndex: 'sku_id',
+    //   key: 'sku_id',
+    //   width: skuIdColumnWidth,
+    // },
     {
-      title: 'SKU ID',
-      dataIndex: 'sku_id',
-      key: 'sku_id',
+      title: '产品编码',
+      dataIndex: 'third_code',
+      key: 'third_code',
       width: skuIdColumnWidth,
     },
     {
       title: 'SKU 名称',
       dataIndex: 'sku_name',
       key: 'sku_name',
-      width: 200,
+      width: 150,
       ellipsis: true,
     },
-    {
-      title: '销售属性',
-      key: 'attr_pairs',
-      width: 250,
-      render: (_, record) => {
-        if (!record.attr_pairs || record.attr_pairs.length === 0) {
-          return <span style={{ color: '#999' }}>-</span>;
-        }
-        return (
-          <Space wrap>
-            {record.attr_pairs.map((pair, index) => (
-              <Tag key={index} color="blue">
-                {pair.attr_name || pair.attr_code || ''}:{' '}
-                {pair.value_name || pair.value_code || ''}
-              </Tag>
-            ))}
-          </Space>
-        );
-      },
-    },
+    // {
+    //   title: '销售属性',
+    //   key: 'attr_pairs',
+    //   width: 250,
+    //   render: (_, record) => {
+    //     if (!record.attr_pairs || record.attr_pairs.length === 0) {
+    //       return <span style={{ color: '#999' }}>-</span>;
+    //     }
+    //     return (
+    //       <Space wrap>
+    //         {record.attr_pairs.map((pair, index) => (
+    //           <Tag key={index} color="blue">
+    //             {pair.attr_name || pair.attr_code || ''}:{' '}
+    //             {pair.value_name || pair.value_code || ''}
+    //           </Tag>
+    //         ))}
+    //       </Space>
+    //     );
+    //   },
+    // },
     {
       title: '商品品类',
       key: 'category_tree',
