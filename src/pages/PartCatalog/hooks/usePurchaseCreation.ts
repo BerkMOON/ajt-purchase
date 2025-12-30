@@ -37,10 +37,31 @@ export const usePurchaseCreation = () => {
     try {
       setCreateLoading(true);
 
+      // 构建回采商品列表：根据 return_purchase 字段，找出所有勾选为 true 的 sku_id
+      const returnPurchaseList: number[] = [];
+
+      if (
+        values.return_purchase &&
+        typeof values.return_purchase === 'object'
+      ) {
+        Object.entries(values.return_purchase).forEach(
+          ([skuIdStr, isChecked]) => {
+            // Checkbox 的值应该是布尔值
+            if (isChecked === true) {
+              const skuId = Number(skuIdStr);
+              if (!isNaN(skuId) && skuId > 0) {
+                returnPurchaseList.push(skuId);
+              }
+            }
+          },
+        );
+      }
+
       const createParams: SubmitCartParams = {
         expected_delivery_date: formatDate(values.expected_delivery_date, true),
-        remark: values.remark,
+        remark: values.remark || '',
         order_type: CategoryType.PARTS, // 备件类型
+        return_purchase_list: returnPurchaseList,
       };
 
       const response = await CartAPI.submitCart(createParams);

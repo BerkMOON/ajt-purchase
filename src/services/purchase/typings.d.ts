@@ -1,4 +1,5 @@
 import { COMMON_STATUS_CODE } from '@/constants';
+import { OrderItemStatus } from '@/pages/PurchaseDetail/constants';
 import { PurchaseStatusColorMap } from '@/pages/PurchaseDetail/utils';
 import { BaseListInfo, PageInfoParams, StatusInfo } from '@/types/common';
 export interface PurchaseItem {
@@ -111,7 +112,7 @@ export interface PurchaseOrderItemResponse {
   sku_id: number;
   sku_name: string;
   quantity: number;
-  status: StatusInfo;
+  status: StatusInfo<OrderItemStatus>;
   delivery_date: string;
   supplier_id: number;
   supplier_name: string;
@@ -120,9 +121,11 @@ export interface PurchaseOrderItemResponse {
   quote_remark: string;
   quote_delivery_date: string;
   quote_no: number;
+  purchase_type: string;
   remark: string;
   ctime: string;
   mtime: string;
+  limit_price: number;
 }
 
 // PurchaseOrderDetailResponse 采购单详情响应
@@ -143,16 +146,33 @@ export interface PurchaseOrderDetailResponse {
   mtime: string;
 }
 
-export interface PurchaseOrderStatusLogResponse {
-  id: number;
-  order_id: number;
-  order_no: number;
+export interface BasicPurchaseOrderStatusLog {
   from_status: StatusInfo<keyof typeof PurchaseStatusColorMap>;
   to_status: StatusInfo<keyof typeof PurchaseStatusColorMap>;
   operator_id: number;
   operator_name: string;
   remark: string;
   ctime: string;
+}
+export interface PurchaseOrderStatusLog extends BasicPurchaseOrderStatusLog {
+  id: number;
+  order_id: number;
+  order_no: number;
+}
+
+export interface PurchaseOrderStatusLogItem
+  extends BasicPurchaseOrderStatusLog {
+  quote_no: number;
+}
+
+export interface PurchaseOrderItemStatusLog {
+  sku_id: number;
+  status_logs: PurchaseOrderStatusLogItem[];
+}
+
+export interface PurchaseOrderStatusLogResponse {
+  logs: PurchaseOrderItemStatusLog[];
+  order_logs: PurchaseOrderStatusLog[];
 }
 
 export interface SendSupplierInquiryParams {
@@ -170,6 +190,8 @@ export interface SkuList {
   quote_items: QuoteItem[];
   sku_id: number;
   sku_name: string;
+  third_code: string;
+  limit_price: number;
 }
 
 export interface QuoteItem {
@@ -200,10 +222,16 @@ export interface OrderQuoteItemResponse {
 }
 
 export interface SubmitOrderParams {
-  order_no: number | string;
-  items: SubmitOrderItemParams[];
+  inquiry_no: number;
+  order_no: number;
+  quote_no: number;
+  sku_id: number;
 }
 
+export interface ConfirmOrderParams {
+  order_no: number;
+  sku_id_list: number[];
+}
 export interface SubmitOrderItemParams {
   sku_id: number;
   quote_no: number | string;

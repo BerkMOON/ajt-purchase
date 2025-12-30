@@ -5,7 +5,7 @@ import {
   SkuList,
 } from '@/services/purchase/typings.d';
 import dayjs from 'dayjs';
-import { OrderItemStatus, OrderStatus } from './constants';
+import { OrderStatus } from './constants';
 
 export type SelectedSupplierMap = Record<
   string,
@@ -40,7 +40,10 @@ export type ItemQuoteRow = {
   sku_name: string;
   quantity: number;
   product_name?: string;
-  status?: { code: number; name: string };
+  status: { code: number; name: string };
+  supplier_name?: string; // 已选中的供应商名称
+  third_code?: string; // 产品编码
+  limit_price?: number; // 采购最高限价
   quotes: QuoteCard[];
 };
 
@@ -67,7 +70,7 @@ export const getQuoteItemKey = (quoteItem: any) => {
 };
 
 export const formatCurrency = (val?: number | null) =>
-  typeof val === 'number' ? `¥${val.toFixed(2)}` : '-';
+  typeof val === 'number' && val ? `¥${val.toFixed(2)}` : '-';
 
 export const PurchaseStatusColorMap = {
   [OrderStatus.DRAFT]: 'green',
@@ -124,6 +127,7 @@ export const buildItemQuoteData = (
       quantity: item.quantity,
       product_name: item.sku_name,
       status: item.status,
+      supplier_name: item.supplier_name, // 保存供应商名称
       quotes: [],
     });
 
@@ -143,6 +147,11 @@ export const buildItemQuoteData = (
     if (targetKey) {
       const itemData = itemMap.get(targetKey);
       if (itemData) {
+        // 保存 third_code（产品编码）
+        itemData.third_code = skuQuote.third_code;
+        // 保存 limit_price（采购最高限价）
+        itemData.limit_price = skuQuote.limit_price;
+
         // 遍历该 SKU 的所有报价项
         skuQuote.quote_items.forEach((quoteItem: QuoteItem) => {
           // 检查是否已存在相同的报价（避免重复）
@@ -172,28 +181,14 @@ export const buildItemQuoteData = (
   return Array.from(itemMap.values());
 };
 
-export const getItemStatusColor = (statusCode: number): string => {
-  switch (statusCode) {
-    case OrderItemStatus.PENDING_QUOTE:
-      return 'warning';
-    case OrderItemStatus.SELECTED:
-      return 'blue';
-    case OrderItemStatus.ORDERED:
-      return 'purple';
-    case OrderItemStatus.ARRIVED:
-      return 'success';
-    default:
-      return 'default';
-  }
-};
-
 export const formatDate = (
   date: string | undefined | null,
   isDate: boolean = false,
 ): string => {
   return date &&
     date !== '1970-01-01 00:00:00' &&
-    date !== '0001-01-01 00:00:00'
+    date !== '0001-01-01 00:00:00' &&
+    date !== '0001-01-01'
     ? dayjs(date).format(isDate ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:mm:ss')
     : '-';
 };

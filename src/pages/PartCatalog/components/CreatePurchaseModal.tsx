@@ -2,6 +2,7 @@ import { CartAPI } from '@/services/cart/CartController';
 import type { CartItem } from '@/services/cart/typings';
 import {
   Button,
+  Checkbox,
   Col,
   DatePicker,
   Form,
@@ -46,14 +47,19 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
             setCartItems(items);
 
             // 初始化数量表单值，使用购物车中的数量
-            const initialQuantities: Record<number, number> = {};
+            const initialQuantities: Record<string | number, number> = {};
+            const initialReturnPurchase: Record<string | number, boolean> = {};
             items.forEach((item) => {
               if (item.sku_id !== undefined && item.sku_id !== null) {
-                initialQuantities[item.sku_id] = item.quantity || 1;
+                // 使用字符串作为 key，因为表单的 name 路径会转换为字符串
+                const skuIdKey = String(item.sku_id);
+                initialQuantities[skuIdKey] = item.quantity || 1;
+                initialReturnPurchase[skuIdKey] = false; // 默认为非回采商品
               }
             });
             form.setFieldsValue({
               quantities: initialQuantities,
+              return_purchase: initialReturnPurchase,
               expected_delivery_date: dayjs().add(7, 'days'),
               inquiry_deadline: dayjs().add(30, 'minutes'),
               remark: '',
@@ -77,6 +83,12 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
 
   const columns = [
     {
+      title: '产品编码',
+      dataIndex: 'third_code',
+      key: 'third_code',
+      width: 200,
+    },
+    {
       title: 'SKU ID',
       dataIndex: 'sku_id',
       key: 'sku_id',
@@ -86,7 +98,7 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
       title: 'SKU 名称',
       dataIndex: 'sku_name',
       key: 'sku_name',
-      width: 300,
+      width: 200,
       ellipsis: true,
     },
     {
@@ -100,7 +112,7 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
         }
         return (
           <Form.Item
-            name={['quantities', record.sku_id]}
+            name={['quantities', String(record.sku_id)]}
             style={{ margin: 0 }}
             rules={[
               { required: true, message: '请输入数量' },
@@ -113,6 +125,28 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
               size="small"
               style={{ width: 100 }}
             />
+          </Form.Item>
+        );
+      },
+    },
+    {
+      title: '是否回采',
+      key: 'return_purchase',
+      width: 100,
+      render: (_: any, record: CartItem) => {
+        // 确保 sku_id 存在
+        if (record.sku_id === undefined || record.sku_id === null) {
+          return <span style={{ color: '#999' }}>-</span>;
+        }
+        return (
+          <Form.Item
+            name={['return_purchase', String(record.sku_id)]}
+            style={{ margin: 0 }}
+            valuePropName="checked"
+            getValueFromEvent={(e) => e.target.checked}
+            initialValue={false}
+          >
+            <Checkbox />
           </Form.Item>
         );
       },

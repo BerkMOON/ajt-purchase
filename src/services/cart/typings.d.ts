@@ -32,6 +32,7 @@ export interface SubmitCartParams {
    */
   order_type: string;
   remark: string;
+  return_purchase_list: number[];
 }
 
 export interface UpdateCartQuantityParams {

@@ -1,6 +1,6 @@
 import { COMMON_STATUS_CODE } from '@/constants';
 import { ModalControl } from '@/hooks/useModalControl';
-import { SupplierInfo } from '@/services/system/supplier/typings';
+import { BrandInfo, SupplierInfo } from '@/services/system/supplier/typings';
 import { ColumnsProps } from '@/types/common';
 import { getStatusMeta, resolveCommonStatus } from '@/utils/status';
 import { Button, Divider, Tag } from 'antd';
@@ -22,6 +22,14 @@ export const getColumns = (props: SupplierColumnsProps) => {
       title: '供应商名称',
       dataIndex: 'supplier_name',
       key: 'supplier_name',
+    },
+    {
+      title: '供应商所属品牌',
+      dataIndex: 'brand_infos',
+      key: 'brand_infos',
+      render: (brand_infos: BrandInfo[]) => {
+        return brand_infos.map((brand: any) => brand.brand_name).join(',');
+      },
     },
     {
       title: '联系人',

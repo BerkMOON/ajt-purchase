@@ -23,20 +23,20 @@ export const getColumns = ({
       title: '产品编码',
       dataIndex: 'third_code',
       key: 'third_code',
-      width: 220,
+      width: 200,
     },
     {
       title: 'SKU 名称',
       dataIndex: 'sku_name',
       key: 'sku_name',
-      width: 200,
+      width: 180,
       ellipsis: true,
     },
     {
       title: '品牌',
       dataIndex: 'brand_name',
       key: 'brand_name',
-      width: 120,
+      width: 60,
     },
     {
       title: '产品ID',
@@ -82,7 +82,7 @@ export const getColumns = ({
     {
       title: '原厂价',
       key: 'origin_price',
-      width: 100,
+      width: 120,
       render: (_, record) => {
         return (
           <span>

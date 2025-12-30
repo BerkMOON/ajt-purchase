@@ -2,12 +2,13 @@ import type {
   ConfirmArrivalItemParams,
   PurchaseOrderItemResponse,
 } from '@/services/purchase/typings.d';
+import { formatPriceToYuan } from '@/utils/prince';
 import { Checkbox, DatePicker, Form, Modal, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import { OrderItemStatus } from '../constants';
-import { formatCurrency, formatDate } from '../utils';
+import { formatDate } from '../utils';
 
 interface ConfirmArrivalModalProps {
   visible: boolean;
@@ -153,14 +154,14 @@ const ConfirmArrivalModal: React.FC<ConfirmArrivalModalProps> = ({
       dataIndex: 'quote_price',
       key: 'quote_price',
       align: 'right',
-      render: (price: number) => formatCurrency(price),
+      render: (price: number) => formatPriceToYuan(price),
     },
     {
       title: '报价小计',
       dataIndex: 'total_price',
       key: 'total_price',
       align: 'right',
-      render: (price: number) => formatCurrency(price),
+      render: (price: number) => formatPriceToYuan(price),
     },
     {
       title: '到货日期 *',

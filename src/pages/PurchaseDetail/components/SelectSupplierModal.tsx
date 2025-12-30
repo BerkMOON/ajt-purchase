@@ -1,3 +1,4 @@
+import { formatPriceToYuan } from '@/utils/prince';
 import { Modal, Tag } from 'antd';
 import React from 'react';
 import type { ItemQuoteRow, SelectedSupplierMap } from '../utils';
@@ -56,9 +57,9 @@ const SelectSupplierModal: React.FC<SelectSupplierModalProps> = ({
                 选择供应商: <Tag color="success">{data.supplier_name}</Tag>
                 {selectedQuote && (
                   <span style={{ marginLeft: 8 }}>
-                    报价: ¥{selectedQuote.quote_price.toFixed(2)} ×{' '}
+                    报价: ¥{formatPriceToYuan(selectedQuote.quote_price)} ×{' '}
                     {itemData.quantity} = ¥
-                    {selectedQuote.total_price.toFixed(2)}
+                    {formatPriceToYuan(selectedQuote.total_price)}
                   </span>
                 )}
               </div>

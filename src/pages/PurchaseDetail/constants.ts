@@ -47,15 +47,31 @@ export const PurchaseStatusMap = {
 };
 
 export enum OrderItemStatus {
-  PENDING_QUOTE = 1,
-  SELECTED = 2,
-  ORDERED = 3,
-  ARRIVED = 4,
+  PENDING_QUOTE,
+  SELECTED,
+  PENDING_APPROVAL, // 待审批
+  REJECTED,
+  ORDERED,
+  SHIPPED,
+  ARRIVED, // 审批不通过
 }
 
 export const OrderItemStatusNameMap = {
   [OrderItemStatus.PENDING_QUOTE]: '待报价',
   [OrderItemStatus.SELECTED]: '已选中',
+  [OrderItemStatus.PENDING_APPROVAL]: '待审批',
+  [OrderItemStatus.REJECTED]: '审批不通过',
   [OrderItemStatus.ORDERED]: '已下单',
+  [OrderItemStatus.SHIPPED]: '已发货',
   [OrderItemStatus.ARRIVED]: '已到货',
+};
+
+export const OrderItemStatusColorMap = {
+  [OrderItemStatus.PENDING_QUOTE]: 'orange',
+  [OrderItemStatus.SELECTED]: 'green',
+  [OrderItemStatus.PENDING_APPROVAL]: 'blue',
+  [OrderItemStatus.REJECTED]: 'red',
+  [OrderItemStatus.ORDERED]: 'purple',
+  [OrderItemStatus.SHIPPED]: 'purple',
+  [OrderItemStatus.ARRIVED]: 'green',
 };

@@ -5,7 +5,7 @@ export enum InquiryStatus {
 
 export const InquiryStatusMap = {
   [InquiryStatus.Quoting]: '询价中',
-  [InquiryStatus.End]: '已结束',
+  [InquiryStatus.End]: '询价结束',
 };
 
 export const InquiryStatusTagColor = {

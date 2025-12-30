@@ -1,9 +1,9 @@
 export enum QuoteStatus {
-  NOT_SELECTED,
-  SELECTED,
-  PENDING_SHIPMENT,
-  SHIPMENT,
-  COMPLETED,
+  NOT_SELECTED, // 未选择
+  SELECTED, // 已选中                            // 待审批
+  PENDING_SHIPMENT, // 待发货
+  SHIPMENT, // 已发货
+  COMPLETED, // 已到货
 }
 
 export const QuoteStatusMap = {

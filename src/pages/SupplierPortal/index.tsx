@@ -1,6 +1,9 @@
 import CountdownText from '@/components/BasicComponents/CountdownText';
 import { InquiryAPI, SupplierInquiryItem } from '@/services/inquiry';
-import { InquiryStatusTagColor } from '@/services/inquiry/constant';
+import {
+  InquiryStatus,
+  InquiryStatusTagColor,
+} from '@/services/inquiry/constant';
 import { UserInfo } from '@/services/system/user/typings';
 import { Navigate, history, useAccess, useModel } from '@umijs/max';
 import {
@@ -122,9 +125,7 @@ const SupplierPortal: React.FC = () => {
 
   // 进入报价页面
   const goToQuote = (inquiryNo: string) => {
-    const url = `/supplier-quote/${inquiryNo}?supplier_id=${
-      selectedSupplierId || ''
-    }`;
+    const url = `/supplier-quote/${inquiryNo}`;
     history.push(url);
   };
 
@@ -173,13 +174,7 @@ const SupplierPortal: React.FC = () => {
       key: 'status',
       render: (_: any, record: SupplierInquiryItem) => {
         return (
-          <Tag
-            color={
-              InquiryStatusTagColor[
-                record.status.code as keyof typeof InquiryStatusTagColor
-              ] || 'default'
-            }
-          >
+          <Tag color={InquiryStatusTagColor[record.status.code]}>
             {record.status.name}
           </Tag>
         );
@@ -195,18 +190,16 @@ const SupplierPortal: React.FC = () => {
       title: '操作',
       key: 'action',
       render: (_: any, record: SupplierInquiryItem) => {
-        const expired = isInquiryExpired(record.deadline);
-        const isQuoted = record.status.code === 1 || record.status.code === 3;
-
+        const isQuoting = record.status.code === InquiryStatus.Quoting;
         return (
           <Space>
             <Button
               type="primary"
               size="small"
               onClick={() => goToQuote(record.inquiry_no.toString())}
-              disabled={expired && !isQuoted}
+              disabled={!isQuoting}
             >
-              {isQuoted ? '查看报价' : expired ? '已过期' : '立即报价'}
+              {isQuoting ? '立即报价' : '询价结束'}
             </Button>
           </Space>
         );
@@ -313,10 +306,8 @@ const SupplierPortal: React.FC = () => {
                     allowClear
                     style={{ width: '100%' }}
                     options={[
-                      { label: '待报价', value: 0 },
-                      { label: '已报价', value: 1 },
-                      { label: '已超时', value: 2 },
-                      { label: '已选中', value: 3 },
+                      { label: '询价中', value: InquiryStatus.Quoting },
+                      { label: '询价结束', value: InquiryStatus.End },
                     ]}
                   />
                 </Form.Item>

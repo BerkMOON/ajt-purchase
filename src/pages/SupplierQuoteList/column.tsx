@@ -1,5 +1,6 @@
 import { SupplierQuoteResponse } from '@/services/quote';
 import { QuoteStatus, QuoteStatusTagColor } from '@/services/quote/constant';
+import { formatPriceToYuan } from '@/utils/prince';
 import { history } from '@umijs/max';
 import { Button, Space, Tag } from 'antd';
 import { ColumnsType } from 'antd/es/table';
@@ -52,14 +53,14 @@ export const getColumns = ({
     dataIndex: 'quote_price',
     key: 'quote_price',
     align: 'right',
-    render: (price: number) => `¥${price.toFixed(2)}`,
+    render: (price: number) => formatPriceToYuan(price),
   },
   {
     title: '报价总价',
     dataIndex: 'total_price',
     key: 'total_price',
     align: 'right',
-    render: (price: number) => `¥${price.toFixed(2)}`,
+    render: (price: number) => formatPriceToYuan(price),
   },
   {
     title: '状态',

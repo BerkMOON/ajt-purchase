@@ -9,6 +9,7 @@ import {
 } from '@/services/inquiry/constant';
 import { QuoteAPI } from '@/services/quote';
 import { QuoteStatusTagColor } from '@/services/quote/constant';
+import { formatPriceToFen, formatPriceToYuanNumber } from '@/utils/prince';
 import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
 import { Navigate, useAccess, useParams, useSearchParams } from '@umijs/max';
 import {
@@ -75,7 +76,9 @@ const SupplierQuote: React.FC = () => {
         const fieldKey = getItemFieldKey(item, index);
         // 如果已有报价信息，回填到表单
         if (item.quote_price) {
-          formData[`quote_price_${fieldKey}`] = item.quote_price;
+          formData[`quote_price_${fieldKey}`] = formatPriceToYuanNumber(
+            item.quote_price,
+          );
         }
         if (
           item.expected_delivery_date &&
@@ -130,7 +133,7 @@ const SupplierQuote: React.FC = () => {
             inquiry_no: inquiry.inquiry_no,
             order_no: inquiry.order_no,
             sku_id: item.sku_id,
-            quote_price: item.quote_price,
+            quote_price: formatPriceToFen(item.quote_price) || 0,
             expected_delivery_date: item.expected_delivery_date,
             remark: item.remark,
           });

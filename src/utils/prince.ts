@@ -8,6 +8,10 @@ export const formatPriceToFen = (price: number | undefined) => {
   return Number((price * 100).toFixed(0));
 };
 
+export const formatPriceToYuanNumber = (price: number) => {
+  return Number(price / 100);
+};
+
 export const formatPriceToDiscount = (
   originPrice: number | undefined,
   price: number | undefined,

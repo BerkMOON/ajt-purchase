@@ -12,6 +12,7 @@ import {
 } from '../system/sku/typings';
 import type {
   ConfirmArrivalParams,
+  ConfirmOrderParams,
   CreatePurchaseParams,
   GetSkuListParams,
   OrderQuoteDetailResponse,
@@ -73,12 +74,13 @@ export const PurchaseAPI = {
    * GET /api/v1/purchaseOrder/statusLog/list
    */
   getPurchaseStatusLog: async (orderNo: string | number) => {
-    return request<
-      ResponseInfoType<{ logs: PurchaseOrderStatusLogResponse[] }>
-    >(`${API_PREFIX}/statusLogs`, {
-      method: 'GET',
-      params: { order_no: orderNo },
-    });
+    return request<ResponseInfoType<PurchaseOrderStatusLogResponse>>(
+      `${API_PREFIX}/statusLogs`,
+      {
+        method: 'GET',
+        params: { order_no: orderNo },
+      },
+    );
   },
 
   createOrder: async (params: CreatePurchaseParams) => {
@@ -175,10 +177,16 @@ export const PurchaseAPI = {
       },
     ),
 
-  submitOrder: async (orderNo: string | number) => {
-    return request<ResponseInfoType<null>>(`${API_PREFIX}/submit`, {
+  /**
+   * 报价确认
+   * POST /api/v1/store/purchase/order/confirm
+   * 接口ID：398182309
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-398182309
+   */
+  confirmOrder: async (params: ConfirmOrderParams) => {
+    return request<ResponseInfoType<null>>(`${API_PREFIX}/confirm`, {
       method: 'POST',
-      data: { order_no: orderNo },
+      data: params,
     });
   },
 

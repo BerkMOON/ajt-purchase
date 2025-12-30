@@ -1,3 +1,4 @@
+import BrandSelect from '@/components/BusinessComponents/BrandSelect';
 import { Form, Input } from 'antd';
 
 export const createAndModifyForm = (props: { isModify: boolean }) => {
@@ -19,6 +20,13 @@ export const createAndModifyForm = (props: { isModify: boolean }) => {
       >
         <Input placeholder="请输入供应商名称" />
       </Form.Item>
+      <Form.Item
+        label="供应商所属品牌"
+        name="brand_id_list"
+        rules={[{ required: true, message: '请选择供应商所属品牌' }]}
+      >
+        <BrandSelect isPlatform={true} mode="multiple" />
+      </Form.Item>
       <Form.Item label="联系人" name="contacts">
         <Input placeholder="请输入联系人" />
       </Form.Item>
@@ -31,18 +39,6 @@ export const createAndModifyForm = (props: { isModify: boolean }) => {
       <Form.Item label="所属公司" name="corporation">
         <Input placeholder="请输入所属公司" />
       </Form.Item>
-      {/* <Form.Item label="社会信用代码" name="credit_code">
-        <Input placeholder="请输入社会信用代码" />
-      </Form.Item>
-      <Form.Item label="税号" name="tax_number">
-        <Input placeholder="请输入税号" />
-      </Form.Item>
-      <Form.Item label="开户行" name="bank_name">
-        <Input placeholder="请输入开户行" />
-      </Form.Item>
-      <Form.Item label="开户账号" name="bank_account">
-        <Input placeholder="请输入开户账号" />
-      </Form.Item> */}
       <Form.Item label="所在省份" name="province">
         <Input placeholder="请输入所在省份" />
       </Form.Item>

@@ -3,10 +3,12 @@ import type {
   SkuList,
 } from '@/services/purchase/typings.d';
 import { StatusInfo } from '@/types/common';
+import { formatPriceToYuan } from '@/utils/prince';
 import { Card, Space, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo } from 'react';
-import { formatCurrency, formatDate, getItemStatusColor } from '../utils';
+import { OrderItemStatus, OrderItemStatusColorMap } from '../constants';
+import { formatDate } from '../utils';
 
 interface PartListCardProps {
   items?: PurchaseOrderItemResponse[];
@@ -15,10 +17,10 @@ interface PartListCardProps {
 
 const columns: ColumnsType<PurchaseOrderItemResponse> = [
   {
-    title: 'SKU ID',
-    dataIndex: 'sku_id',
-    key: 'sku_id',
-    render: (skuId: number) => String(skuId),
+    title: '产品编码',
+    dataIndex: 'third_code',
+    key: 'third_code',
+    width: 200,
   },
   {
     title: '配件名称',
@@ -34,19 +36,24 @@ const columns: ColumnsType<PurchaseOrderItemResponse> = [
     title: '状态',
     dataIndex: 'status',
     key: 'status',
-    render: (status?: StatusInfo) =>
+    render: (status?: StatusInfo<OrderItemStatus>) =>
       status ? (
-        <Tag color={getItemStatusColor(status.code)}>{status.name}</Tag>
+        <Tag color={OrderItemStatusColorMap[status.code]}>{status.name}</Tag>
       ) : (
         '-'
       ),
   },
-  // {
-  //   title: '采购均价',
-  //   dataIndex: 'avg_price',
-  //   key: 'avg_price',
-  //   render: (price?: number) => formatCurrency(price),
-  // },
+  {
+    title: '采购类型',
+    dataIndex: 'purchase_type',
+    key: 'purchase_type',
+  },
+  {
+    title: '采购最高限价',
+    dataIndex: 'limit_price',
+    key: 'limit_price',
+    render: (price?: number) => formatPriceToYuan(price),
+  },
   {
     title: '选择供应商',
     dataIndex: 'supplier_name',
@@ -59,16 +66,16 @@ const columns: ColumnsType<PurchaseOrderItemResponse> = [
       ),
   },
   {
-    title: '实际价格',
+    title: '报价价格',
     dataIndex: 'quote_price',
     key: 'quote_price',
-    render: (price?: number) => formatCurrency(price),
+    render: (price?: number) => formatPriceToYuan(price),
   },
   {
-    title: '实际总价',
+    title: '报价总价',
     dataIndex: 'total_price',
     key: 'total_price',
-    render: (price?: number) => formatCurrency(price),
+    render: (price?: number) => formatPriceToYuan(price),
   },
   {
     title: '预计交货日期',
@@ -90,7 +97,10 @@ const columns: ColumnsType<PurchaseOrderItemResponse> = [
   },
 ];
 
-const PartListCard: React.FC<PartListCardProps> = ({ items, quotes = [] }) => {
+const PartListCard: React.FC<PartListCardProps> = ({
+  items = [],
+  quotes = [],
+}) => {
   // 构建一个映射：itemKey (基于 id 或 sku_id+sku_name) -> tracking_info
   // 根据 item.id 或 sku_id + quote_no 来匹配对应的报价项的物流信息
   const trackingInfoMap = useMemo(() => {
@@ -177,6 +187,7 @@ const PartListCard: React.FC<PartListCardProps> = ({ items, quotes = [] }) => {
         dataSource={items}
         rowKey={(item) => `${item.id}-${item.sku_id}-${item.sku_name}`}
         pagination={false}
+        scroll={{ x: 1600 }}
         size="small"
       />
     </Card>

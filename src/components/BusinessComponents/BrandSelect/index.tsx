@@ -1,6 +1,7 @@
 import InfiniteSelect from '@/components/BasicComponents/InfiniteSelect';
 import { COMMON_STATUS } from '@/constants';
 import { PurchaseAPI } from '@/services/purchase';
+import { BrandAPI } from '@/services/system/brand/BrandController';
 import type { BrandDetailResponse } from '@/services/system/brand/typings';
 import { DefaultOptionType } from 'antd/es/select';
 import React from 'react';
@@ -12,6 +13,8 @@ interface BrandSelectProps {
   disabled?: boolean;
   style?: React.CSSProperties;
   status?: COMMON_STATUS; // 可选：筛选品牌状态，默认只显示启用的
+  isPlatform?: boolean;
+  mode?: 'multiple' | 'tags';
 }
 
 const BrandSelect: React.FC<BrandSelectProps> = ({
@@ -21,6 +24,8 @@ const BrandSelect: React.FC<BrandSelectProps> = ({
   disabled = false,
   style,
   status = COMMON_STATUS.ACTIVE,
+  isPlatform = false,
+  mode = undefined,
 }) => {
   const fetchBrand = async ({
     page,
@@ -29,7 +34,9 @@ const BrandSelect: React.FC<BrandSelectProps> = ({
     page: number;
     pageSize: number;
   }) => {
-    const { data } = await PurchaseAPI.getBrandList({
+    const Api = isPlatform ? BrandAPI.getList : PurchaseAPI.getBrandList;
+
+    const { data } = await Api({
       page,
       limit: pageSize,
       status,
@@ -50,6 +57,7 @@ const BrandSelect: React.FC<BrandSelectProps> = ({
     <InfiniteSelect
       placeholder={placeholder}
       value={value}
+      mode={mode}
       onChange={onChange}
       disabled={disabled}
       style={{ width: '100%', ...style }}

@@ -21,12 +21,13 @@ import {
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import BasicInfoCard from './components/BasicInfoCard';
 import ConfirmArrivalModal from './components/ConfirmArrivalModal';
+import ConfirmOrderModal from './components/ConfirmOrderModal';
 import PartListCard from './components/PartListCard';
 import SelectSupplierModal from './components/SelectSupplierModal';
 import SendInquiryModal from './components/SendInquiryModal';
 import StatusTimelineCard from './components/StatusTimelineCard';
 import SupplierQuotesCard from './components/SupplierQuotesCard';
-import { OrderStatus } from './constants';
+import { OrderItemStatus, OrderStatus } from './constants';
 import {
   buildItemQuoteData,
   buildSelectionsFromPurchaseItems,
@@ -50,6 +51,9 @@ const PurchaseDetail: React.FC = () => {
   const [confirmArrivalModalVisible, setConfirmArrivalModalVisible] =
     useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [confirmOrderModalVisible, setConfirmOrderModalVisible] =
+    useState(false);
+  const [orderLoading, setOrderLoading] = useState(false);
   const [sendInquiryModalVisible, setSendInquiryModalVisible] = useState(false);
   const [sendInquiryLoading, setSendInquiryLoading] = useState(false);
 
@@ -157,16 +161,26 @@ const PurchaseDetail: React.FC = () => {
     skuId?: number | string,
     orderItemId?: number,
   ) => {
-    setSelectedSuppliers((prev) => ({
-      ...prev,
-      [itemKey]: {
-        quote_no: quoteNo,
-        supplier_name: supplierName,
-        inquiry_item_id: inquiryItemId,
-        sku_id: skuId,
-        order_item_id: orderItemId,
-      },
-    }));
+    setSelectedSuppliers((prev) => {
+      const currentSelection = prev[itemKey];
+      // 如果点击的是已选中的项，则取消选择
+      if (currentSelection?.quote_no === quoteNo) {
+        const newState = { ...prev };
+        delete newState[itemKey];
+        return newState;
+      }
+      // 否则设置为新的选择
+      return {
+        ...prev,
+        [itemKey]: {
+          quote_no: quoteNo,
+          supplier_name: supplierName,
+          inquiry_item_id: inquiryItemId,
+          sku_id: skuId,
+          order_item_id: orderItemId,
+        },
+      };
+    });
   };
 
   const confirmSelectSuppliers = async () => {
@@ -174,23 +188,36 @@ const PurchaseDetail: React.FC = () => {
       return;
     }
     setConfirmLoading(true);
-    const submitItems = Object.values(selectedSuppliers)
-      .filter((item) => !!item.quote_no && item.order_item_id)
-      .map((item) => ({
-        sku_id: item.sku_id as number,
-        quote_no: Number(item.quote_no),
-      }));
 
-    if (submitItems.length === 0) {
+    // 过滤出已选择供应商的商品
+    const validSelections = Object.values(selectedSuppliers).filter(
+      (item) =>
+        !!item.quote_no &&
+        item.inquiry_item_id &&
+        item.sku_id !== undefined &&
+        item.sku_id !== null,
+    );
+
+    if (validSelections.length === 0) {
       message.warning('请至少选择一个商品的供应商');
+      setConfirmLoading(false);
       return;
     }
 
     try {
-      await PurchaseAPI.selectSuppliersByItems({
-        order_no: purchase.order_no,
-        items: submitItems,
+      // 循环调用接口，每个 SKU 单独请求一次
+      const promises = validSelections.map((item) => {
+        const params = {
+          inquiry_no: Number(item.inquiry_item_id),
+          order_no: Number(purchase.order_no),
+          quote_no: Number(item.quote_no),
+          sku_id: Number(item.sku_id),
+        };
+        return PurchaseAPI.selectSuppliersByItems(params);
       });
+
+      // 等待所有请求完成
+      await Promise.all(promises);
       message.success('供应商选择成功，订单已下单');
       setSelectSupplierModalVisible(false);
       fetchPurchaseDetail();
@@ -284,15 +311,39 @@ const PurchaseDetail: React.FC = () => {
     }
   };
 
-  const handleOrder = async () => {
+  const handleConfirmOrder = () => {
+    if (!purchase) return;
+
+    // 检查是否有状态为"已选中"的商品
+    const hasSelectedItems = purchase.items?.some(
+      (item) => item.status.code === OrderItemStatus.SELECTED,
+    );
+
+    if (!hasSelectedItems) {
+      message.warning('没有可下单的商品，请先选择供应商');
+      return;
+    }
+
+    // 打开下单弹窗
+    setConfirmOrderModalVisible(true);
+  };
+
+  const handleConfirmOrderSubmit = async (skuIdList: number[]) => {
     if (!purchase) return;
     try {
-      await PurchaseAPI.submitOrder(purchase.order_no);
+      setOrderLoading(true);
+      await PurchaseAPI.confirmOrder({
+        order_no: purchase.order_no,
+        sku_id_list: skuIdList,
+      });
       message.success('下单成功');
+      setConfirmOrderModalVisible(false);
       fetchPurchaseDetail();
     } catch (error: any) {
       message.error(error?.message || '下单失败');
       console.error('下单失败:', error);
+    } finally {
+      setOrderLoading(false);
     }
   };
 
@@ -325,15 +376,22 @@ const PurchaseDetail: React.FC = () => {
       );
     }
 
-    if (status === OrderStatus.QUOTED) {
+    // 检查是否有状态为"已选中"的商品，显示下单按钮
+    const hasSelectedItems = purchase.items?.some(
+      (item) => item.status.code === OrderItemStatus.SELECTED,
+    );
+    if (hasSelectedItems) {
       actions.push(
-        <Button key="quote-completed" type="primary" onClick={handleOrder}>
+        <Button key="confirm-order" type="primary" onClick={handleConfirmOrder}>
           下单
         </Button>,
       );
     }
 
-    if (status === OrderStatus.ORDERED) {
+    const hasAvailableItems = purchase.items?.some(
+      (item) => item.status.code >= OrderItemStatus.ORDERED,
+    );
+    if (hasAvailableItems) {
       actions.push(
         <Button
           key="confirm-arrival"
@@ -422,7 +480,10 @@ const PurchaseDetail: React.FC = () => {
           </Col>
 
           <Col span={24}>
-            <StatusTimelineCard orderNo={purchase.order_no} />
+            <StatusTimelineCard
+              orderNo={purchase.order_no}
+              items={purchase.items}
+            />
           </Col>
         </Row>
       </Card>
@@ -441,6 +502,14 @@ const PurchaseDetail: React.FC = () => {
         items={purchase?.items || []}
         onOk={handleConfirmArrivalSubmit}
         onCancel={() => setConfirmArrivalModalVisible(false)}
+      />
+
+      <ConfirmOrderModal
+        visible={confirmOrderModalVisible}
+        items={purchase?.items || []}
+        onOk={handleConfirmOrderSubmit}
+        onCancel={() => setConfirmOrderModalVisible(false)}
+        loading={orderLoading}
       />
 
       <SendInquiryModal

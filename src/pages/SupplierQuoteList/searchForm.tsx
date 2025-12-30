@@ -1,4 +1,4 @@
-import { InquiryItemStatus } from '@/services/inquiry';
+import { QuoteStatusMap } from '@/services/quote/constant';
 import { Col, DatePicker, Form, Input, Select } from 'antd';
 
 const { RangePicker } = DatePicker;
@@ -18,13 +18,11 @@ export const searchForm = (
     <Col>
       <Form.Item name="status" label="状态">
         <Select style={{ width: '200px' }} placeholder="请选择状态" allowClear>
-          <Select.Option value={InquiryItemStatus.PENDING}>
-            待报价
-          </Select.Option>
-          <Select.Option value={InquiryItemStatus.QUOTED}>已报价</Select.Option>
-          <Select.Option value={InquiryItemStatus.CANCELLED}>
-            未报价
-          </Select.Option>
+          {Object.entries(QuoteStatusMap).map(([key, value]) => (
+            <Select.Option key={key} value={key}>
+              {value}
+            </Select.Option>
+          ))}
         </Select>
       </Form.Item>
     </Col>

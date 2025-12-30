@@ -1,6 +1,7 @@
 import { QuoteAPI } from '@/services/quote';
 import { QuoteStatusTagColor } from '@/services/quote/constant';
 import type { SupplierQuoteResponse } from '@/services/quote/typings.d';
+import { formatPriceToYuan } from '@/utils/prince';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { history, useAccess, useParams } from '@umijs/max';
 import {
@@ -120,10 +121,10 @@ const SupplierQuoteDetail: React.FC = () => {
                   {quote.quantity}
                 </Descriptions.Item>
                 <Descriptions.Item label="报价单价">
-                  ¥{quote.quote_price.toFixed(2)}
+                  {formatPriceToYuan(quote.quote_price)}
                 </Descriptions.Item>
                 <Descriptions.Item label="报价总价">
-                  ¥{quote.total_price.toFixed(2)}
+                  {formatPriceToYuan(quote.total_price)}
                 </Descriptions.Item>
                 <Descriptions.Item label="状态">
                   <Tag color={QuoteStatusTagColor[quote.status?.code]}>

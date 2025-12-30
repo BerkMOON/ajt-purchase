@@ -1,9 +1,10 @@
+import { formatPriceToYuan } from '@/utils/prince';
 import { Button, Card, Empty, Radio, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React from 'react';
-import { OrderStatus } from '../constants';
+import { OrderItemStatus, OrderStatus } from '../constants';
 import type { ItemQuoteRow, SelectedSupplierMap } from '../utils';
-import { formatCurrency, formatDate } from '../utils';
+import { formatDate } from '../utils';
 
 interface SupplierQuotesCardProps {
   visible: boolean;
@@ -46,20 +47,30 @@ const SupplierQuotesCard: React.FC<SupplierQuotesCardProps> = ({
       render: (_: any, quote) => {
         const isSelected =
           selectedSuppliers[item.itemKey]?.quote_no === quote.quote_no;
+        // 如果该商品的状态是"已选中"或更高，则禁用选择
+        const isItemSelected = item.status?.code >= OrderItemStatus.SELECTED;
+        const isDisabled = !selectionEnabled || isItemSelected;
+
+        const handleRadioClick = () => {
+          if (isDisabled) return;
+
+          // 统一使用 onClick 来处理选择和取消
+          // handleItemSupplierChange 会检查如果已选中则取消，否则选中
+          onSelectSupplier(
+            item.itemKey,
+            quote.quote_no,
+            quote.supplier_name,
+            quote.inquiry_item_id,
+            quote.sku_id,
+            item.order_item_id,
+          );
+        };
+
         return (
           <Radio
             checked={isSelected}
-            disabled={!selectionEnabled}
-            onChange={() =>
-              onSelectSupplier(
-                item.itemKey,
-                quote.quote_no,
-                quote.supplier_name,
-                quote.inquiry_item_id,
-                quote.sku_id,
-                item.order_item_id,
-              )
-            }
+            disabled={isDisabled}
+            onClick={handleRadioClick}
           />
         );
       },
@@ -80,14 +91,14 @@ const SupplierQuotesCard: React.FC<SupplierQuotesCardProps> = ({
       dataIndex: 'quote_price',
       key: 'quote_price',
       align: 'right',
-      render: (val: number) => formatCurrency(val),
+      render: (val: number) => formatPriceToYuan(val),
     },
     {
       title: '报价小计',
       dataIndex: 'total_price',
       key: 'total_price',
       align: 'right',
-      render: (val: number) => formatCurrency(val),
+      render: (val: number) => formatPriceToYuan(val),
     },
     {
       title: '单项交货时间',
@@ -106,6 +117,12 @@ const SupplierQuotesCard: React.FC<SupplierQuotesCardProps> = ({
 
   const productColumns: ColumnsType<ItemQuoteRow> = [
     {
+      title: '产品编码',
+      dataIndex: 'third_code',
+      key: 'third_code',
+      width: 150,
+    },
+    {
       title: '商品名称',
       dataIndex: 'sku_name',
       key: 'sku_name',
@@ -119,18 +136,24 @@ const SupplierQuotesCard: React.FC<SupplierQuotesCardProps> = ({
       align: 'center',
     },
     {
-      title: '采购均价',
-      dataIndex: 'avg_price',
-      key: 'avg_price',
+      title: '采购最高限价',
+      dataIndex: 'limit_price',
+      key: 'limit_price',
       width: 140,
       align: 'right',
-      render: (val?: number) => formatCurrency(val),
+      render: (val?: number) => formatPriceToYuan(val),
     },
     {
       title: '当前选择',
       key: 'selected_supplier',
       width: 200,
       render: (_: any, record: ItemQuoteRow) => {
+        // 如果商品状态是"已选中"或更高，从 record.supplier_name 获取供应商名称
+        const isItemSelected = record.status?.code >= OrderItemStatus.SELECTED;
+        if (isItemSelected && record.supplier_name) {
+          return <Tag color="success">{record.supplier_name}</Tag>;
+        }
+        // 否则从临时选择的 selectedSuppliers 中获取
         const selected = selectedSuppliers[record.itemKey];
         return selected?.supplier_name ? (
           <Tag color="success">{selected.supplier_name}</Tag>

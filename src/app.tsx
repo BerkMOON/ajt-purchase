@@ -3,6 +3,7 @@ import { Button, message, Result } from 'antd';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import Login from './components/BasicComponents/Login/Login';
+import GlobalNotification from './components/GlobalNotification';
 import { Role } from './constants';
 import iconPng from './favicon.jpeg';
 import { UserInfo } from './services/system/user/typings';
@@ -195,7 +196,12 @@ export const layout = ({
     menu: {
       locale: false,
     },
-    rightContentRender: () => <Login />,
+    rightContentRender: () => (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <GlobalNotification />
+        <Login />
+      </div>
+    ),
     layout: 'top',
     unAccessible: (
       <Result
