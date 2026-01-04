@@ -228,6 +228,7 @@ const TableList: React.FC = () => {
         searchFormItems={searchForm}
         defaultSearchParams={DEFAULT_SEARCH_PARAMS}
         fetchData={fetchUserData}
+        rowKey={(record) => record.id + record.store_name}
         createButton={{
           text: '新建用户',
           onClick: () => handleModalOpen(createOrModifyModal),

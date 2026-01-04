@@ -22,6 +22,47 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 const POLLING_INTERVAL = 30000; // 30秒
 
+/**
+ * 根据通知类型和参数获取跳转路由
+ * @param notifyType 通知类型
+ * @param params 通知参数（JSON字符串）
+ * @returns 路由路径，如果无法跳转则返回 null
+ */
+const getNotificationRoute = (
+  notifyType: NotificationType,
+  params: string,
+): string | null => {
+  try {
+    const parsedParams = JSON.parse(params || '{}');
+
+    switch (notifyType) {
+      case NotificationType.SUPPLIER_QUOTE:
+        // 供应商报价通知：跳转到报价页面
+        if (parsedParams.inquiry_no) {
+          return `/supplier-quote/${parsedParams.inquiry_no}`;
+        }
+        break;
+
+      case NotificationType.APPROVAL:
+        // 审批通知：跳转到审批详情页面
+        if (parsedParams.id) {
+          return `/review/detail/${parsedParams.quote_no}`;
+        }
+        // 如果没有 id，可以跳转到审批列表
+        return '/review/list';
+
+      default:
+        console.warn(`未知的通知类型: ${notifyType}`);
+        return null;
+    }
+  } catch (error) {
+    console.error('解析通知参数失败:', error);
+    return null;
+  }
+
+  return null;
+};
+
 const GlobalNotification: React.FC = () => {
   const { initialState } = useModel('@@initialState');
 
@@ -123,6 +164,7 @@ const GlobalNotification: React.FC = () => {
         if (needRefresh) {
           await fetchNotifications();
         }
+        setUnreadCount(unreadCount - 1);
       } catch (error) {
         message.error('标记已读失败');
         console.error('标记已读失败:', error);
@@ -139,24 +181,24 @@ const GlobalNotification: React.FC = () => {
         await markAsRead(notification.id, !isDestroy);
       }
 
-      // 根据通知类型跳转到相应页面
-      if (notification.notify_type === NotificationType.SUPPLIER_QUOTE) {
-        try {
-          const params = JSON.parse(notification.params || '{}');
-          if (params.inquiry_no) {
-            history.push(`/supplier-quote/${params.inquiry_no}`);
-            if (isDestroy) {
-              api.destroy(notification.id);
-            } else {
-              setVisible(false);
-            }
-          }
-        } catch (error) {
-          console.error('解析通知参数失败:', error);
+      // 根据通知类型获取跳转路由
+      const route = getNotificationRoute(
+        notification.notify_type,
+        notification.params,
+      );
+
+      if (route) {
+        history.push(route);
+        if (isDestroy) {
+          api.destroy(notification.id);
+        } else {
+          setVisible(false);
         }
+      } else {
+        console.warn('无法获取通知跳转路由:', notification);
       }
     },
-    [markAsRead],
+    [markAsRead, api],
   );
 
   // 启动轮询
