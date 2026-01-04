@@ -6,6 +6,7 @@ export default (initialState: UserInfo & { isLogin: boolean }) => {
   // 参考文档 https://umijs.org/docs/max/access
 
   const userType = initialState?.user_type;
+  const roleKey = initialState?.role_key;
   const isLogin = !!initialState?.isLogin;
 
   // platform: 可以看所有页面
@@ -14,6 +15,8 @@ export default (initialState: UserInfo & { isLogin: boolean }) => {
   const isStore = userType === Role.Store;
   // supplier: 只能看供应商门户相关页面
   const isSupplier = userType === Role.Supplier;
+  // 平台审核员
+  const isAdminReviewer = roleKey === 'admin_reviewer';
 
   return {
     isLogin,
@@ -30,6 +33,8 @@ export default (initialState: UserInfo & { isLogin: boolean }) => {
     supplierPortal: isLogin && (isPlatform || isSupplier),
     // 系统管理 - 只有platform可以访问
     systemAdmin: isLogin && isPlatform,
+    // 审批列表 - 只有admin_reviewer可以访问
+    reviewList: isLogin && isAdminReviewer,
     // 首页 - 所有登录用户都可以访问
     home: isLogin,
   };

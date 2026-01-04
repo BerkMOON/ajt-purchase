@@ -5,7 +5,6 @@ import isoWeek from 'dayjs/plugin/isoWeek';
 import Login from './components/BasicComponents/Login/Login';
 import GlobalNotification from './components/GlobalNotification';
 import { Role } from './constants';
-import iconPng from './favicon.jpeg';
 import { UserInfo } from './services/system/user/typings';
 import { UserAPI } from './services/system/user/UserController';
 import type { ResponseInfoType } from './types/common';
@@ -192,7 +191,7 @@ export const layout = ({
 }) => {
   const { isLogin } = initialState;
   return {
-    logo: iconPng,
+    // logo: iconPng,
     menu: {
       locale: false,
     },
@@ -203,6 +202,25 @@ export const layout = ({
       </div>
     ),
     layout: 'top',
+    // token: {
+    //   // --- Header 整体 ---
+    //   header: {
+    //    // ✅ 有效：header 背景
+    //    colorBgHeader: 'rgb(0, 21, 41)',
+    //    colorHeaderTitle: '#fff',
+
+    //    // ✅ 有效：顶部菜单项样式（ProLayout 会把 top menu 映射到 menu token）
+    //    colorTextMenu: 'rgba(255, 255, 255, 0.65)',
+    //    colorTextMenuSelected: '#fff',
+    //    colorTextMenuActive: '#fff',
+    //    colorBgMenuItemHover: 'rgba(255, 255, 255, 0.1)',
+    //    colorBgMenuItemSelected: '#1677ff',
+
+    //    // ✅ 有效：右上角操作区（用户头像、通知等）
+    //    colorTextRightActionsItem: 'rgba(255, 255, 255, 0.85)',
+    //    colorBgRightActionsItemHover: 'rgba(255, 255, 255, 0.1)'
+    //   },
+    // },
     unAccessible: (
       <Result
         status={`${isLogin ? '403' : '404'}`}

@@ -15,6 +15,7 @@ export interface UserInfo {
   status: StatusInfo;
   user_type: string;
   username: string;
+  role_key: string;
   store_infos?: UserStoreInfo[];
   supplier_infos?: {
     supplier_code: string;

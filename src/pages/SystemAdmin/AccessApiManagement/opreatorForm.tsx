@@ -85,7 +85,7 @@ const OperatorForm: React.FC = () => {
         name="api_code"
         rules={[{ required: true, message: '请输入接口code' }]}
       >
-        <Input placeholder="例如：platform:company:list" />
+        <Input placeholder="例如：list" />
       </Form.Item>
       <Form.Item
         label="接口名称"

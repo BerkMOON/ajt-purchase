@@ -31,6 +31,9 @@ const GlobalNotification: React.FC = () => {
     | { isLogin: boolean };
   const isSupplier =
     userInfo?.isLogin && (userInfo as UserInfo)?.user_type === Role.Supplier;
+  const isAdminReviewer =
+    userInfo?.isLogin && (userInfo as UserInfo)?.role_key === 'admin_reviewer';
+  const shouldShowNotification = isSupplier || isAdminReviewer;
   const [notifications, setNotifications] = useState<NotificationInfo[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -81,7 +84,7 @@ const GlobalNotification: React.FC = () => {
   // 获取未读通知列表
   const fetchNotifications = useCallback(
     async (isInitial = false) => {
-      if (!isSupplier) return;
+      if (!shouldShowNotification) return;
 
       try {
         setLoading(true);
@@ -108,7 +111,7 @@ const GlobalNotification: React.FC = () => {
         setLoading(false);
       }
     },
-    [isSupplier, showNotificationAlert],
+    [shouldShowNotification, showNotificationAlert],
   );
 
   // 标记通知为已读
@@ -158,7 +161,7 @@ const GlobalNotification: React.FC = () => {
 
   // 启动轮询
   useEffect(() => {
-    if (!isSupplier) return;
+    if (!shouldShowNotification) return;
 
     // 立即获取一次（初始加载，不显示通知提醒）
     fetchNotifications(false);
@@ -175,10 +178,10 @@ const GlobalNotification: React.FC = () => {
         pollingTimerRef.current = null;
       }
     };
-  }, [isSupplier, fetchNotifications]);
+  }, [shouldShowNotification, fetchNotifications]);
 
   // 如果用户不是供应商，不显示通知
-  if (!isSupplier) {
+  if (!shouldShowNotification) {
     return null;
   }
 

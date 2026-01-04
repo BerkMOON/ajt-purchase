@@ -160,11 +160,16 @@ const SupplierPortal: React.FC = () => {
       title: '询价截止时间',
       dataIndex: 'deadline',
       key: 'deadline',
-      render: (deadline: string) => {
-        const expired = isInquiryExpired(deadline);
+      render: (deadline: string, record: SupplierInquiryItem) => {
+        const expired =
+          isInquiryExpired(deadline) &&
+          record.status.code === InquiryStatus.Quoting;
         return (
           <span style={{ color: expired ? 'red' : 'inherit' }}>
-            <CountdownText deadline={deadline} />
+            <CountdownText
+              deadline={deadline}
+              isInquiring={record.status.code === InquiryStatus.Quoting}
+            />
           </span>
         );
       },

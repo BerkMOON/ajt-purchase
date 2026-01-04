@@ -118,7 +118,7 @@ const LoginPage: React.FC = () => {
             <div className={styles['login-info']}>
               <div className={styles.header}>
                 <h1 className={styles.welcome}>WELCOME</h1>
-                <p className={styles.subtitle}>欢迎来到易达安管理系统</p>
+                <p className={styles.subtitle}>欢迎来到奥吉通集采系统</p>
               </div>
               <Form
                 name="login"

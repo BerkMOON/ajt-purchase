@@ -22,7 +22,7 @@ export const OssAPI = {
    * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-395733812
    */
   importPartExcel: (params: ImportPartExcelParams) =>
-    request<ResponseInfoType<null>>(`/api/v1/platform/part/import`, {
+    request<ResponseInfoType<null>>(`/api/v1/platform/product/part/import`, {
       method: 'POST',
       data: params,
     }),
