@@ -69,8 +69,8 @@ const Home = () => {
                 ]}
               >
                 <List.Item.Meta
-                  title={`采购单 ${item.purchase_no}`}
-                  description={`${item.store_name} - ${item.creator_name} - ${item.create_time}`}
+                  title={`采购单 ${item.order_no}`}
+                  description={`${item.store_name} - ${item.creator_name} - ${item.ctime}`}
                 />
               </List.Item>
             )}

@@ -31,14 +31,12 @@ export enum StockStatus {
   DISCONTINUED = 'DISCONTINUED',
 }
 
-export interface PurchaseParams {
-  page?: number;
-  limit?: number;
+export interface PurchaseParams extends PageInfoParams {
   order_no?: string;
   ctime_start?: string;
   ctime_end?: string;
   store_id?: string;
-  status?: string;
+  status?: number;
 }
 
 export interface CreatePurchaseParams {

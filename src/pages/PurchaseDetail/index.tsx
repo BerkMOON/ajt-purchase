@@ -37,7 +37,7 @@ import {
 } from './utils';
 
 const PurchaseDetail: React.FC = () => {
-  const { isLogin } = useAccess();
+  const { isLogin, isPlatform } = useAccess();
   const { id } = useParams<{ id: string }>();
   const [purchase, setPurchase] = useState<PurchaseOrderDetailResponse | null>(
     null,
@@ -66,11 +66,15 @@ const PurchaseDetail: React.FC = () => {
     [selectedSuppliers],
   );
 
+  const isReadOnly = isPlatform;
+
   const fetchPurchaseDetail = useCallback(async () => {
     if (!id) return;
     setLoading(true);
     try {
-      const purchaseResponse = await PurchaseAPI.getPurchaseDetail(id);
+      const purchaseResponse = isPlatform
+        ? await PurchaseAPI.getPurchaseInfoDetail(Number(id))
+        : await PurchaseAPI.getPurchaseDetail(id);
       const purchaseData = purchaseResponse.data;
       setPurchase(purchaseData);
 
@@ -143,7 +147,7 @@ const PurchaseDetail: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, isPlatform]);
 
   useEffect(() => {
     fetchPurchaseDetail();
@@ -184,6 +188,7 @@ const PurchaseDetail: React.FC = () => {
   };
 
   const confirmSelectSuppliers = async () => {
+    if (isReadOnly) return;
     if (!purchase) {
       return;
     }
@@ -230,6 +235,7 @@ const PurchaseDetail: React.FC = () => {
   };
 
   const handleConfirmArrival = () => {
+    if (isReadOnly) return;
     if (!purchase) return;
 
     // 检查是否有已选中供应商的配件
@@ -269,6 +275,7 @@ const PurchaseDetail: React.FC = () => {
   };
 
   const handleSendInquiry = () => {
+    if (isReadOnly) return;
     if (!purchase) {
       message.error('采购单信息不存在');
       return;
@@ -300,7 +307,7 @@ const PurchaseDetail: React.FC = () => {
   };
 
   const handleEndInquiry = async () => {
-    if (!purchase) return;
+    if (!purchase || isReadOnly) return;
     try {
       await PurchaseAPI.endInquiry(purchase.order_no);
       message.success('已结束询价，请选择供应商报价');
@@ -312,7 +319,7 @@ const PurchaseDetail: React.FC = () => {
   };
 
   const handleConfirmOrder = () => {
-    if (!purchase) return;
+    if (!purchase || isReadOnly) return;
 
     // 检查是否有状态为"已选中"的商品
     const hasSelectedItems = purchase.items?.some(
@@ -329,7 +336,7 @@ const PurchaseDetail: React.FC = () => {
   };
 
   const handleConfirmOrderSubmit = async (skuIdList: number[]) => {
-    if (!purchase) return;
+    if (!purchase || isReadOnly) return;
     try {
       setOrderLoading(true);
       await PurchaseAPI.confirmOrder({
@@ -348,6 +355,7 @@ const PurchaseDetail: React.FC = () => {
   };
 
   const getAvailableActions = () => {
+    if (isReadOnly) return [];
     if (!purchase) return [];
     const status = purchase.status.code;
     const actions: React.ReactNode[] = [];
@@ -470,10 +478,11 @@ const PurchaseDetail: React.FC = () => {
               itemQuoteData={itemQuoteData}
               selectedSuppliers={selectedSuppliers}
               onSelectSupplier={handleItemSupplierChange}
-              canConfirm={hasSupplierSelection}
+              canConfirm={!isReadOnly && hasSupplierSelection}
               onOpenConfirmModal={() => setSelectSupplierModalVisible(true)}
               purchaseStatus={purchase.status.code}
               selectionEnabled={
+                !isReadOnly &&
                 purchase.status.code === OrderStatus.INQUIRY_COMPLETED
               }
             />
@@ -488,37 +497,41 @@ const PurchaseDetail: React.FC = () => {
         </Row>
       </Card>
 
-      <SelectSupplierModal
-        visible={selectSupplierModalVisible}
-        onOk={confirmSelectSuppliers}
-        confirmLoading={confirmLoading}
-        onCancel={() => setSelectSupplierModalVisible(false)}
-        selectedSuppliers={selectedSuppliers}
-        itemQuoteData={itemQuoteData}
-      />
+      {!isReadOnly && (
+        <>
+          <SelectSupplierModal
+            visible={selectSupplierModalVisible}
+            onOk={confirmSelectSuppliers}
+            confirmLoading={confirmLoading}
+            onCancel={() => setSelectSupplierModalVisible(false)}
+            selectedSuppliers={selectedSuppliers}
+            itemQuoteData={itemQuoteData}
+          />
 
-      <ConfirmArrivalModal
-        visible={confirmArrivalModalVisible}
-        items={purchase?.items || []}
-        onOk={handleConfirmArrivalSubmit}
-        onCancel={() => setConfirmArrivalModalVisible(false)}
-      />
+          <ConfirmArrivalModal
+            visible={confirmArrivalModalVisible}
+            items={purchase?.items || []}
+            onOk={handleConfirmArrivalSubmit}
+            onCancel={() => setConfirmArrivalModalVisible(false)}
+          />
 
-      <ConfirmOrderModal
-        visible={confirmOrderModalVisible}
-        items={purchase?.items || []}
-        onOk={handleConfirmOrderSubmit}
-        onCancel={() => setConfirmOrderModalVisible(false)}
-        loading={orderLoading}
-      />
+          <ConfirmOrderModal
+            visible={confirmOrderModalVisible}
+            items={purchase?.items || []}
+            onOk={handleConfirmOrderSubmit}
+            onCancel={() => setConfirmOrderModalVisible(false)}
+            loading={orderLoading}
+          />
 
-      <SendInquiryModal
-        visible={sendInquiryModalVisible}
-        defaultDeadline={purchase?.inquiry_deadline}
-        loading={sendInquiryLoading}
-        onOk={handleSendInquirySubmit}
-        onCancel={() => setSendInquiryModalVisible(false)}
-      />
+          <SendInquiryModal
+            visible={sendInquiryModalVisible}
+            defaultDeadline={purchase?.inquiry_deadline}
+            loading={sendInquiryLoading}
+            onOk={handleSendInquirySubmit}
+            onCancel={() => setSendInquiryModalVisible(false)}
+          />
+        </>
+      )}
     </div>
   );
 };

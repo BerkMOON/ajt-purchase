@@ -31,6 +31,8 @@ export type QuoteCard = {
     tracking_no_list: string[];
     remark: string;
   };
+  // quote_no === '0' 时表示未报价
+  isUnquoted?: boolean;
 };
 
 export type ItemQuoteRow = {
@@ -154,23 +156,27 @@ export const buildItemQuoteData = (
 
         // 遍历该 SKU 的所有报价项
         skuQuote.quote_items.forEach((quoteItem: QuoteItem) => {
-          // 检查是否已存在相同的报价（避免重复）
-          const existingQuote = itemData.quotes.find(
-            (q) => q.quote_no === String(quoteItem.quote_no),
-          );
+          const quoteNoStr = String(quoteItem.quote_no);
+          const isUnquoted = quoteItem.quote_no === 0;
+
+          // 未报价记录（quote_no === 0）不做去重，直接展示
+          const existingQuote = isUnquoted
+            ? undefined
+            : itemData.quotes.find((q) => q.quote_no === quoteNoStr);
 
           if (!existingQuote) {
             const totalPrice = quoteItem.quote_price * skuQuote.quantity;
             itemData.quotes.push({
-              quote_no: String(quoteItem.quote_no),
+              quote_no: quoteNoStr,
               supplier_name: quoteItem.supplier_name,
               inquiry_item_id: quoteItem.inquiry_no, // 使用 inquiry_no 作为 inquiry_item_id
               sku_id: skuQuote.sku_id,
               quote_price: quoteItem.quote_price,
               total_price: totalPrice,
               expected_delivery_date: quoteItem.expected_delivery_date,
-              remark: quoteItem.remark || '',
+              remark: quoteItem.remark,
               tracking_info: quoteItem.tracking_info,
+              isUnquoted,
             });
           }
         });

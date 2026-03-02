@@ -12,6 +12,35 @@ export default defineConfig({
   },
   routes: [
     {
+      name: '审批管理',
+      path: '/review',
+      lazy: true,
+      hideInBreadcrumb: true,
+      access: 'reviewList',
+      icon: 'AuditOutlined',
+      routes: [
+        {
+          name: '审批列表',
+          path: '/review/list',
+          component: './Review/ReviewList',
+          access: 'reviewList',
+        },
+        {
+          name: '审批详情',
+          path: '/review/detail/:id',
+          component: './Review/ReviewDetail',
+          hideInMenu: true,
+          access: 'reviewList',
+        },
+        {
+          name: '审批记录列表',
+          path: '/review/approval-record',
+          component: './Review/ApprovalRecordList',
+          access: 'reviewList',
+        },
+      ],
+    },
+    {
       path: '/',
       redirect: '/home',
       component: './Home',
@@ -41,6 +70,7 @@ export default defineConfig({
       path: '/purchase',
       component: './PurchaseList',
       access: 'purchaseList',
+      icon: 'ShoppingOutlined',
     },
     {
       name: '采购单详情',
@@ -61,6 +91,7 @@ export default defineConfig({
       path: '/supplier-quotes',
       component: './SupplierQuoteList',
       access: 'supplierPortal',
+      icon: 'ContainerOutlined',
     },
     {
       name: '供应商报价详情',
@@ -74,24 +105,28 @@ export default defineConfig({
       path: '/supplier-portal',
       component: './SupplierPortal',
       access: 'supplierPortal',
+      icon: 'PropertySafetyOutlined',
     },
     {
       name: '配件目录',
       path: '/catalog',
       component: './PartCatalog',
       access: 'partCatalog',
+      icon: 'ShopOutlined',
     },
     {
       name: '购物车',
       path: '/cart',
       component: './Cart',
-      access: 'partCatalog',
+      access: 'cart',
+      icon: 'ShoppingCartOutlined',
     },
     {
       name: '系统管理',
       path: '/admin',
       component: './SystemAdmin',
       access: 'systemAdmin',
+      icon: 'SettingOutlined',
     },
     {
       name: '品类树管理',
@@ -177,42 +212,14 @@ export default defineConfig({
       hideInMenu: true,
       access: 'systemAdmin',
     },
-    {
-      name: '审批管理',
-      path: '/review',
-      lazy: true,
-      hideInBreadcrumb: true,
-      access: 'reviewList',
-      routes: [
-        {
-          name: '审批列表',
-          path: '/review/list',
-          component: './Review/ReviewList',
-          access: 'reviewList',
-        },
-        {
-          name: '审批详情',
-          path: '/review/detail/:id',
-          component: './Review/ReviewDetail',
-          hideInMenu: true,
-          access: 'reviewList',
-        },
-        {
-          name: '审批记录列表',
-          path: '/review/approval-record',
-          component: './Review/ApprovalRecordList',
-          access: 'reviewList',
-        },
-      ],
-    },
   ],
   npmClient: 'pnpm',
   proxy: {
     '/api': {
       // 标识需要进行转换的请求的url
-      // target: 'http://59.110.38.103:8999',
+      target: 'http://59.110.38.103:8999',
       // target: 'http://192.168.8.66:8888',
-      target: 'http://192.168.8.232:8888',
+      // target: 'http://192.168.8.232:8888',
       changeOrigin: true, // 允许域名进行转换
     },
   },

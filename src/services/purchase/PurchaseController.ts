@@ -27,6 +27,7 @@ import type {
 
 const API_PREFIX = '/api/v1/store/purchase/order';
 const PRODUCT_API_PREFIX = '/api/v1/store/purchase/shop';
+const PLATFORM_API_PREFIX = '/api/v1/platform/order';
 
 export const PurchaseAPI = {
   /**
@@ -34,7 +35,7 @@ export const PurchaseAPI = {
    * GET /api/v1/purchaseOrder/list
    * 支持筛选：order_no, store_id, status, ctime_start, ctime_end
    */
-  getAllPurchases: async (params: PurchaseParams) => {
+  getPurchaseList: async (params: PurchaseParams) => {
     return request<ResponseInfoType<PurchaseListResponse>>(
       `${API_PREFIX}/list`,
       {
@@ -219,4 +220,36 @@ export const PurchaseAPI = {
         params,
       },
     ),
+
+  /**
+   * 采购单列表
+   * GET /api/v1/platform/order/list
+   * 接口ID：421597434
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-421597434
+   */
+  getAllPurchases: async (params: PurchaseParams) => {
+    return request<ResponseInfoType<PurchaseListResponse>>(
+      `${PLATFORM_API_PREFIX}/list`,
+      {
+        method: 'GET',
+        params,
+      },
+    );
+  },
+
+  /**
+   * 采购单详情
+   * GET /api/v1/platform/order/detail
+   * 接口ID：421600479
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-421600479
+   */
+  getPurchaseInfoDetail: async (orderNo: number) => {
+    return request<ResponseInfoType<PurchaseOrderDetailResponse>>(
+      `${PLATFORM_API_PREFIX}/detail`,
+      {
+        method: 'GET',
+        params: { order_no: orderNo },
+      },
+    );
+  },
 };

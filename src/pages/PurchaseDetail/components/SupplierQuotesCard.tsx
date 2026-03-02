@@ -45,11 +45,13 @@ const SupplierQuotesCard: React.FC<SupplierQuotesCardProps> = ({
       width: 80,
       align: 'center',
       render: (_: any, quote) => {
+        const isUnquoted = quote.isUnquoted || quote.quote_no === '0';
         const isSelected =
           selectedSuppliers[item.itemKey]?.quote_no === quote.quote_no;
         // 如果该商品的状态是"已选中"或更高，则禁用选择
         const isItemSelected = item.status?.code >= OrderItemStatus.SELECTED;
-        const isDisabled = !selectionEnabled || isItemSelected;
+        // 未报价记录不允许选择
+        const isDisabled = !selectionEnabled || isItemSelected || isUnquoted;
 
         const handleRadioClick = () => {
           if (isDisabled) return;
@@ -84,6 +86,20 @@ const SupplierQuotesCard: React.FC<SupplierQuotesCardProps> = ({
         const isSelected =
           selectedSuppliers[item.itemKey]?.quote_no === quote.quote_no;
         return <Tag color={isSelected ? 'success' : 'default'}>{name}</Tag>;
+      },
+    },
+    {
+      title: '是否报价',
+      key: 'quoted_status',
+      width: 100,
+      align: 'center',
+      render: (_: any, quote) => {
+        const isUnquoted = quote.isUnquoted || quote.quote_no === '0';
+        return (
+          <Tag color={isUnquoted ? 'red' : 'green'}>
+            {isUnquoted ? '未报价' : '已报价'}
+          </Tag>
+        );
       },
     },
     {

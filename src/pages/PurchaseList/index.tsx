@@ -11,9 +11,7 @@ import { columns } from './colums';
 import { searchForm } from './searchForm';
 
 const PurchaseList: React.FC = () => {
-  const { isLogin } = useAccess();
-  // 添加权限检查，可以根据实际需求调整
-  const { purchaseList } = useAccess();
+  const { isLogin, purchaseList, isPlatform } = useAccess();
 
   const listRef = useRef<BaseListPageRef>(null);
 
@@ -37,7 +35,7 @@ const PurchaseList: React.FC = () => {
 
     // 状态筛选（单选）
     if (params.status !== undefined && params.status !== null) {
-      searchParams.status = String(params.status);
+      searchParams.status = params.status;
     }
 
     // 日期范围
@@ -46,7 +44,9 @@ const PurchaseList: React.FC = () => {
       searchParams.ctime_end = formatDate(params.date_range[1]);
     }
 
-    const response = await PurchaseAPI.getAllPurchases(searchParams);
+    const response = isPlatform
+      ? await PurchaseAPI.getAllPurchases(searchParams)
+      : await PurchaseAPI.getPurchaseList(searchParams);
     return {
       list: response.data.orders || [],
       total: response.data.count.total_count,

@@ -36,8 +36,8 @@ export interface BaseListInfo {
 }
 
 export interface PageInfoParams {
-  page: number;
-  limit: number;
+  page?: number;
+  limit?: number;
 }
 
 export interface BaseCreateModalFormProps {

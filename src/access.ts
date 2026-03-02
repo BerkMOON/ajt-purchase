@@ -20,17 +20,22 @@ export default (initialState: UserInfo & { isLogin: boolean }) => {
 
   return {
     isLogin,
+    isPlatform,
+    isStore,
+    isSupplier,
     // 采购单相关页面 - platform和store可以访问
     purchaseList: isLogin && (isPlatform || isStore),
     purchaseDetail: isLogin && (isPlatform || isStore),
     purchaseInquiry: isLogin && (isPlatform || isStore),
     purchaseSupplierQuote: isLogin && (isPlatform || isStore),
     // 采购单审核权限 - platform和store可以访问
-    purchaseAudit: isLogin && (isPlatform || isStore),
+    purchaseAudit: isLogin && isStore,
+    // 购物车 - platform和store可以访问
+    cart: isLogin && isStore,
     // 配件目录 - platform和store可以访问
     partCatalog: isLogin && (isPlatform || isStore),
     // 供应商门户 - platform和supplier可以访问
-    supplierPortal: isLogin && (isPlatform || isSupplier),
+    supplierPortal: isLogin && isSupplier,
     // 系统管理 - 只有platform可以访问
     systemAdmin: isLogin && isPlatform,
     // 审批列表 - 只有admin_reviewer可以访问
