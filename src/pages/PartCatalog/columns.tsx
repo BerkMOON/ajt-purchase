@@ -6,13 +6,15 @@ import { Button, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
 interface ColumnsHandlers {
-  onAddToCart: (sku: SkuListInfo) => void;
+  onAddToCart?: (sku: SkuListInfo) => void;
+  enableCart?: boolean;
 }
 
 export const getColumns = ({
   onAddToCart,
+  enableCart = true,
 }: ColumnsHandlers): ColumnsType<SkuListInfo> => {
-  return [
+  const baseColumns: ColumnsType<SkuListInfo> = [
     {
       title: 'SKU ID',
       dataIndex: 'sku_id',
@@ -36,7 +38,7 @@ export const getColumns = ({
       title: '品牌',
       dataIndex: 'brand_name',
       key: 'brand_name',
-      width: 60,
+      width: 70,
     },
     {
       title: '产品ID',
@@ -159,6 +161,14 @@ export const getColumns = ({
       key: 'create_time',
       width: 180,
     },
+  ];
+
+  if (!enableCart) {
+    return baseColumns;
+  }
+
+  return [
+    ...baseColumns,
     {
       title: '操作',
       key: 'action',
@@ -169,7 +179,7 @@ export const getColumns = ({
           type="primary"
           size="small"
           icon={<ShoppingCartOutlined />}
-          onClick={() => onAddToCart(record)}
+          onClick={() => onAddToCart?.(record)}
         >
           加入购物车
         </Button>

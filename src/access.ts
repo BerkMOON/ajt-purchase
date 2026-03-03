@@ -36,6 +36,8 @@ export default (initialState: UserInfo & { isLogin: boolean }) => {
     partCatalog: isLogin && (isPlatform || isStore),
     // 供应商门户 - platform和supplier可以访问
     supplierPortal: isLogin && isSupplier,
+    // 供应商报价列表 - platform和supplier可以访问
+    supplierQuote: isLogin && (isPlatform || isSupplier),
     // 系统管理 - 只有platform可以访问
     systemAdmin: isLogin && isPlatform,
     // 审批列表 - 只有admin_reviewer可以访问

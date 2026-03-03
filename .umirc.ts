@@ -41,6 +41,20 @@ export default defineConfig({
       ],
     },
     {
+      name: '品类树管理',
+      path: '/category',
+      component: './SystemAdmin/CategoryManagement',
+      access: 'systemAdmin',
+      icon: 'ApartmentOutlined',
+    },
+    {
+      name: '产品管理',
+      path: '/product',
+      component: './SystemAdmin/ProductManagement',
+      access: 'systemAdmin',
+      icon: 'AppstoreOutlined',
+    },
+    {
       path: '/',
       redirect: '/home',
       component: './Home',
@@ -90,7 +104,7 @@ export default defineConfig({
       name: '供应商报价列表',
       path: '/supplier-quotes',
       component: './SupplierQuoteList',
-      access: 'supplierPortal',
+      access: 'supplierQuote',
       icon: 'ContainerOutlined',
     },
     {
@@ -98,7 +112,7 @@ export default defineConfig({
       path: '/supplier-quote-detail/:quoteNo',
       component: './SupplierQuoteDetail',
       hideInMenu: true,
-      access: 'supplierPortal',
+      access: 'supplierQuote',
     },
     {
       name: '供应商门户',
@@ -127,20 +141,6 @@ export default defineConfig({
       component: './SystemAdmin',
       access: 'systemAdmin',
       icon: 'SettingOutlined',
-    },
-    {
-      name: '品类树管理',
-      path: '/admin/category',
-      component: './SystemAdmin/CategoryManagement',
-      hideInMenu: true,
-      access: 'systemAdmin',
-    },
-    {
-      name: '产品管理',
-      path: '/admin/product',
-      component: './SystemAdmin/ProductManagement',
-      hideInMenu: true,
-      access: 'systemAdmin',
     },
     {
       name: '产品详情',

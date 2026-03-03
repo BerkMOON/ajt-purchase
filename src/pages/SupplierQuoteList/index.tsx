@@ -6,6 +6,7 @@ import type {
   GetSupplierQuotesParams,
   SupplierQuoteResponse,
 } from '@/services/quote/typings.d';
+import { useAccess } from '@umijs/max';
 import { Card, message } from 'antd';
 import React, { useRef, useState } from 'react';
 import { formatDate } from '../PurchaseDetail/utils';
@@ -14,6 +15,7 @@ import ShipModal from './components/ShipModal';
 import { searchForm } from './searchForm';
 
 const SupplierQuoteList: React.FC = () => {
+  const { isPlatform, isSupplier } = useAccess();
   const listRef = useRef<BaseListPageRef>(null);
   const [shipModalVisible, setShipModalVisible] = useState(false);
   const [shipLoading, setShipLoading] = useState(false);
@@ -21,7 +23,9 @@ const SupplierQuoteList: React.FC = () => {
     useState<SupplierQuoteResponse | null>(null);
 
   const fetchData = async (params: GetSupplierQuotesParams) => {
-    const response = await QuoteAPI.getSupplierQuotes(params);
+    const response = isPlatform
+      ? await QuoteAPI.getQuoteList(params)
+      : await QuoteAPI.getSupplierQuotes(params);
     return {
       list: response.data?.quotes || [],
       total: response.data?.count?.total_count || 0,
@@ -42,8 +46,8 @@ const SupplierQuoteList: React.FC = () => {
     if (params.order_no) {
       result.order_no = params.order_no;
     }
-    if (params.status) {
-      result.status = params.status;
+    if (params.status !== undefined && params.status !== null) {
+      result.status = Number(params.status);
     }
     if (params.ctime_range) {
       const [start, end] = params.ctime_range || [];
@@ -55,11 +59,19 @@ const SupplierQuoteList: React.FC = () => {
       }
     }
 
+    if (params.supplier_id) {
+      result.supplier_id = Number(params.supplier_id);
+    }
+
     return result;
   };
 
   // 处理发货
   const handleShip = (record: SupplierQuoteResponse) => {
+    if (isPlatform && !isSupplier) {
+      // 平台仅查看，不允许发货
+      return;
+    }
     setSelectedQuote(record);
     setShipModalVisible(true);
   };
@@ -94,7 +106,10 @@ const SupplierQuoteList: React.FC = () => {
         <BaseListPage
           ref={listRef}
           title="供应商报价列表"
-          columns={getColumns({ onShip: handleShip })}
+          columns={getColumns({
+            onShip: handleShip,
+            enableShip: isSupplier,
+          })}
           fetchData={fetchData}
           searchFormItems={searchForm}
           searchParamsTransform={searchParamsTransform}

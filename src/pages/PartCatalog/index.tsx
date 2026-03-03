@@ -16,9 +16,11 @@ import { usePurchaseCreation } from './hooks/usePurchaseCreation';
 import { searchForm } from './searchForm';
 
 const PartCatalog: React.FC = () => {
-  const { isLogin } = useAccess();
+  const { isLogin, isPlatform } = useAccess();
   const baseListRef = useRef<BaseListPageRef>(null);
   const [cartVisible, setCartVisible] = useState(false);
+
+  const isReadOnly = isPlatform;
 
   // 使用购物车数据 hook
   const {
@@ -26,13 +28,17 @@ const PartCatalog: React.FC = () => {
     cartItemCount,
     loading: cartLoading,
     refreshCartData,
-  } = useCartData(isLogin);
+  } = useCartData(isLogin && !isReadOnly);
 
   // 添加到购物车
   const handleAddToCart = async (sku: {
     sku_id?: number;
     product_id?: number;
   }) => {
+    if (isReadOnly) {
+      message.warning('平台用户无需购物车功能');
+      return;
+    }
     if (!sku.sku_id) {
       message.error('SKU信息不完整');
       return;
@@ -64,10 +70,15 @@ const PartCatalog: React.FC = () => {
 
   // 获取 SKU 列表数据
   const fetchSkuData = async (params: GetSkuListParams) => {
-    const { data } = await PurchaseAPI.getSkuList(params);
+    const { data } = isReadOnly
+      ? await PurchaseAPI.getAllSkuList(params)
+      : await PurchaseAPI.getSkuList(params);
     return {
-      list: data.sku_list || [],
-      total: data.count?.total_count || 0,
+      list: (data as any)?.sku_list || [],
+      total:
+        (data as any)?.count?.total_count ??
+        (data as any)?.meta?.total_count ??
+        ((data as any)?.sku_list?.length || 0),
     };
   };
 
@@ -82,7 +93,10 @@ const PartCatalog: React.FC = () => {
     handleSubmitPurchase(values);
   };
 
-  const columns = getColumns({ onAddToCart: handleAddToCart });
+  const columns = getColumns({
+    onAddToCart: handleAddToCart,
+    enableCart: !isReadOnly,
+  });
 
   if (!isLogin) {
     return <Navigate to="/login" />;
@@ -106,37 +120,43 @@ const PartCatalog: React.FC = () => {
           status: COMMON_STATUS.ACTIVE,
         }}
         extraButtons={
-          <Button
-            type="primary"
-            icon={<ShoppingCartOutlined />}
-            onClick={() => {
-              setCartVisible(true);
-            }}
-          >
-            购物车 ({cartItemCount})
-          </Button>
+          isReadOnly ? null : (
+            <Button
+              type="primary"
+              icon={<ShoppingCartOutlined />}
+              onClick={() => {
+                setCartVisible(true);
+              }}
+            >
+              购物车 ({cartItemCount})
+            </Button>
+          )
         }
         rowKey="sku_id"
       />
 
-      {/* 购物车弹窗 */}
-      <CartModal
-        visible={cartVisible}
-        cartItems={cartItems}
-        loading={cartLoading}
-        onCancel={() => setCartVisible(false)}
-        onCreatePurchase={onCreatePurchase}
-        onRefresh={refreshCartData}
-      />
+      {!isReadOnly && (
+        <>
+          {/* 购物车弹窗 */}
+          <CartModal
+            visible={cartVisible}
+            cartItems={cartItems}
+            loading={cartLoading}
+            onCancel={() => setCartVisible(false)}
+            onCreatePurchase={onCreatePurchase}
+            onRefresh={refreshCartData}
+          />
 
-      {/* 创建采购单弹窗 */}
-      <CreatePurchaseModal
-        visible={createModalVisible}
-        loading={createLoading}
-        form={form}
-        onCancel={handleCancelCreate}
-        onSubmit={onSubmitPurchase}
-      />
+          {/* 创建采购单弹窗 */}
+          <CreatePurchaseModal
+            visible={createModalVisible}
+            loading={createLoading}
+            form={form}
+            onCancel={handleCancelCreate}
+            onSubmit={onSubmitPurchase}
+          />
+        </>
+      )}
     </>
   );
 };

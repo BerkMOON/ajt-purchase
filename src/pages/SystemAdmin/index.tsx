@@ -1,6 +1,4 @@
 import {
-  ApartmentOutlined,
-  AppstoreOutlined,
   CloudUploadOutlined,
   SafetyCertificateOutlined,
   ShopOutlined,
@@ -27,18 +25,6 @@ const SystemAdmin: React.FC = () => {
 
   // 功能卡片配置
   const adminFunctions = [
-    {
-      title: '品类树管理',
-      description: '管理商品分类层级结构（2-3级）',
-      icon: <ApartmentOutlined style={{ fontSize: 48, color: '#1890ff' }} />,
-      path: '/admin/category',
-    },
-    {
-      title: '产品管理',
-      description: '管理产品信息和销售属性配置',
-      icon: <AppstoreOutlined style={{ fontSize: 48, color: '#52c41a' }} />,
-      path: '/admin/product',
-    },
     {
       title: '品牌管理',
       description: '管理品牌信息',

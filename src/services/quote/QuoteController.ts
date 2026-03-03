@@ -10,6 +10,7 @@ import type {
 } from './typings';
 
 const API_PREFIX = '/api/v1/supplier/order/quote';
+const PLATFORM_API_PREFIX = '/api/v1/platform/quote';
 
 export const QuoteAPI = {
   /**
@@ -62,5 +63,37 @@ export const QuoteAPI = {
       method: 'POST',
       data: params,
     });
+  },
+
+  /**
+   * 报价单列表
+   * GET /api/v1/platform/quote/list
+   * 接口ID：421611147
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-421611147
+   */
+  getQuoteList: async (params: GetSupplierQuotesParams) => {
+    return request<ResponseInfoType<GetSupplierQuotesResponse>>(
+      `${PLATFORM_API_PREFIX}/list`,
+      {
+        method: 'GET',
+        params,
+      },
+    );
+  },
+
+  /**
+   * 报价单详情
+   * GET /api/v1/platform/quote/detail
+   * 接口ID：421612066
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-421612066
+   */
+  getQuoteDetail: async (quoteNo: number | string) => {
+    return request<ResponseInfoType<SupplierQuoteResponse>>(
+      `${PLATFORM_API_PREFIX}/detail`,
+      {
+        method: 'GET',
+        params: { quote_no: quoteNo },
+      },
+    );
   },
 };

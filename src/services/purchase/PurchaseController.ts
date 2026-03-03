@@ -28,6 +28,7 @@ import type {
 const API_PREFIX = '/api/v1/store/purchase/order';
 const PRODUCT_API_PREFIX = '/api/v1/store/purchase/shop';
 const PLATFORM_API_PREFIX = '/api/v1/platform/order';
+const PLATFORM_PRODUCT_API_PREFIX = '/api/v1/platform/product';
 
 export const PurchaseAPI = {
   /**
@@ -249,6 +250,22 @@ export const PurchaseAPI = {
       {
         method: 'GET',
         params: { order_no: orderNo },
+      },
+    );
+  },
+
+  /**
+   * sku列表
+   * GET /api/v1/platform/product/sku/list
+   * 接口ID：421615064
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-421615064
+   */
+  getAllSkuList: async (params: GetSkuListParams) => {
+    return request<ResponseInfoType<SkuListResponse>>(
+      `${PLATFORM_PRODUCT_API_PREFIX}/sku/list`,
+      {
+        method: 'GET',
+        params,
       },
     );
   },

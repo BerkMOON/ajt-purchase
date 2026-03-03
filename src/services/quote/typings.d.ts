@@ -18,11 +18,13 @@ export interface SubmitSupplierQuoteItemParams {
   remark?: string;
 }
 export interface GetSupplierQuotesParams extends PageInfoParams {
-  quote_no: number | string;
-  order_no: number | string;
-  status: number;
-  ctime_start: string;
-  ctime_end: string;
+  quote_no?: number | string;
+  order_no?: number | string;
+  status?: number;
+  ctime_start?: string;
+  ctime_end?: string;
+  // 平台侧额外支持按供应商筛选
+  supplier_id?: number | string;
 }
 
 export interface SupplierQuoteResponse {

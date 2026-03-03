@@ -1,7 +1,27 @@
+import SupplierSelect from '@/components/BusinessComponents/SupplierSelect';
 import { QuoteStatusMap } from '@/services/quote/constant';
+import { useAccess } from '@umijs/max';
 import { Col, DatePicker, Form, Input, Select } from 'antd';
+import React from 'react';
 
 const { RangePicker } = DatePicker;
+
+// 仅平台用户展示供应商ID筛选
+const SupplierFilterCol: React.FC = () => {
+  const { isPlatform } = useAccess();
+
+  if (!isPlatform) {
+    return null;
+  }
+
+  return (
+    <Col>
+      <Form.Item name="supplier_id" label="供应商">
+        <SupplierSelect placeholder="请选择供应商" />
+      </Form.Item>
+    </Col>
+  );
+};
 
 export const searchForm = (
   <>
@@ -10,6 +30,7 @@ export const searchForm = (
         <Input placeholder="请输入报价单号" allowClear />
       </Form.Item>
     </Col>
+    <SupplierFilterCol />
     <Col>
       <Form.Item name="order_no" label="采购单号">
         <Input placeholder="请输入采购单号" allowClear />

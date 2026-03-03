@@ -5,9 +5,9 @@ import { PurchaseAPI } from '@/services/purchase/PurchaseController';
 import { type PurchaseParams } from '@/services/purchase/typings.d';
 import { Navigate, useAccess } from '@umijs/max';
 import { Card, Result } from 'antd';
-import React, { useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { formatDate } from '../PurchaseDetail/utils';
-import { columns } from './colums';
+import { getColumns } from './colums';
 import { searchForm } from './searchForm';
 
 const PurchaseList: React.FC = () => {
@@ -52,6 +52,11 @@ const PurchaseList: React.FC = () => {
       total: response.data.count.total_count,
     };
   };
+
+  const columns = useMemo(
+    () => getColumns({ enableAction: !isPlatform }),
+    [isPlatform],
+  );
 
   if (!isLogin) {
     return <Navigate to="/login" />;

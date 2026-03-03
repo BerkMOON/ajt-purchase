@@ -20,7 +20,7 @@ import React, { useEffect, useState } from 'react';
 import { formatDate } from '../PurchaseDetail/utils';
 
 const SupplierQuoteDetail: React.FC = () => {
-  const { isLogin } = useAccess();
+  const { isLogin, isPlatform } = useAccess();
   const { quoteNo } = useParams<{ quoteNo: string }>();
   const [quote, setQuote] = useState<SupplierQuoteResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,7 +31,9 @@ const SupplierQuoteDetail: React.FC = () => {
 
       try {
         setLoading(true);
-        const response = await QuoteAPI.getSupplierQuoteDetail(quoteNo);
+        const response = isPlatform
+          ? await QuoteAPI.getQuoteDetail(quoteNo)
+          : await QuoteAPI.getSupplierQuoteDetail(quoteNo);
         setQuote(response.data);
       } catch (error) {
         message.error('获取报价详情失败');
