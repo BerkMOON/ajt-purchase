@@ -1,7 +1,7 @@
 import { CartAPI } from '@/services/cart/CartController';
 import type { CartItem } from '@/services/cart/typings';
 import { Navigate, useAccess } from '@umijs/max';
-import { Button, Card, Space, Table, message } from 'antd';
+import { Button, Card, Popconfirm, Space, Table, message } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 import { getCartColumns } from '../PartCatalog/components/cartColumns';
 import CreatePurchaseModal from '../PartCatalog/components/CreatePurchaseModal';
@@ -95,6 +95,18 @@ const Cart: React.FC = () => {
     }
   };
 
+  // 清空购物车
+  const handleClearCart = async () => {
+    try {
+      await CartAPI.clearCart();
+      message.success('购物车已清空');
+      fetchCartList();
+    } catch (error) {
+      console.error('清空购物车失败:', error);
+      message.error('清空购物车失败');
+    }
+  };
+
   // 处理创建采购单提交
   const handleSubmitPurchaseWithRefresh = async (values: any) => {
     await handleSubmitPurchase(values);
@@ -124,6 +136,18 @@ const Cart: React.FC = () => {
         title="购物车"
         extra={
           <Space>
+            <Popconfirm
+              title="确定要清空购物车吗？"
+              description="此操作将删除购物车中的所有商品"
+              onConfirm={handleClearCart}
+              okText="确定"
+              cancelText="取消"
+              disabled={cartItems.length === 0 || loading}
+            >
+              <Button danger disabled={cartItems.length === 0 || loading}>
+                清空购物车
+              </Button>
+            </Popconfirm>
             <Button
               type="primary"
               onClick={handleCreatePurchase}

@@ -85,6 +85,22 @@ export const PurchaseAPI = {
     );
   },
 
+  /**
+   * 采购单状态流水
+   * GET /api/v1/platform/order/statusLogs
+   * 接口ID：422049358
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-422049358
+   */
+  getPlatformPurchaseStatusLog: async (orderNo: string | number) => {
+    return request<ResponseInfoType<PurchaseOrderStatusLogResponse>>(
+      `${PLATFORM_API_PREFIX}/statusLogs`,
+      {
+        method: 'GET',
+        params: { order_no: orderNo },
+      },
+    );
+  },
+
   createOrder: async (params: CreatePurchaseParams) => {
     return request<ResponseInfoType<null>>(`${API_PREFIX}/create`, {
       method: 'POST',
@@ -117,6 +133,22 @@ export const PurchaseAPI = {
   getSupplierQuotesByOrder: async (orderNo: string | number) => {
     return request<ResponseInfoType<OrderQuoteDetailResponse>>(
       `${API_PREFIX}/quotes`,
+      {
+        method: 'GET',
+        params: { order_no: orderNo },
+      },
+    );
+  },
+
+  /**
+   * 采购单报价列表
+   * GET /api/v1/platform/order/quotes
+   * 接口ID：422047948
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-422047948
+   */
+  getPlatformSupplierQuotesByOrder: async (orderNo: string | number) => {
+    return request<ResponseInfoType<OrderQuoteDetailResponse>>(
+      `${PLATFORM_API_PREFIX}/quotes`,
       {
         method: 'GET',
         params: { order_no: orderNo },

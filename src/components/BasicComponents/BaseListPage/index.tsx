@@ -136,6 +136,7 @@ const BaseListPage = forwardRef<BaseListPageRef, BaseListPageProps>(
     );
 
     const handleReset = useCallback(() => {
+      console.log('handleReset', defaultSearchParams);
       form.resetFields();
       fetchTableData({
         page: 1,

@@ -47,26 +47,12 @@ export const getCartColumns = ({
       width: 150,
       ellipsis: true,
     },
-    // {
-    //   title: '销售属性',
-    //   key: 'attr_pairs',
-    //   width: 250,
-    //   render: (_, record) => {
-    //     if (!record.attr_pairs || record.attr_pairs.length === 0) {
-    //       return <span style={{ color: '#999' }}>-</span>;
-    //     }
-    //     return (
-    //       <Space wrap>
-    //         {record.attr_pairs.map((pair, index) => (
-    //           <Tag key={index} color="blue">
-    //             {pair.attr_name || pair.attr_code || ''}:{' '}
-    //             {pair.value_name || pair.value_code || ''}
-    //           </Tag>
-    //         ))}
-    //       </Space>
-    //     );
-    //   },
-    // },
+    {
+      title: '品牌',
+      dataIndex: 'brand_name',
+      key: 'brand_name',
+      width: 100,
+    },
     {
       title: '商品品类',
       key: 'category_tree',
@@ -80,6 +66,15 @@ export const getCartColumns = ({
         }
         return <span style={{ color: '#999' }}>-</span>;
       },
+    },
+    {
+      title: '类型',
+      dataIndex: 'product_type',
+      key: 'product_type',
+      render: (type: string) => (
+        <Tag color="blue">{type === 'parts' ? '备件' : type || '备件'}</Tag>
+      ),
+      width: 100,
     },
     {
       title: '商品状态',

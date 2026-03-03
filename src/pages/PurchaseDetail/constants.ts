@@ -72,6 +72,6 @@ export const OrderItemStatusColorMap = {
   [OrderItemStatus.PENDING_APPROVAL]: 'blue',
   [OrderItemStatus.REJECTED]: 'red',
   [OrderItemStatus.ORDERED]: 'purple',
-  [OrderItemStatus.SHIPPED]: 'purple',
+  [OrderItemStatus.SHIPPED]: 'cyan',
   [OrderItemStatus.ARRIVED]: 'green',
 };

@@ -29,10 +29,10 @@ export const searchForm = (
       </Form.Item>
     </Col>
     <Col>
-      <Form.Item name="product_type" label="产品类型">
+      <Form.Item name="product_type" label="产品类型" hidden>
         <Select placeholder="请选择产品类型" allowClear style={{ width: 150 }}>
           <Select.Option value="parts">备件</Select.Option>
-          <Select.Option value="boutique">精品</Select.Option>
+          {/* <Select.Option value="boutique">精品</Select.Option> */}
         </Select>
       </Form.Item>
     </Col>

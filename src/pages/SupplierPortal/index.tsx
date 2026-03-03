@@ -5,6 +5,7 @@ import {
   InquiryStatusTagColor,
 } from '@/services/inquiry/constant';
 import { UserInfo } from '@/services/system/user/typings';
+import { PageContainer } from '@ant-design/pro-components';
 import { Navigate, history, useAccess, useModel } from '@umijs/max';
 import {
   Alert,
@@ -60,7 +61,9 @@ const SupplierPortal: React.FC = () => {
     status?: number;
     start_date?: string;
     end_date?: string;
-  }>({});
+  }>({
+    status: InquiryStatus.Quoting,
+  });
 
   // 获取供应商的询价单列表
   const fetchInquiries = async (
@@ -119,7 +122,9 @@ const SupplierPortal: React.FC = () => {
 
   // 重置筛选
   const handleReset = () => {
-    setFilters({});
+    setFilters({
+      status: InquiryStatus.Quoting,
+    });
     setPagination((prev) => ({ ...prev, current: 1 }));
   };
 
@@ -227,8 +232,8 @@ const SupplierPortal: React.FC = () => {
   }
 
   return (
-    <div style={{ padding: '24px' }}>
-      <Card title="供应商询价门户">
+    <Card>
+      <PageContainer title="供应商询价门户">
         {/* 供应商信息 */}
         <Card size="small" style={{ marginBottom: 16 }}>
           <Descriptions column={2} size="small">
@@ -285,58 +290,56 @@ const SupplierPortal: React.FC = () => {
         />
 
         {/* 筛选表单 */}
-        <Card size="small" style={{ marginBottom: 16 }}>
-          <Form
-            layout="inline"
-            onFinish={handleFilter}
-            initialValues={{
-              status: undefined,
-            }}
-          >
-            <Row gutter={[24, 12]} style={{ width: '100%' }}>
-              <Col span={6}>
-                <Form.Item name="inquiry_no" label="询价单号">
-                  <Input placeholder="请输入询价单号" allowClear />
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item name="order_no" label="采购单号">
-                  <Input placeholder="请输入采购单号" allowClear />
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item name="status" label="询价状态">
-                  <Select
-                    placeholder="请选择状态"
-                    allowClear
-                    style={{ width: '100%' }}
-                    options={[
-                      { label: '询价中', value: InquiryStatus.Quoting },
-                      { label: '询价结束', value: InquiryStatus.End },
-                    ]}
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item name="dateRange" label="创建时间">
-                  <DatePicker.RangePicker
-                    style={{ width: '100%' }}
-                    format="YYYY-MM-DD"
-                    placeholder={['开始日期', '结束日期']}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-            <div style={{ textAlign: 'right', width: '100%', marginTop: 16 }}>
-              <Space>
-                <Button onClick={handleReset}>重置</Button>
-                <Button type="primary" htmlType="submit">
-                  查询
-                </Button>
-              </Space>
-            </div>
-          </Form>
-        </Card>
+        <Form
+          layout="inline"
+          onFinish={handleFilter}
+          initialValues={{
+            status: InquiryStatus.Quoting,
+          }}
+        >
+          <Row gutter={[24, 12]} style={{ width: '100%' }}>
+            <Col span={6}>
+              <Form.Item name="inquiry_no" label="询价单号">
+                <Input placeholder="请输入询价单号" allowClear />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item name="order_no" label="采购单号">
+                <Input placeholder="请输入采购单号" allowClear />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item name="status" label="询价状态">
+                <Select
+                  placeholder="请选择状态"
+                  allowClear
+                  style={{ width: '100%' }}
+                  options={[
+                    { label: '询价中', value: InquiryStatus.Quoting },
+                    { label: '询价结束', value: InquiryStatus.End },
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="dateRange" label="创建时间">
+                <DatePicker.RangePicker
+                  style={{ width: '100%' }}
+                  format="YYYY-MM-DD"
+                  placeholder={['开始日期', '结束日期']}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <div style={{ textAlign: 'right', width: '100%', margin: '16px 0' }}>
+            <Space>
+              <Button onClick={handleReset}>重置</Button>
+              <Button type="primary" htmlType="submit">
+                查询
+              </Button>
+            </Space>
+          </div>
+        </Form>
 
         {/* 询价单列表 */}
         <Table
@@ -360,8 +363,8 @@ const SupplierPortal: React.FC = () => {
                 : undefined,
           }}
         />
-      </Card>
-    </div>
+      </PageContainer>
+    </Card>
   );
 };
 

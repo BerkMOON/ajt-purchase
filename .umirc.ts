@@ -94,6 +94,13 @@ export default defineConfig({
       access: 'purchaseDetail',
     },
     {
+      name: '供应商门户',
+      path: '/supplier-portal',
+      component: './SupplierPortal',
+      access: 'supplierPortal',
+      icon: 'PropertySafetyOutlined',
+    },
+    {
       name: '供应商报价',
       path: '/supplier-quote/:id',
       component: './SupplierQuote',
@@ -113,13 +120,6 @@ export default defineConfig({
       component: './SupplierQuoteDetail',
       hideInMenu: true,
       access: 'supplierQuote',
-    },
-    {
-      name: '供应商门户',
-      path: '/supplier-portal',
-      component: './SupplierPortal',
-      access: 'supplierPortal',
-      icon: 'PropertySafetyOutlined',
     },
     {
       name: '配件目录',

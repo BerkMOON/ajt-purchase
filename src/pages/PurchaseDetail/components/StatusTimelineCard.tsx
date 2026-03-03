@@ -15,11 +15,13 @@ const { Panel } = Collapse;
 interface StatusTimelineCardProps {
   orderNo: number;
   items?: PurchaseOrderItemResponse[]; // 用于获取 SKU 名称
+  isPlatform?: boolean;
 }
 
 const StatusTimelineCard: React.FC<StatusTimelineCardProps> = ({
   orderNo,
   items = [],
+  isPlatform = false,
 }) => {
   const [orderLogs, setOrderLogs] = useState<PurchaseOrderStatusLog[]>([]);
   const [skuLogs, setSkuLogs] = useState<PurchaseOrderItemStatusLog[]>([]);
@@ -38,7 +40,9 @@ const StatusTimelineCard: React.FC<StatusTimelineCardProps> = ({
     const fetchStatusLogs = async () => {
       try {
         setLoading(true);
-        const response = await PurchaseAPI.getPurchaseStatusLog(orderNo);
+        const response = isPlatform
+          ? await PurchaseAPI.getPlatformPurchaseStatusLog(orderNo)
+          : await PurchaseAPI.getPurchaseStatusLog(orderNo);
         const data = response.data;
 
         // 处理订单状态流转日志
@@ -61,7 +65,7 @@ const StatusTimelineCard: React.FC<StatusTimelineCardProps> = ({
     if (orderNo) {
       fetchStatusLogs();
     }
-  }, [orderNo]);
+  }, [orderNo, isPlatform]);
 
   // 构建订单状态流转的时间线项
   const orderTimelineItems = useMemo(() => {

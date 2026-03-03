@@ -2,6 +2,7 @@ import BaseListPage, {
   BaseListPageRef,
 } from '@/components/BasicComponents/BaseListPage';
 import { QuoteAPI } from '@/services/quote';
+import { QuoteStatus } from '@/services/quote/constant';
 import type {
   GetSupplierQuotesParams,
   SupplierQuoteResponse,
@@ -113,6 +114,9 @@ const SupplierQuoteList: React.FC = () => {
           fetchData={fetchData}
           searchFormItems={searchForm}
           searchParamsTransform={searchParamsTransform}
+          defaultSearchParams={{
+            status: String(QuoteStatus.PENDING_SHIPMENT),
+          }}
         />
       </Card>
 

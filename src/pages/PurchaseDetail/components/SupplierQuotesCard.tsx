@@ -1,5 +1,5 @@
 import { formatPriceToYuan } from '@/utils/prince';
-import { Button, Card, Empty, Radio, Table, Tag } from 'antd';
+import { Button, Card, Empty, Radio, Spin, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React from 'react';
 import { OrderItemStatus, OrderStatus } from '../constants';
@@ -22,6 +22,7 @@ interface SupplierQuotesCardProps {
   onOpenConfirmModal: () => void;
   purchaseStatus: number;
   selectionEnabled: boolean;
+  quotesLoading?: boolean;
 }
 
 const SupplierQuotesCard: React.FC<SupplierQuotesCardProps> = ({
@@ -33,6 +34,7 @@ const SupplierQuotesCard: React.FC<SupplierQuotesCardProps> = ({
   onOpenConfirmModal,
   purchaseStatus,
   selectionEnabled,
+  quotesLoading = false,
 }) => {
   if (!visible) return null;
 
@@ -193,7 +195,11 @@ const SupplierQuotesCard: React.FC<SupplierQuotesCardProps> = ({
         )
       }
     >
-      {itemQuoteData.length > 0 ? (
+      {quotesLoading ? (
+        <div style={{ padding: 24, textAlign: 'center' }}>
+          <Spin tip="加载报价数据..." />
+        </div>
+      ) : itemQuoteData.length > 0 ? (
         <Table
           columns={productColumns}
           dataSource={itemQuoteData}

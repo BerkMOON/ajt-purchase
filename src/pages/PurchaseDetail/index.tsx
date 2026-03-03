@@ -43,6 +43,7 @@ const PurchaseDetail: React.FC = () => {
     null,
   );
   const [loading, setLoading] = useState(true);
+  const [quotesLoading, setQuotesLoading] = useState(false);
   const [quotes, setQuotes] = useState<SkuList[]>([]);
   const [selectSupplierModalVisible, setSelectSupplierModalVisible] =
     useState(false);
@@ -71,81 +72,78 @@ const PurchaseDetail: React.FC = () => {
   const fetchPurchaseDetail = useCallback(async () => {
     if (!id) return;
     setLoading(true);
+    let purchaseData: PurchaseOrderDetailResponse | null = null;
     try {
       const purchaseResponse = isPlatform
         ? await PurchaseAPI.getPurchaseInfoDetail(Number(id))
         : await PurchaseAPI.getPurchaseDetail(id);
-      const purchaseData = purchaseResponse.data;
+      purchaseData = purchaseResponse.data;
       setPurchase(purchaseData);
-
-      if (purchaseData.status.code >= OrderStatus.INQUIRING) {
-        try {
-          const quoteResponse = await PurchaseAPI.getSupplierQuotesByOrder(
-            purchaseData.order_no,
-          );
-          const quotesData = quoteResponse.data?.sku_list || [];
-          setQuotes(quotesData);
-
-          // 构建 selectedSuppliers，从报价数据中获取 quote_no
-          if (purchaseData.status.code >= OrderStatus.QUOTED) {
-            const selections: SelectedSupplierMap = {};
-            purchaseData.items?.forEach((item) => {
-              if (!item.supplier_name) {
-                return;
-              }
-              const key = getOrderItemKey(item);
-
-              // 从新的报价数据结构中查找匹配的报价
-              let matchedQuoteNo = '';
-              let matchedInquiryNo = 0;
-
-              const skuQuote = quotesData.find(
-                (sq) => sq.sku_id === item.sku_id,
-              );
-
-              if (skuQuote) {
-                const matchedQuoteItem = skuQuote.quote_items.find(
-                  (qi) => qi.supplier_name === item.supplier_name,
-                );
-
-                if (matchedQuoteItem) {
-                  matchedQuoteNo = String(matchedQuoteItem.quote_no);
-                  matchedInquiryNo = matchedQuoteItem.inquiry_no;
-                }
-              }
-
-              selections[key] = {
-                quote_no: matchedQuoteNo,
-                supplier_name: item.supplier_name,
-                inquiry_item_id: matchedInquiryNo,
-                sku_id: item.sku_id.toString(),
-                order_item_id: item.id,
-              };
-            });
-            setSelectedSuppliers(selections);
-          } else {
-            setSelectedSuppliers({});
-          }
-        } catch (error) {
-          console.error('获取报价失败', error);
-          setQuotes([]);
-          if (purchaseData.status.code >= OrderStatus.QUOTED) {
-            setSelectedSuppliers(
-              buildSelectionsFromPurchaseItems(purchaseData.items || []),
-            );
-          } else {
-            setSelectedSuppliers({});
-          }
-        }
-      } else {
-        setQuotes([]);
-        setSelectedSuppliers({});
-      }
     } catch (error) {
       message.error('获取采购单详情失败');
       console.error(error);
     } finally {
       setLoading(false);
+    }
+
+    // 报价数据异步加载，不阻塞首屏
+    if (!purchaseData || purchaseData.status.code < OrderStatus.INQUIRING) {
+      setQuotes([]);
+      setSelectedSuppliers({});
+      return;
+    }
+
+    setQuotesLoading(true);
+    try {
+      const quoteResponse = isPlatform
+        ? await PurchaseAPI.getPlatformSupplierQuotesByOrder(
+            purchaseData.order_no,
+          )
+        : await PurchaseAPI.getSupplierQuotesByOrder(purchaseData.order_no);
+      const quotesData = quoteResponse.data?.sku_list || [];
+      setQuotes(quotesData);
+
+      if (purchaseData.status.code >= OrderStatus.QUOTED) {
+        const selections: SelectedSupplierMap = {};
+        purchaseData.items?.forEach((item) => {
+          if (!item.supplier_name) return;
+          const key = getOrderItemKey(item);
+          let matchedQuoteNo = '';
+          let matchedInquiryNo = 0;
+          const skuQuote = quotesData.find((sq) => sq.sku_id === item.sku_id);
+          if (skuQuote) {
+            const matchedQuoteItem = skuQuote.quote_items.find(
+              (qi) => qi.supplier_name === item.supplier_name,
+            );
+            if (matchedQuoteItem) {
+              matchedQuoteNo = String(matchedQuoteItem.quote_no);
+              matchedInquiryNo = matchedQuoteItem.inquiry_no;
+            }
+          }
+          selections[key] = {
+            quote_no: matchedQuoteNo,
+            supplier_name: item.supplier_name,
+            inquiry_item_id: matchedInquiryNo,
+            sku_id: item.sku_id.toString(),
+            order_item_id: item.id,
+          };
+        });
+        setSelectedSuppliers(selections);
+      } else {
+        setSelectedSuppliers({});
+      }
+    } catch (error) {
+      console.error('获取报价失败', error);
+      setQuotes([]);
+      if (purchaseData.status.code >= OrderStatus.QUOTED) {
+        setSelectedSuppliers(
+          buildSelectionsFromPurchaseItems(purchaseData.items || []),
+        );
+      } else {
+        setSelectedSuppliers({});
+      }
+    } finally {
+      setQuotesLoading(false);
     }
   }, [id, isPlatform]);
 
@@ -485,6 +483,7 @@ const PurchaseDetail: React.FC = () => {
                 !isReadOnly &&
                 purchase.status.code === OrderStatus.INQUIRY_COMPLETED
               }
+              quotesLoading={quotesLoading}
             />
           </Col>
 
@@ -492,6 +491,7 @@ const PurchaseDetail: React.FC = () => {
             <StatusTimelineCard
               orderNo={purchase.order_no}
               items={purchase.items}
+              isPlatform={isPlatform}
             />
           </Col>
         </Row>
