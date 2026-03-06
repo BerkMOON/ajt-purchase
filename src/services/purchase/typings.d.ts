@@ -32,6 +32,7 @@ export enum StockStatus {
 }
 
 export interface PurchaseParams extends PageInfoParams {
+  title?: string;
   order_no?: string;
   ctime_start?: string;
   ctime_end?: string;
@@ -128,6 +129,7 @@ export interface PurchaseOrderItemResponse {
 
 // PurchaseOrderDetailResponse 采购单详情响应
 export interface PurchaseOrderDetailResponse {
+  title: string;
   id: number;
   order_no: number;
   store_id: number;

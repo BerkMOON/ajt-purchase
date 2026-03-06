@@ -15,6 +15,7 @@ import type {
 } from './typings';
 
 const API_PREFIX = '/api/v1/platform/user';
+const SELF_API_PREFIX = '/api/v1/self';
 
 export const UserAPI = {
   /**
@@ -184,5 +185,17 @@ export const UserAPI = {
     request<ResponseInfoType<UserStoreInfo>>(`${API_PREFIX}/listUserStore`, {
       method: 'GET',
       params,
+    }),
+
+  /**
+   * 重置密码
+   * POST /api/v1/self/password/reset
+   * 接口ID：372441341
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-372441341
+   */
+  resetSelfPassword: (params: { old: string; new: string }) =>
+    request<ResponseInfoType<null>>(`${SELF_API_PREFIX}/password/reset`, {
+      method: 'POST',
+      data: params,
     }),
 };

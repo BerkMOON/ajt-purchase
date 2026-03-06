@@ -17,7 +17,7 @@ const SupplierFilterCol: React.FC = () => {
   return (
     <Col>
       <Form.Item name="supplier_id" label="供应商">
-        <SupplierSelect placeholder="请选择供应商" />
+        <SupplierSelect placeholder="请选择供应商" style={{ width: '180px' }} />
       </Form.Item>
     </Col>
   );
@@ -44,6 +44,18 @@ export const searchForm = (
               {value}
             </Select.Option>
           ))}
+        </Select>
+      </Form.Item>
+    </Col>
+    <Col>
+      <Form.Item name="purchase_type" label="采购类型">
+        <Select
+          style={{ width: '200px' }}
+          placeholder="请选择采购类型"
+          allowClear
+        >
+          <Select.Option value="normal">普通采购</Select.Option>
+          <Select.Option value="return">回采</Select.Option>
         </Select>
       </Form.Item>
     </Col>

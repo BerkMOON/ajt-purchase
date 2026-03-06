@@ -223,4 +223,22 @@ export default defineConfig({
       changeOrigin: true, // 允许域名进行转换
     },
   },
+  chainWebpack: (config, { env }) => {
+    if (env === 'production') {
+      // 关键修改：输出到根目录，而非 static/js/
+      // 格式：[name].[hash:8].js（直接在 dist 根目录生成 umi.xxx.js）
+      config.output.filename('[name].[hash:8].js');
+      config.output.chunkFilename('[name].[hash:8].chunk.js');
+
+      // CSS 也输出到根目录
+      const miniCssExtractPlugin = config.plugin('mini-css-extract-plugin');
+      if (miniCssExtractPlugin) {
+        miniCssExtractPlugin.tap((args) => {
+          args[0].filename = '[name].[hash:8].css';
+          args[0].chunkFilename = '[name].[hash:8].chunk.css';
+          return args;
+        });
+      }
+    }
+  },
 });

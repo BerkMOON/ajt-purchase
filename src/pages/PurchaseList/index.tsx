@@ -44,6 +44,10 @@ const PurchaseList: React.FC = () => {
       searchParams.ctime_end = formatDate(params.date_range[1]);
     }
 
+    if (params.title) {
+      searchParams.title = params.title;
+    }
+
     const response = isPlatform
       ? await PurchaseAPI.getAllPurchases(searchParams)
       : await PurchaseAPI.getPurchaseList(searchParams);

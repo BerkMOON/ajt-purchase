@@ -39,6 +39,9 @@ const BasicInfoCard: React.FC<BasicInfoCardProps> = ({ purchase }) => {
         <Descriptions.Item label="采购单号">
           {String(purchase.order_no)}
         </Descriptions.Item>
+        <Descriptions.Item label="采购单名称">
+          {purchase.title}
+        </Descriptions.Item>
         <Descriptions.Item label="采购门店">
           {purchase.store_name}
         </Descriptions.Item>

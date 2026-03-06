@@ -58,6 +58,7 @@ export const usePurchaseCreation = () => {
       }
 
       const createParams: SubmitCartParams = {
+        title: values.title || '',
         expected_delivery_date: formatDate(values.expected_delivery_date, true),
         remark: values.remark || '',
         order_type: CategoryType.PARTS, // 备件类型

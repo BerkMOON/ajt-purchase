@@ -23,6 +23,11 @@ export const getColumns = ({
       ),
     },
     {
+      title: '采购单名称',
+      dataIndex: 'title',
+      key: 'title',
+    },
+    {
       title: '创建日期',
       dataIndex: 'ctime',
       key: 'ctime',

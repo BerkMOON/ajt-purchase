@@ -177,6 +177,9 @@ const ReviewDetail: React.FC = () => {
             <Descriptions.Item label="SKU名称" span={2}>
               {reviewData.sku_name}
             </Descriptions.Item>
+            <Descriptions.Item label="限价">
+              {formatPriceToYuan(reviewData.ceiling_price)}
+            </Descriptions.Item>
             <Descriptions.Item label="采购数量">
               {reviewData.quantity}
             </Descriptions.Item>

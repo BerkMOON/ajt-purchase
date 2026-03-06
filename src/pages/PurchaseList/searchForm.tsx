@@ -32,6 +32,11 @@ const StoreFilterCol: React.FC = () => {
 export const searchForm = (
   <>
     <Col>
+      <Form.Item name="title" label="采购单名称">
+        <Input placeholder="请输入采购单名称" allowClear />
+      </Form.Item>
+    </Col>
+    <Col>
       <Form.Item name="order_no" label="采购单号">
         <Input placeholder="请输入采购单号" allowClear />
       </Form.Item>

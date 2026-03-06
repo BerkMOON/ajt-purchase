@@ -31,6 +31,11 @@ export const getColumns = ({
       ),
     },
     {
+      title: '采购类型',
+      dataIndex: 'purchase_type',
+      key: 'purchase_type',
+    },
+    {
       title: '询价单号',
       dataIndex: 'inquiry_no',
       key: 'inquiry_no',
@@ -95,7 +100,14 @@ export const getColumns = ({
   ];
 
   if (!enableShip) {
-    return baseColumns;
+    return [
+      {
+        title: '供应商名称',
+        dataIndex: 'supplier_name',
+        key: 'supplier_name',
+      },
+      ...baseColumns,
+    ];
   }
 
   return [

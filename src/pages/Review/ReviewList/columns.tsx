@@ -19,6 +19,12 @@ export const getColumns = (): ColumnsType<PendingApprovalQuotesInfo> => [
     width: 150,
   },
   {
+    title: '限价',
+    dataIndex: 'ceiling_price',
+    key: 'ceiling_price',
+    render: (price: number) => formatPriceToYuan(price),
+  },
+  {
     title: 'SKU名称',
     dataIndex: 'sku_name',
     key: 'sku_name',

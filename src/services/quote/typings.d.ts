@@ -25,6 +25,7 @@ export interface GetSupplierQuotesParams extends PageInfoParams {
   ctime_end?: string;
   // 平台侧额外支持按供应商筛选
   supplier_id?: number | string;
+  purchase_type?: 'normal' | 'return';
 }
 
 export interface SupplierQuoteResponse {
@@ -43,6 +44,8 @@ export interface SupplierQuoteResponse {
     tracking_no_list: string[];
     remark: string;
   };
+  third_code: string;
+  supplier_name: string;
   remark: string;
   submit_time: string;
   ctime: string;

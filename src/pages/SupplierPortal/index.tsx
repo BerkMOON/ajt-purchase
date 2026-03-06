@@ -297,23 +297,23 @@ const SupplierPortal: React.FC = () => {
             status: InquiryStatus.Quoting,
           }}
         >
-          <Row gutter={[24, 12]} style={{ width: '100%' }}>
-            <Col span={6}>
+          <Row gutter={[16, 16]} style={{ width: '100%' }}>
+            <Col>
               <Form.Item name="inquiry_no" label="询价单号">
                 <Input placeholder="请输入询价单号" allowClear />
               </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col>
               <Form.Item name="order_no" label="采购单号">
                 <Input placeholder="请输入采购单号" allowClear />
               </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col>
               <Form.Item name="status" label="询价状态">
                 <Select
                   placeholder="请选择状态"
                   allowClear
-                  style={{ width: '100%' }}
+                  style={{ width: '180px' }}
                   options={[
                     { label: '询价中', value: InquiryStatus.Quoting },
                     { label: '询价结束', value: InquiryStatus.End },
@@ -321,7 +321,7 @@ const SupplierPortal: React.FC = () => {
                 />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col>
               <Form.Item name="dateRange" label="创建时间">
                 <DatePicker.RangePicker
                   style={{ width: '100%' }}

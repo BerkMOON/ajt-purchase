@@ -40,6 +40,9 @@ const SupplierQuoteList: React.FC = () => {
       page: params.page,
       limit: params.limit,
     };
+    if (params.purchase_type) {
+      result.purchase_type = params.purchase_type;
+    }
 
     if (params.quote_no) {
       result.quote_no = params.quote_no;
@@ -115,7 +118,9 @@ const SupplierQuoteList: React.FC = () => {
           searchFormItems={searchForm}
           searchParamsTransform={searchParamsTransform}
           defaultSearchParams={{
-            status: String(QuoteStatus.PENDING_SHIPMENT),
+            status: isSupplier
+              ? String(QuoteStatus.PENDING_SHIPMENT)
+              : undefined,
           }}
         />
       </Card>

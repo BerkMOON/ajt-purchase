@@ -222,7 +222,9 @@ const BaseListPage = forwardRef<BaseListPageRef, BaseListPageProps>(
             style={formStyle}
           >
             <Row gutter={[16, 16]}>{searchFormItems}</Row>
-            <div style={{ textAlign: 'right', width: '100%' }}>
+            <div
+              style={{ textAlign: 'right', width: '100%', margin: '16px 0' }}
+            >
               <Space>
                 <Button type="primary" htmlType="submit">
                   查询

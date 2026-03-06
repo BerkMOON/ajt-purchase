@@ -449,7 +449,7 @@ const PurchaseDetail: React.FC = () => {
             </Button>
             <Divider type="vertical" />
             <span style={{ fontSize: 16, fontWeight: 'bold' }}>
-              采购单详情 - {String(purchase.order_no)}
+              采购单详情 - {purchase.title} - {String(purchase.order_no)}
             </span>
             <Tag color={PurchaseStatusColorMap[purchase.status?.code]}>
               {purchase.status.name}

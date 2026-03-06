@@ -18,6 +18,7 @@ export interface PendingApprovalQuotesInfo {
   status: StatusInfo;
   expected_delivery_date: string;
   remark: string;
+  ceiling_price: number;
   submit_time: string;
   ctime: string;
   mtime: string;

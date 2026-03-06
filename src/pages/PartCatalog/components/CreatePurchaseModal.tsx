@@ -60,6 +60,7 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
             form.setFieldsValue({
               quantities: initialQuantities,
               return_purchase: initialReturnPurchase,
+              title: '',
               expected_delivery_date: dayjs().add(7, 'days'),
               inquiry_deadline: dayjs().add(30, 'minutes'),
               remark: '',
@@ -176,6 +177,15 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
     >
       <Form form={form} layout="vertical" onFinish={onSubmit}>
         <Row gutter={16}>
+          <Col span={8}>
+            <Form.Item
+              label="采购名称"
+              name="title"
+              rules={[{ required: true, message: '请输入采购名称' }]}
+            >
+              <Input />
+            </Form.Item>
+          </Col>
           <Col span={8}>
             <Form.Item
               label="期望到货日期"

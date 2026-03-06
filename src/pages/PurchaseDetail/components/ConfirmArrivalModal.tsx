@@ -3,11 +3,11 @@ import type {
   PurchaseOrderItemResponse,
 } from '@/services/purchase/typings.d';
 import { formatPriceToYuan } from '@/utils/prince';
-import { Checkbox, DatePicker, Form, Modal, Table } from 'antd';
+import { Checkbox, DatePicker, Form, Modal, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
-import { OrderItemStatus } from '../constants';
+import { OrderItemStatus, OrderItemStatusColorMap } from '../constants';
 import { formatDate } from '../utils';
 
 interface ConfirmArrivalModalProps {
@@ -37,9 +37,9 @@ const ConfirmArrivalModal: React.FC<ConfirmArrivalModalProps> = ({
   // 只显示已选中供应商的配件
   const displayItems = items.filter((item) => !!item.supplier_name);
 
-  // 未到货的商品（可选择）
+  // 只有状态为「已发货」的才能确认到货
   const availableItems = displayItems.filter(
-    (item) => item.status.code !== OrderItemStatus.ARRIVED,
+    (item) => item.status.code === OrderItemStatus.SHIPPED,
   );
 
   const handleToggleItem = (itemId: number) => {
@@ -53,7 +53,7 @@ const ConfirmArrivalModal: React.FC<ConfirmArrivalModalProps> = ({
   };
 
   const handleSelectAll = () => {
-    // 只选择未到货的商品
+    // 只选择状态为「已发货」的商品
     if (selectedItems.size === availableItems.length) {
       setSelectedItems(new Set());
     } else {
@@ -123,12 +123,12 @@ const ConfirmArrivalModal: React.FC<ConfirmArrivalModalProps> = ({
       key: 'select',
       width: 100,
       render: (_: any, record: PurchaseOrderItemResponse) => {
-        const isArrived = record.status.code === OrderItemStatus.ARRIVED;
+        const canConfirm = record.status.code === OrderItemStatus.SHIPPED;
         return (
           <Checkbox
             checked={selectedItems.has(record.id)}
             onChange={() => handleToggleItem(record.id)}
-            disabled={isArrived}
+            disabled={!canConfirm}
           />
         );
       },
@@ -150,6 +150,17 @@ const ConfirmArrivalModal: React.FC<ConfirmArrivalModalProps> = ({
       key: 'supplier_name',
     },
     {
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      width: 100,
+      render: (_: any, record: PurchaseOrderItemResponse) => (
+        <Tag color={OrderItemStatusColorMap[record.status.code]}>
+          {record.status.name}
+        </Tag>
+      ),
+    },
+    {
       title: '报价单价',
       dataIndex: 'quote_price',
       key: 'quote_price',
@@ -168,10 +179,10 @@ const ConfirmArrivalModal: React.FC<ConfirmArrivalModalProps> = ({
       key: 'delivery_date',
       width: 180,
       render: (_: any, record: PurchaseOrderItemResponse) => {
-        const isArrived = record.status.code === OrderItemStatus.ARRIVED;
+        const canConfirm = record.status.code === OrderItemStatus.SHIPPED;
         const isSelected = selectedItems.has(record.id);
 
-        if (!isSelected || isArrived) {
+        if (!isSelected || !canConfirm) {
           return <span style={{ color: '#999' }}>-</span>;
         }
 
@@ -211,7 +222,7 @@ const ConfirmArrivalModal: React.FC<ConfirmArrivalModalProps> = ({
       <Form form={form} layout="vertical">
         <div style={{ marginBottom: 16 }}>
           <span style={{ color: '#666' }}>
-            请选择已到货的配件并填写到货日期，确认后将更新对应配件的到货状态。
+            仅状态为「已发货」的配件可确认到货，请选择并填写到货日期。
           </span>
         </div>
         <Table
@@ -221,8 +232,8 @@ const ConfirmArrivalModal: React.FC<ConfirmArrivalModalProps> = ({
           pagination={false}
           size="small"
           rowClassName={(record) => {
-            const isArrived = record.status.code === OrderItemStatus.ARRIVED;
-            return isArrived ? 'arrived-item-disabled' : '';
+            const canConfirm = record.status.code === OrderItemStatus.SHIPPED;
+            return canConfirm ? '' : 'arrived-item-disabled';
           }}
         />
       </Form>
