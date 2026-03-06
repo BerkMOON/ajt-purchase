@@ -160,11 +160,11 @@ const GlobalNotification: React.FC = () => {
     async (id: number, needRefresh = true) => {
       try {
         await NotificationAPI.readNotification(id);
-        // 重新获取通知列表
         if (needRefresh) {
           await fetchNotifications();
+        } else {
+          setUnreadCount((prev) => Math.max(0, prev - 1));
         }
-        setUnreadCount(unreadCount - 1);
       } catch (error) {
         message.error('标记已读失败');
         console.error('标记已读失败:', error);

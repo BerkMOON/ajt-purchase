@@ -222,7 +222,8 @@ const ConfirmArrivalModal: React.FC<ConfirmArrivalModalProps> = ({
       <Form form={form} layout="vertical">
         <div style={{ marginBottom: 16 }}>
           <span style={{ color: '#666' }}>
-            仅状态为「已发货」的配件可确认到货，请选择并填写到货日期。
+            仅状态为 <Tag color="cyan">已发货</Tag>
+            的配件可确认到货，请选择并填写到货日期。
           </span>
         </div>
         <Table

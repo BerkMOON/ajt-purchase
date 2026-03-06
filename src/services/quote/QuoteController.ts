@@ -25,6 +25,19 @@ export const QuoteAPI = {
   },
 
   /**
+   * 更新报价
+   * POST /api/v1/supplier/order/quote/update
+   * 接口ID：423794809
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-423794809
+   */
+  updateSupplierQuote: async (params: SubmitSupplierQuoteParams) => {
+    return request<ResponseInfoType<null>>(`${API_PREFIX}/update`, {
+      method: 'POST',
+      data: params,
+    });
+  },
+
+  /**
    * 获取供应商报价列表
    * GET /api/v1/purchaseOrder/quote/list
    */

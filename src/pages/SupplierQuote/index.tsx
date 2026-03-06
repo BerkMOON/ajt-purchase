@@ -113,8 +113,8 @@ const SupplierQuote: React.FC = () => {
     try {
       setSaving(true);
 
-      // 构建所有需要提交的 SKU 数据
-      const itemsToSubmit = inquiry.items.map((item, index) => {
+      // 构建所有 SKU 数据，筛选出「报价单价 + 单项交货时间」都填写的项（至少一个配件两项都填即可）
+      const allItems = inquiry.items.map((item, index) => {
         const fieldKey = getItemFieldKey(item, index);
         const deliveryDateValue = values[`item_delivery_${fieldKey}`];
         return {
@@ -122,14 +122,34 @@ const SupplierQuote: React.FC = () => {
           quote_price: values[`quote_price_${fieldKey}`],
           expected_delivery_date: formatDate(deliveryDateValue, true),
           remark: values[`item_remark_${fieldKey}`] || '',
+          alreadyQuoted: !!item.quote_price, // 该配件是否已有报价，决定用提交还是更新接口
         };
       });
 
-      // 逐个提交每个 SKU 的报价
+      const itemsToSubmit = allItems.filter(
+        (item) =>
+          item.quote_price !== undefined &&
+          item.quote_price !== null &&
+          item.quote_price !== '' &&
+          Number(item.quote_price) > 0 &&
+          item.expected_delivery_date !== undefined &&
+          item.expected_delivery_date !== '' &&
+          item.expected_delivery_date !== '0001-01-01',
+      );
+
+      if (itemsToSubmit.length === 0) {
+        message.error('请至少填写一个配件的报价单价和单项交货时间');
+        setSaving(false);
+        return;
+      }
+
       const errors: string[] = [];
       for (const item of itemsToSubmit) {
+        const apiMethod = item.alreadyQuoted
+          ? QuoteAPI.updateSupplierQuote
+          : QuoteAPI.submitSupplierQuote;
         try {
-          await QuoteAPI.submitSupplierQuote({
+          await apiMethod({
             inquiry_no: inquiry.inquiry_no,
             order_no: inquiry.order_no,
             sku_id: item.sku_id,
@@ -146,20 +166,17 @@ const SupplierQuote: React.FC = () => {
 
       // 处理提交结果
       if (errors.length === 0) {
-        message.success('所有报价提交成功！');
-        fetchData();
+        message.success('报价保存成功！');
       } else if (errors.length === itemsToSubmit.length) {
-        // 全部失败
         message.error('报价提交失败，请稍后重试');
       } else {
-        // 部分成功
         message.warning(`部分报价提交成功，${errors.length} 个失败`);
-        fetchData(); // 即使部分失败，也刷新数据以显示成功的部分
       }
     } catch (error: any) {
       message.error(error?.message || '报价提交失败');
       console.error(error);
     } finally {
+      fetchData();
       setSaving(false);
     }
   };
@@ -293,10 +310,10 @@ const SupplierQuote: React.FC = () => {
                 <Table
                   columns={[
                     {
-                      title: 'SKU ID',
-                      dataIndex: 'sku_id',
-                      key: 'sku_id',
-                      width: 120,
+                      title: '第三方编码',
+                      dataIndex: 'third_code',
+                      key: 'third_code',
+                      width: 220,
                     },
                     {
                       title: '商品名称',
@@ -312,9 +329,19 @@ const SupplierQuote: React.FC = () => {
                       align: 'center',
                     },
                     {
-                      title: canSubmit ? '报价单价 *' : '报价单价',
+                      title: '采购类型',
+                      dataIndex: 'purchase_type',
+                      key: 'purchase_type',
+                      width: 120,
+                    },
+                    {
+                      title: (
+                        <span>
+                          报价单价 <span style={{ color: 'red' }}>*</span>
+                        </span>
+                      ),
                       key: 'quote_price',
-                      width: 150,
+                      width: 200,
                       render: (_, record, index) => {
                         const fieldKey = getItemFieldKey(record, index);
                         return (
@@ -323,10 +350,6 @@ const SupplierQuote: React.FC = () => {
                             rules={
                               canSubmit
                                 ? [
-                                    {
-                                      required: true,
-                                      message: '请输入报价单价',
-                                    },
                                     {
                                       type: 'number',
                                       min: 0.01,
@@ -350,25 +373,49 @@ const SupplierQuote: React.FC = () => {
                       },
                     },
                     {
-                      title: '单项交货时间',
+                      title: (
+                        <span>
+                          单项交货时间 <span style={{ color: 'red' }}>*</span>
+                        </span>
+                      ),
                       key: 'item_delivery',
-                      width: 180,
+                      width: 220,
                       render: (_, record, index) => {
                         const fieldKey = getItemFieldKey(record, index);
                         return (
                           <Form.Item
                             name={`item_delivery_${fieldKey}`}
-                            style={{ margin: 0 }}
                             rules={
                               canSubmit
                                 ? [
                                     {
-                                      required: true,
-                                      message: '请选择交货日期',
+                                      validator: async (_, value) => {
+                                        const priceValue = form.getFieldValue(
+                                          `quote_price_${fieldKey}`,
+                                        );
+                                        // 未填写价格时，不做校验
+                                        if (
+                                          priceValue === undefined ||
+                                          priceValue === null ||
+                                          priceValue === '' ||
+                                          Number(priceValue) <= 0
+                                        ) {
+                                          return Promise.resolve();
+                                        }
+                                        // 填了价格但没选日期，提示错误
+                                        if (!value) {
+                                          // eslint-disable-next-line prefer-promise-reject-errors
+                                          return Promise.reject(
+                                            '请选择单项交货时间',
+                                          );
+                                        }
+                                        return Promise.resolve();
+                                      },
                                     },
                                   ]
                                 : []
                             }
+                            style={{ margin: 0 }}
                           >
                             <DatePicker
                               placeholder="选择日期"
