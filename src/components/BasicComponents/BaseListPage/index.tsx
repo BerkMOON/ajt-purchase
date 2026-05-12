@@ -38,6 +38,7 @@ interface BaseListPageProps<T = any, U = any> {
   expandable?: TableProps<T>['expandable'];
   exportConfig?: {
     fileName?: string;
+    buttonText?: string;
     fetchAllData?: (params: U) => Promise<ResponseInfoType<any>>;
     responseKey?: string;
     useOffset?: boolean;
@@ -260,7 +261,7 @@ const BaseListPage = forwardRef<BaseListPageRef, BaseListPageProps>(
                 loading={exportLoading}
                 onClick={handleExportExcel}
               >
-                导出Excel
+                {exportConfig.buttonText || '导出Excel'}
               </Button>
             )}
             {extraButtons}

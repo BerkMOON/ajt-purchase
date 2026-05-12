@@ -116,6 +116,9 @@ const SupplierQuoteDetail: React.FC = () => {
                 <Descriptions.Item label="供应商名称">
                   {quote.supplier_name}
                 </Descriptions.Item>
+                <Descriptions.Item label="采购门店">
+                  {quote.store_name}
+                </Descriptions.Item>
                 <Descriptions.Item label="三方编码">
                   {quote?.third_code}
                 </Descriptions.Item>

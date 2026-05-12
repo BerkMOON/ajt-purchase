@@ -3,6 +3,7 @@ import {
   PurchaseAPI,
   PurchaseOrderDetailResponse,
   SkuList,
+  UpdatePurchaseItemParams,
 } from '@/services/purchase';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { history, Navigate, useAccess, useParams } from '@umijs/max';
@@ -22,7 +23,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import BasicInfoCard from './components/BasicInfoCard';
 import ConfirmArrivalModal from './components/ConfirmArrivalModal';
 import ConfirmOrderModal from './components/ConfirmOrderModal';
+import EditPurchaseItemsModal from './components/EditPurchaseItemsModal';
 import PartListCard from './components/PartListCard';
+import PrintOutboundAction from './components/PrintOutboundAction';
 import SelectSupplierModal from './components/SelectSupplierModal';
 import SendInquiryModal from './components/SendInquiryModal';
 import StatusTimelineCard from './components/StatusTimelineCard';
@@ -55,6 +58,8 @@ const PurchaseDetail: React.FC = () => {
   const [confirmOrderModalVisible, setConfirmOrderModalVisible] =
     useState(false);
   const [orderLoading, setOrderLoading] = useState(false);
+  const [editItemsModalVisible, setEditItemsModalVisible] = useState(false);
+  const [editItemsLoading, setEditItemsLoading] = useState(false);
   const [sendInquiryModalVisible, setSendInquiryModalVisible] = useState(false);
   const [sendInquiryLoading, setSendInquiryLoading] = useState(false);
 
@@ -352,6 +357,34 @@ const PurchaseDetail: React.FC = () => {
     }
   };
 
+  const handleEditItems = () => {
+    if (!purchase || isReadOnly) return;
+    setEditItemsModalVisible(true);
+  };
+
+  const handleEditItemsSubmit = async (changes: UpdatePurchaseItemParams[]) => {
+    if (!purchase || isReadOnly) return;
+    if (changes.length === 0) {
+      message.info('未检测到商品变更');
+      setEditItemsModalVisible(false);
+      return;
+    }
+    try {
+      setEditItemsLoading(true);
+      await Promise.all(
+        changes.map((item) => PurchaseAPI.updatePurchaseItem(item)),
+      );
+      message.success('商品信息修改成功');
+      setEditItemsModalVisible(false);
+      fetchPurchaseDetail();
+    } catch (error: any) {
+      message.error(error?.message || '商品信息修改失败');
+      console.error('商品信息修改失败:', error);
+    } finally {
+      setEditItemsLoading(false);
+    }
+  };
+
   const getAvailableActions = () => {
     if (isReadOnly) return [];
     if (!purchase) return [];
@@ -359,6 +392,11 @@ const PurchaseDetail: React.FC = () => {
     const actions: React.ReactNode[] = [];
 
     if (status === OrderStatus.AWAIT_INQUIRY) {
+      actions.push(
+        <Button key="edit-items" onClick={handleEditItems}>
+          修改商品
+        </Button>,
+      );
       actions.push(
         <Button key="send-inquiry" type="primary" onClick={handleSendInquiry}>
           发起询价
@@ -395,7 +433,7 @@ const PurchaseDetail: React.FC = () => {
     }
 
     const hasAvailableItems = purchase.items?.some(
-      (item) => item.status.code >= OrderItemStatus.ORDERED,
+      (item) => item.status.code === OrderItemStatus.SHIPPED,
     );
     if (hasAvailableItems) {
       actions.push(
@@ -406,6 +444,19 @@ const PurchaseDetail: React.FC = () => {
         >
           确认到货
         </Button>,
+      );
+    }
+
+    const hasArrivedItems = purchase.items?.some(
+      (item) => item.status.code === OrderItemStatus.ARRIVED,
+    );
+    if (hasArrivedItems) {
+      actions.push(
+        <PrintOutboundAction
+          key="print-outbound"
+          purchase={purchase}
+          disabled={isReadOnly}
+        />,
       );
     }
 
@@ -521,6 +572,15 @@ const PurchaseDetail: React.FC = () => {
             onOk={handleConfirmOrderSubmit}
             onCancel={() => setConfirmOrderModalVisible(false)}
             loading={orderLoading}
+          />
+
+          <EditPurchaseItemsModal
+            visible={editItemsModalVisible}
+            orderNo={purchase.order_no}
+            items={purchase?.items || []}
+            loading={editItemsLoading}
+            onOk={handleEditItemsSubmit}
+            onCancel={() => setEditItemsModalVisible(false)}
           />
 
           <SendInquiryModal

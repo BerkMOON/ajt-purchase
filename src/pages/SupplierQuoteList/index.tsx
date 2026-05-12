@@ -7,6 +7,7 @@ import type {
   GetSupplierQuotesParams,
   SupplierQuoteResponse,
 } from '@/services/quote/typings.d';
+import { formatPriceToYuan } from '@/utils/prince';
 import { useAccess } from '@umijs/max';
 import { Card, message } from 'antd';
 import React, { useRef, useState } from 'react';
@@ -121,6 +122,81 @@ const SupplierQuoteList: React.FC = () => {
             status: isSupplier
               ? String(QuoteStatus.PENDING_SHIPMENT)
               : undefined,
+          }}
+          exportConfig={{
+            buttonText: '下载',
+            fileName: '供应商报价列表.xlsx',
+            fetchAllData: async (params: any) => {
+              return isPlatform
+                ? QuoteAPI.getQuoteList(params)
+                : QuoteAPI.getSupplierQuotes(params);
+            },
+            responseKey: 'quotes',
+            useOffset: false,
+            keyAndNames: [
+              {
+                key: (row: SupplierQuoteResponse) =>
+                  row.quote_no !== undefined && row.quote_no !== null
+                    ? String(row.quote_no)
+                    : '',
+                name: '报价单号',
+                width: 18,
+              },
+              { key: 'supplier_name', name: '供应商名称', width: 20 },
+              { key: 'purchase_type', name: '采购类型', width: 14 },
+              {
+                key: (row: SupplierQuoteResponse) =>
+                  row.inquiry_no !== undefined && row.inquiry_no !== null
+                    ? String(row.inquiry_no)
+                    : '',
+                name: '询价单号',
+                width: 18,
+              },
+              {
+                key: (row: SupplierQuoteResponse) =>
+                  row.order_no !== undefined && row.order_no !== null
+                    ? String(row.order_no)
+                    : '',
+                name: '采购单号',
+                width: 18,
+              },
+              { key: 'sku_name', name: '商品名称', width: 26 },
+              { key: 'quantity', name: '数量', width: 10 },
+              {
+                key: (row: SupplierQuoteResponse) =>
+                  formatPriceToYuan(row.quote_price),
+                name: '报价单价(元)',
+                width: 14,
+              },
+              {
+                key: (row: SupplierQuoteResponse) =>
+                  formatPriceToYuan(row.total_price),
+                name: '报价总价(元)',
+                width: 14,
+              },
+              {
+                key: (row: SupplierQuoteResponse) => row.status?.name,
+                name: '状态',
+                width: 14,
+              },
+              {
+                key: (row: SupplierQuoteResponse) =>
+                  formatDate(row.expected_delivery_date, true),
+                name: '预计交货日期',
+                width: 16,
+              },
+              {
+                key: (row: SupplierQuoteResponse) =>
+                  formatDate(row.submit_time),
+                name: '提交时间',
+                width: 20,
+              },
+              {
+                key: (row: SupplierQuoteResponse) => formatDate(row.ctime),
+                name: '创建时间',
+                width: 20,
+              },
+            ],
           }}
         />
       </Card>

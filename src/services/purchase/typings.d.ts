@@ -285,3 +285,14 @@ export interface SkuListInfo {
   status?: StatusInfo<COMMON_STATUS_CODE>;
   third_code?: string;
 }
+
+export interface UpdatePurchaseItemParams {
+  order_no: number;
+  /**
+   * normal普通采购，return回采
+   */
+  purchase_type?: string;
+  quantity?: number;
+  remark?: string;
+  sku_id: number;
+}

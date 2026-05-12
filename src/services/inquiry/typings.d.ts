@@ -66,6 +66,7 @@ export interface InquiryDetailResponse {
   ctime: string;
   mtime: string;
   expected_delivery_date: string;
+  store_name: string;
   items: InquiryItemResponse[];
 }
 

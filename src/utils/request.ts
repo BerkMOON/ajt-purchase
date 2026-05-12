@@ -36,8 +36,15 @@ export async function fetchAllPaginatedData<T, P extends object>(
 
     const firstPageResponse = await requestFn(firstPageParams as any);
 
-    let allRecords = [...firstPageResponse.data[responseKey]];
-    const totalPage = firstPageResponse.data.meta.total_page;
+    const firstPageList = Array.isArray(firstPageResponse?.data?.[responseKey])
+      ? firstPageResponse.data[responseKey]
+      : [];
+    let allRecords = [...firstPageList];
+
+    const totalPage =
+      firstPageResponse?.data?.meta?.total_page ??
+      firstPageResponse?.data?.count?.total_page ??
+      1;
 
     // 如果有多页，继续请求剩余页面的数据
     if (totalPage > 1) {
@@ -54,7 +61,10 @@ export async function fetchAllPaginatedData<T, P extends object>(
 
       const responses = await Promise.all(remainingRequests);
       responses.forEach((response) => {
-        allRecords = [...allRecords, ...response.data[responseKey]];
+        const pageList = Array.isArray(response?.data?.[responseKey])
+          ? response.data[responseKey]
+          : [];
+        allRecords = [...allRecords, ...pageList];
       });
     }
 

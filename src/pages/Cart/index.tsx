@@ -122,7 +122,7 @@ const Cart: React.FC = () => {
     loading,
     showDeleteConfirm: true,
     actionColumnWidth: 100,
-    skuIdColumnWidth: 120,
+    skuIdColumnWidth: 180,
     fixedActionColumn: true,
   });
 
@@ -134,6 +134,7 @@ const Cart: React.FC = () => {
     <>
       <Card
         title="购物车"
+        bodyStyle={{ overflowX: 'auto' }}
         extra={
           <Space>
             <Popconfirm
@@ -163,6 +164,7 @@ const Cart: React.FC = () => {
           dataSource={cartItems}
           rowKey="sku_id"
           loading={loading}
+          scroll={{ x: 'max-content' }}
           pagination={false}
           locale={{
             emptyText: '购物车是空的',

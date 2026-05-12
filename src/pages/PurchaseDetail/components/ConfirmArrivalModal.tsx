@@ -48,6 +48,11 @@ const ConfirmArrivalModal: React.FC<ConfirmArrivalModalProps> = ({
       newSelected.delete(itemId);
     } else {
       newSelected.add(itemId);
+      const fieldName = `delivery_date_${itemId}`;
+      const currentValue = form.getFieldValue(fieldName);
+      if (!currentValue) {
+        form.setFieldValue(fieldName, dayjs());
+      }
     }
     setSelectedItems(newSelected);
   };
@@ -58,6 +63,17 @@ const ConfirmArrivalModal: React.FC<ConfirmArrivalModalProps> = ({
       setSelectedItems(new Set());
     } else {
       setSelectedItems(new Set(availableItems.map((item) => item.id)));
+      const defaultDeliveryDates: Record<string, any> = {};
+      availableItems.forEach((item) => {
+        const fieldName = `delivery_date_${item.id}`;
+        const currentValue = form.getFieldValue(fieldName);
+        if (!currentValue) {
+          defaultDeliveryDates[fieldName] = dayjs();
+        }
+      });
+      if (Object.keys(defaultDeliveryDates).length > 0) {
+        form.setFieldsValue(defaultDeliveryDates);
+      }
     }
   };
 
@@ -132,6 +148,12 @@ const ConfirmArrivalModal: React.FC<ConfirmArrivalModalProps> = ({
           />
         );
       },
+    },
+    {
+      title: '产品编码',
+      dataIndex: 'third_code',
+      key: 'third_code',
+      width: 200,
     },
     {
       title: '商品名称',

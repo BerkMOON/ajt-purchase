@@ -23,6 +23,7 @@ import type {
   SendSupplierInquiryParams,
   SkuInfoResponse,
   SubmitOrderParams,
+  UpdatePurchaseItemParams,
 } from './typings';
 
 const API_PREFIX = '/api/v1/store/purchase/order';
@@ -300,5 +301,18 @@ export const PurchaseAPI = {
         params,
       },
     );
+  },
+
+  /**
+   * 更新采购单商品信息
+   * POST /api/v1/store/purchase/order/updateItem
+   * 接口ID：451143181
+   * 接口地址：https://app.apifox.com/link/project/7357392/apis/api-451143181
+   */
+  updatePurchaseItem: async (params: UpdatePurchaseItemParams) => {
+    return request<ResponseInfoType<null>>(`${API_PREFIX}/updateItem`, {
+      method: 'POST',
+      data: params,
+    });
   },
 };

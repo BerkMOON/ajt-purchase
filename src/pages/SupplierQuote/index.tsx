@@ -52,6 +52,7 @@ const SupplierQuote: React.FC = () => {
   const [inquiry, setInquiry] = useState<InquiryDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [batchDeliveryDate, setBatchDeliveryDate] = useState<any>(null);
   const [form] = Form.useForm();
 
   const statusInfo = inquiry?.status || { code: -1, name: '' };
@@ -266,6 +267,9 @@ const SupplierQuote: React.FC = () => {
           <Col span={24}>
             <Card title="询价信息" size="small">
               <Descriptions column={3} bordered>
+                <Descriptions.Item label="采购门店">
+                  {inquiry.store_name}
+                </Descriptions.Item>
                 <Descriptions.Item label="供应商名称">
                   {inquiry.supplier_name}
                 </Descriptions.Item>
@@ -306,6 +310,37 @@ const SupplierQuote: React.FC = () => {
 
           <Col span={24}>
             <Card title="配件报价" size="small">
+              {canSubmit && (
+                <div style={{ marginBottom: 12 }}>
+                  <Space>
+                    <DatePicker
+                      placeholder="批量选择交货日期"
+                      value={batchDeliveryDate}
+                      onChange={(val) => setBatchDeliveryDate(val)}
+                      format="YYYY-MM-DD"
+                    />
+                    <Button
+                      onClick={() => {
+                        if (!batchDeliveryDate) {
+                          message.warning('请先选择要批量填写的交货日期');
+                          return;
+                        }
+
+                        const fields: Record<string, any> = {};
+                        inquiry.items.forEach((item, index) => {
+                          const fieldKey = getItemFieldKey(item, index);
+                          fields[`item_delivery_${fieldKey}`] =
+                            batchDeliveryDate;
+                        });
+                        form.setFieldsValue(fields);
+                        message.success('已批量填充单项交货时间');
+                      }}
+                    >
+                      批量填充单项交货时间
+                    </Button>
+                  </Space>
+                </div>
+              )}
               <Form form={form} onFinish={handleSubmit} layout="vertical">
                 <Table
                   columns={[

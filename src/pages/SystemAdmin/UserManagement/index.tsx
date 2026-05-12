@@ -187,7 +187,7 @@ const TableList: React.FC = () => {
     // 先更新用户信息
     const updateResponse = await UserAPI.modifyUserInfo({
       ...userParams,
-      id: user_id,
+      user_id,
       user_type,
     } as any);
 

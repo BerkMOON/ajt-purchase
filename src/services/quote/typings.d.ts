@@ -50,6 +50,7 @@ export interface SupplierQuoteResponse {
   submit_time: string;
   ctime: string;
   mtime: string;
+  store_name: string;
 }
 
 export interface GetSupplierQuotesResponse extends BaseListInfo {

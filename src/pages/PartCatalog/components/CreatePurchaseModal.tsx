@@ -10,6 +10,7 @@ import {
   InputNumber,
   Modal,
   Row,
+  Space,
   Table,
   message,
 } from 'antd';
@@ -34,6 +35,23 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
 }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loadingCart, setLoadingCart] = useState(false);
+
+  const getDefaultPurchaseTitle = (): string => {
+    const dateText = dayjs().format('YYYY-MM-DD');
+    try {
+      const currentStore = localStorage.getItem('currentStore');
+      if (currentStore) {
+        const parsed = JSON.parse(currentStore);
+        const storeName = parsed?.storeName;
+        if (storeName) {
+          return `${storeName}-${dateText}`;
+        }
+      }
+    } catch (error) {
+      console.warn('解析 currentStore 失败:', error);
+    }
+    return dateText;
+  };
 
   // 获取购物车数据
   useEffect(() => {
@@ -60,8 +78,8 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
             form.setFieldsValue({
               quantities: initialQuantities,
               return_purchase: initialReturnPurchase,
-              title: '',
-              expected_delivery_date: dayjs().add(7, 'days'),
+              title: getDefaultPurchaseTitle(),
+              expected_delivery_date: dayjs(),
               inquiry_deadline: dayjs().add(30, 'minutes'),
               remark: '',
             });
@@ -81,6 +99,16 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
       setCartItems([]);
     }
   }, [visible, form]);
+
+  const applyReturnPurchaseAll = (checked: boolean) => {
+    const next: Record<string, boolean> = {};
+    cartItems.forEach((item) => {
+      if (item.sku_id !== undefined && item.sku_id !== null) {
+        next[String(item.sku_id)] = checked;
+      }
+    });
+    form.setFieldsValue({ return_purchase: next });
+  };
 
   const columns = [
     {
@@ -208,7 +236,34 @@ const CreatePurchaseModal: React.FC<CreatePurchaseModalProps> = ({
         </Row>
 
         <div style={{ marginTop: 16 }}>
-          <h4>SKU清单</h4>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 8,
+              marginBottom: 12,
+            }}
+          >
+            <h4 style={{ margin: 0 }}>SKU清单</h4>
+            <Space size="small">
+              <Button
+                size="small"
+                disabled={cartItems.length === 0 || loadingCart}
+                onClick={() => applyReturnPurchaseAll(true)}
+              >
+                一键回采
+              </Button>
+              <Button
+                size="small"
+                disabled={cartItems.length === 0 || loadingCart}
+                onClick={() => applyReturnPurchaseAll(false)}
+              >
+                一键普通采购
+              </Button>
+            </Space>
+          </div>
           <Table
             dataSource={cartItems}
             rowKey="sku_id"

@@ -31,6 +31,11 @@ export const getColumns = ({
       ),
     },
     {
+      title: '采购门店',
+      dataIndex: 'store_name',
+      key: 'store_name',
+    },
+    {
       title: '采购类型',
       dataIndex: 'purchase_type',
       key: 'purchase_type',

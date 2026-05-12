@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # 环境配置
-PROD_SERVER_HOST="8.136.123.166"
-PROD_SSH_KEY="/Users/berk/Downloads/pem/server.pem"
+PROD_SERVER_HOST="39.97.51.0"
+PROD_SSH_KEY="/Users/berk/Downloads/pem/admin.pem"
 TEST_SERVER_HOST="121.41.14.63"
 TEST_SSH_KEY="/Users/berk/Downloads/pem/incident_dev.pem"
 

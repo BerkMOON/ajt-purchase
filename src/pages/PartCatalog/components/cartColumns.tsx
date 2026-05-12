@@ -119,7 +119,11 @@ export const getCartColumns = ({
             danger
             size="small"
             icon={showDeleteConfirm ? <DeleteOutlined /> : undefined}
-            onClick={() => handleRemove(record.sku_id)}
+            onClick={() => {
+              if (!showDeleteConfirm) {
+                handleRemove(record.sku_id);
+              }
+            }}
             disabled={loading}
           >
             {showDeleteConfirm ? '删除' : '移除'}
